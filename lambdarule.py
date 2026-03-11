@@ -132,3 +132,102 @@ PROMPT = build_dynamic_prompt()
 
 
 https://chatgpt.com/share/69b1171d-f640-800f-b6c6-27cc52eb3e03
+
+i extract text json from jpegs  ans like 
+{
+  "extracted_data": {
+    "Company Code": "3600",
+    "Vendor Code": "015674328073000",
+    "Reference": "35/XI/E/2025",
+    "Amount": 47700000.0,
+    "Currency": "IDR",
+    "Document Date": "11/17/2025",
+    "Tax Amount": 47700000.0,
+    "PO Number": null,
+    "Assignment": null,
+    "Baseline Date": "12/02/2025"
+  }
+}{
+  "extracted_data": {
+    "Company Code": "0400",
+    "Vendor Code": "0024183022414000",
+    "Reference": "04002500388182778",
+    "Amount": 47700000.0,
+    "Currency": "IDR",
+    "Document Date": "11/17/2025",
+    "Tax Amount": 47700000.0,
+    "PO Number": null,
+    "Assignment": null,
+    "Baseline Date": "11/17/2025"
+  }
+}{
+  "extracted_data": {
+    "Company Code": "0403",
+    "Vendor Code": "0024183022414000",
+    "Reference": "04032503388182778",
+    "Amount": 47700000.0,
+    "Currency": "IDR",
+    "Document Date": "11/17/2025",
+    "Tax Amount": 47700000.0,
+    "PO Number": null,
+    "Assignment": null,
+    "Baseline Date": "11/17/2025"
+  }
+}{
+  "extracted_data": {
+    "Company Code": null,
+    "Vendor Code": null,
+    "Reference": null,
+    "Amount": 47700000.0,
+    "Currency": "IDR",
+    "Document Date": "06/11/2025",
+    "Tax Amount": 47700000.0,
+    "PO Number": "4300442911",
+    "Assignment": "4300442911",
+    "Baseline Date": "06/11/2025"
+  }
+}{
+  "extracted_data": {
+    "Company Code": null,
+    "Vendor Code": null,
+    "Reference": "35/XI/E/2025",
+    "Amount": null,
+    "Currency": "IDR",
+    "Document Date": "06/11/2025",
+    "Tax Amount": null,
+    "PO Number": null,
+    "Assignment": null,
+    "Baseline Date": "11/17/2025"
+  }
+}{
+  "extracted_data": {
+    "Company Code": null,
+    "Vendor Code": null,
+    "Reference": null,
+    "Amount": null,
+    "Currency": null,
+    "Document Date": null,
+    "Tax Amount": null,
+    "PO Number": null,
+    "Assignment": null,
+    "Baseline Date": null
+  }
+}
+
+
+ i want a consolidated output as 
+ {
+  "consolidated_extracted_data": {
+    "Company Code": "3600",
+    "Vendor Code": "INDO0223ID",
+    "Reference": "35/XI/E/2025",
+    "Amount": 47700000.0,
+    "Currency": "IDR",
+    "Document Date": "11/17/2025",
+    "Tax Amount": 47700000.0,
+    "PO Number": "4500442971",
+    "Assignment": "4500442971",
+    "Baseline Date": "02/12/2025",
+    "document_name": "01_cropped.pdf"
+  }
+}
