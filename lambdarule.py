@@ -133,101 +133,101 @@ PROMPT = build_dynamic_prompt()
 
 https://chatgpt.com/share/69b1171d-f640-800f-b6c6-27cc52eb3e03
 
-i extract text json from jpegs  ans like 
+
+INSTRUCTION_RULES = """
+================================================
+BAHASA INVOICE OCR – BUSINESS EXTRACTION RULES
+================================================
+
+1. Company Code
+Extract the Company Code from the first four (4) digits of the barcode on the invoice.
+
+2. Vendor Code
+Extract the Vendor Code from the Vendor Information section.
+Typically found in the PO section or within the invoice header under vendor details.
+
+3. Reference
+Extract the Invoice Number from the invoice.
+
+4. Amount
+Extract only the total value of the line items billed.
+Exclude:
+- Tax (PPN)
+- VAT
+- Any additional charges
+
+5. Currency
+If the invoice language is Bahasa Indonesia OR a Faktur Pajak is present → set currency as IDR.
+If the invoice is in another language → extract the currency directly from the invoice.
+
+6. Document Date
+Extract the invoice date (Tanggal Invoice) stated on the invoice.
+
+7. Tax Code (Lookup Required)
+Use the first 3 digits of the Faktur Pajak top header code as the lookup key.
+Example: 040.
+
+Use this value to filter the Apical Tax Code lookup table using the column:
+'Kode Seri Faktur Pajak'.
+
+Return the corresponding value from the column:
+'VAT (Rate)'.
+
+Note:
+The lookup key must always be a **3-digit padded format**
+Example:
+040 (not 40).
+
+8. Tax Amount
+The Tax Amount must be the same value as the Amount.
+
+9. PO Number
+Extract the Purchase Order number.
+The PO number must be a **10-digit number**.
+
+It may appear in:
+- Attached PO document
+- Under "Surat Pesanan"
+- Handwritten on the invoice.
+
+10. Assignment
+Assignment must contain the same value as the PO Number.
+
+11. Text
+Extract one line item description from the invoice.
+
+12. Document Header Text
+Extract the full Faktur Pajak header code printed at the top of the Faktur Pajak.
+
+Example:
+04002500388182779
+
+13. Baseline Payment Date
+Use the **stamp date** stamped on the invoice.
+If no stamp date is present, use the Document Date.
+
+14. Business Area
+Extract the Business Area value if present in the document.
+If not present, return null.
+"""
+
+OUTPUT_JSON_SCHEMA = """
 {
   "extracted_data": {
-    "Company Code": "3600",
-    "Vendor Code": "015674328073000",
-    "Reference": "35/XI/E/2025",
-    "Amount": 47700000.0,
-    "Currency": "IDR",
-    "Document Date": "11/17/2025",
-    "Tax Amount": 47700000.0,
-    "PO Number": null,
-    "Assignment": null,
-    "Baseline Date": "12/02/2025"
-  }
-}{
-  "extracted_data": {
-    "Company Code": "0400",
-    "Vendor Code": "0024183022414000",
-    "Reference": "04002500388182778",
-    "Amount": 47700000.0,
-    "Currency": "IDR",
-    "Document Date": "11/17/2025",
-    "Tax Amount": 47700000.0,
-    "PO Number": null,
-    "Assignment": null,
-    "Baseline Date": "11/17/2025"
-  }
-}{
-  "extracted_data": {
-    "Company Code": "0403",
-    "Vendor Code": "0024183022414000",
-    "Reference": "04032503388182778",
-    "Amount": 47700000.0,
-    "Currency": "IDR",
-    "Document Date": "11/17/2025",
-    "Tax Amount": 47700000.0,
-    "PO Number": null,
-    "Assignment": null,
-    "Baseline Date": "11/17/2025"
-  }
-}{
-  "extracted_data": {
-    "Company Code": null,
-    "Vendor Code": null,
-    "Reference": null,
-    "Amount": 47700000.0,
-    "Currency": "IDR",
-    "Document Date": "06/11/2025",
-    "Tax Amount": 47700000.0,
-    "PO Number": "4300442911",
-    "Assignment": "4300442911",
-    "Baseline Date": "06/11/2025"
-  }
-}{
-  "extracted_data": {
-    "Company Code": null,
-    "Vendor Code": null,
-    "Reference": "35/XI/E/2025",
-    "Amount": null,
-    "Currency": "IDR",
-    "Document Date": "06/11/2025",
-    "Tax Amount": null,
-    "PO Number": null,
-    "Assignment": null,
-    "Baseline Date": "11/17/2025"
-  }
-}{
-  "extracted_data": {
-    "Company Code": null,
-    "Vendor Code": null,
-    "Reference": null,
-    "Amount": null,
-    "Currency": null,
-    "Document Date": null,
-    "Tax Amount": null,
-    "PO Number": null,
-    "Assignment": null,
-    "Baseline Date": null
+    "companyCode": null,
+    "vendorCode": null,
+    "reference": null,
+    "amount": null,
+    "currency": null,
+    "documentDate": null,
+    "taxCode": null,
+    "taxAmount": null,
+    "poNumber": null,
+    "assignment": null,
+    "text": null,
+    "documentHeaderText": null,
+    "baselinePaymentDate": null,
+    "businessArea": null
   }
 }
-
-
- i want a consolidated output as 
- {
-  "consolidated_extracted_data": {
-    "Company Code": "3600",
-    "Vendor Code": "INDO0223ID",
-    "Reference": "35/XI/E/2025",
-    "Amount": 47700000.0,
-    "Currency": "IDR",
-    "Document Date": "11/17/2025",
-    "Tax Amount": 47700000.0,
-    "PO Number": "4500442971",
-    "Assignment": "4500442971",
-    "Baseline Date": "02/12/2025",
-    "document_name": "01_cropped.pdf"
-  }
-}
+"""
