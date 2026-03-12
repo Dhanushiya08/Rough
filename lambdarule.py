@@ -78,7 +78,96 @@ If no CBS value is present in the document, return null.
 12.Internal Order
 its null value
 """
+# Invoice Data Extraction Rules
 
+Extract the following fields from the invoice document using the rules below.
+
+---
+
+## 1. Company Code
+Fixed value: **8439**
+
+---
+
+## 2. Supplier
+Extract the **6-digit vendor code**.
+
+- If the vendor code appears in **orange font**, prioritize that value.
+- If no orange-highlighted vendor code is found, extract the vendor code that is **explicitly mentioned or labeled in the document**.
+
+---
+
+## 3. Reference
+Extract the **invoice number** as stated in the invoice document.
+
+---
+
+## 4. Amount in Document
+Extract the **total amount** mentioned in the invoice.
+
+---
+
+## 5. Document Currency
+Extract the **currency mentioned near the grand total amount**.
+
+- If the currency appears in **orange font**, prioritize that value.
+
+---
+
+## 6. Document Date
+Extract the **invoice date**.
+
+- Prioritize the date that has an **orange font tick mark annotation** next to it.
+
+---
+
+## 7. Text
+Extract the **content written next to the label "Text:"** as digitally annotated in the document.
+
+- The annotation may appear in **orange or black font**.
+
+---
+
+## 8. Document Header Text
+
+Use the following priority order:
+
+**Priority 1:**  
+If **"HT:"** is digitally annotated (orange or black font) and the value **starts with LNG1**, use this value as the header text.
+
+**Priority 2:**  
+If **"HT:"** is present but the value **does not start with LNG1**, capture the value and continue checking.
+
+**Priority 3 (Fallback):**  
+If neither condition yields a valid **LNG1** value, use the value from the **Text** field.
+
+---
+
+## 9. Assignment
+Same as **Reference (invoice number)**.
+
+---
+
+## 10. Baseline Payment Date
+Same as **Document Date**.
+
+---
+
+## 11. CBS
+Extract the **CBS number in the format X.X.X.X (e.g., 1.1.4.1)**.
+
+Identify the CBS value using one of the following indicators:
+
+- A **digital tick or annotation** placed next to the number.
+- An **explicit label "CBS"** near the number.
+- The number appearing near the **Payment Certificate section** of the document.
+
+If **no CBS value** is present in the document, leave this field **blank**.
+
+---
+
+## 12. Internal Order
+Fixed value: **null**
 OUTPUT_JSON_SCHEMA = """
 {
   "extracted_data": {
