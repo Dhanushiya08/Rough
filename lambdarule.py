@@ -661,3 +661,27 @@ Rules:
 • The value must contain exactly 6 digits only.
 • Ignore GST numbers, phone numbers, or other identifiers.
 • If no valid 6-digit vendor code is found, return null.
+
+
+6. Document Date
+
+Extract the invoice date marked with the orange tick annotation.  
+The invoice date is typically located near the "Invoice No." or in the invoice header section.
+
+The date may appear in formats such as:
+November 30, 2025
+30 Nov 2025
+2025-11-30
+30/11/2025
+
+Rules:
+• Extract the exact date shown next to the orange tick annotation.
+• Prefer the date located near "Invoice No." or in the invoice header.
+• Do NOT guess or infer dates.
+• Convert the extracted date to format DD/MM/YYYY.
+
+Examples:
+November 30, 2025 → 30/11/2025
+2025-11-30 → 30/11/2025
+
+If no valid date is found, return null.
