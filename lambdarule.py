@@ -1,3 +1,6 @@
+
+
+
 # prompts.py
 
 COMMON_PROMPT = """
@@ -440,3 +443,221 @@ OUTPUT FORMAT
 """
 https://drive.google.com/file/d/1NWAdrXKjOZvvZfC8njIQsQhhQKLjaRw9/view?usp=sharing
 
+
+def consolidated_data_prompt(Extracteddata):
+
+    return f"""
+You are a document consolidation system.
+
+Data has been extracted from multiple pages of the same invoice.
+
+Your task is to consolidate all extracted values into one final JSON.
+
+Follow these rules strictly.
+
+CONSOLIDATION RULES
+
+1. Business Rules First
+Always follow the invoice extraction business rules below.
+
+Fixed values:
+companyCode = 8439
+internalOrder = null
+
+Derived fields:
+assignment = reference
+baselinePaymentDate = documentDate
+
+2. Multi-Page Comparison
+
+Multiple pages may contain values for the same field.
+
+Compare all page results and select the most accurate value.
+
+3. Page Priority
+
+Invoices often contain intermediate values on earlier pages.
+
+For financial totals:
+
+amountInDocument
+documentCurrency
+
+Prefer values appearing on the LAST page,
+especially near labels such as:
+
+TOTAL
+GRAND TOTAL
+TOTAL AMOUNT THIS INVOICE
+
+Earlier totals may be subtotals.
+
+4. Identifier Fields
+
+For identifier fields:
+
+reference
+supplier
+cbsNumber
+
+Prefer values that:
+• appear consistently across pages
+• appear near relevant labels
+
+5. CBS Handling
+
+CBS codes are hierarchical identifiers such as:
+
+1.1.2
+1.2.3
+1.2.3.4
+1.2.3.4R
+
+Never truncate the CBS value.
+
+6. Confidence Score
+
+Confidence should only be used when document structure
+and page order cannot determine the correct value.
+
+Do not allow confidence to override business rules.
+
+7. Null Handling
+
+Ignore null values unless all pages contain null.
+
+If all pages contain null, return null.
+
+OUTPUT FORMAT
+
+Return JSON in this format:
+
+{OUTPUT_JSON_SCHEMA}
+
+Provide for each field:
+value
+reason
+confidence
+
+Extracted Page Data:
+{Extracteddata}
+
+Return ONLY valid JSON.
+"""
+
+
+11. CBS
+
+Extract the CBS code exactly as written.
+
+CBS codes follow hierarchical numbering separated by periods.
+
+Valid examples include:
+1.1.2
+1.2.3
+1.2.3.4
+1.2.3.4R
+
+Rules:
+• Do NOT truncate segments
+• Preserve suffix characters such as "R"
+• Extract the full sequence exactly as written
+
+Priority:
+1. Value labeled "CBS"
+2. Value marked with annotation tick
+3. Value near the Payment Certificate section
+
+If no CBS value exists return null.
+
+Hierarchical identifiers such as CBS must be preserved exactly as written.
+Never truncate segments or remove suffix characters.
+
+Annotation labels such as "Text", "TEXT", "HT", or "HT:" must never be returned as extracted values.
+
+2. Supplier
+
+Extract the supplier vendor code using the following strict priority rules.
+
+Priority 1 — Right Corner / Top Corner Check
+
+First inspect the top-right corner or upper-right area of the page.
+
+If a number appears in this area with the following properties:
+
+• The value contains exactly 6 digits
+• The value contains only digits (no letters or symbols)
+• The value appears in orange, red, or black font
+
+Then extract this value as the supplier vendor code.
+
+Example valid values:
+100269
+200769
+
+Important restrictions:
+• The value must be exactly 6 digits
+• Do NOT extract numbers that contain letters
+• Do NOT extract numbers longer than 6 digits
+• Do NOT extract numbers shorter than 6 digits
+
+Exclude the following types of numbers:
+GST numbers
+tax numbers
+phone numbers
+invoice numbers
+postal codes
+
+If multiple numbers appear in the corner, choose the value that matches exactly six digits only.
+
+Priority 2 — Labeled Vendor Code
+
+If no valid 6-digit number is found in the right or top corner area:
+
+Search the document for a vendor code explicitly labeled with terms such as:
+
+Vendor
+Vendor Code
+Supplier
+Supplier Code
+
+If a labeled value contains exactly 6 digits, extract that value.
+
+Priority 3 — No Valid Vendor Code
+
+If no valid 6-digit vendor code is found in either location, return null.
+
+Important Rules:
+
+• Extract only numeric values with exactly 6 digits.
+• Do not extract GST numbers or tax identifiers.
+• Do not infer vendor codes from other numbers.
+• Do not extract partial numbers.
+
+
+
+2. Supplier
+
+Extract the supplier vendor code using the following priority.
+
+Priority 1 (Highest):
+Check the top-right corner or upper-right area of the page.
+If a number appears in this area with exactly 6 digits (digits only) and is shown in orange, red, or black font, extract it as the supplier vendor code.
+
+Example: 100269
+
+This rule has higher priority even if another vendor code appears elsewhere in the document.
+
+Priority 2:
+If no valid 6-digit number is found in the top-right or upper area, search for a labeled vendor code such as:
+
+Vendor
+Vendor Code
+Supplier
+
+If the labeled value contains exactly 6 digits, extract it.
+
+Rules:
+• The value must contain exactly 6 digits only.
+• Ignore GST numbers, phone numbers, or other identifiers.
+• If no valid 6-digit vendor code is found, return null.
