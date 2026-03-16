@@ -694,7 +694,7 @@ import json
 s3 = boto3.client("s3")
 lambda_client = boto3.client("lambda")
 
-PROCESS_LAMBDA = "processing-lambda-name"
+PROCESS_LAMBDA_ARN = "arn:aws:lambda:ap-south-1:123456789012:function:processInvoice"
 
 def lambda_handler(event, context):
 
@@ -706,23 +706,41 @@ def lambda_handler(event, context):
         Prefix=prefix
     )
 
-    files = response.get("Contents", [])[:5]   # take first 5 files
+    files = response.get("Contents", [])[:5]
 
     for obj in files:
         key = obj["Key"]
 
         payload = {
             "bucket": bucket,
-            "key": key
+            "object_key": key
         }
 
         lambda_client.invoke(
-            FunctionName=PROCESS_LAMBDA,
-            InvocationType="Event",   # async invocation
+            FunctionName=PROCESS_LAMBDA_ARN,
+            InvocationType="Event",  # async invocation
             Payload=json.dumps(payload)
         )
 
+        print(f"Invoked processing lambda for {key}")
+
     return {
-        "message": "First 5 files invoked",
-        "count": len(files)
+        "status": "success",
+        "files_invoked": len(files)
     }
+    def lambda_handler(event, context):
+
+    bucket = event["bucket"]
+    key = event["object_key"]
+
+    print("Processing file:", key)
+
+    # Example: read file from S3
+    import boto3
+    s3 = boto3.client("s3")
+
+    response = s3.get_object(Bucket=bucket, Key=key)
+    data = response["Body"].read()
+
+    print("File size:", len(data))
+
