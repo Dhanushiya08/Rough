@@ -66,3 +66,62 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": f"Stored files: {stored_files}"
     }
+
+
+
+// 
+import boto3
+import pandas as pd
+import json
+import io
+
+s3 = boto3.client("s3")
+
+bucket = "your-bucket"
+input_prefix = "input-folder/"
+output_prefix = "excel-output/"
+
+def lambda_handler(event, context):
+
+    response = s3.list_objects_v2(
+        Bucket=bucket,
+        Prefix=input_prefix
+    )
+
+    for obj in response.get("Contents", []):
+        key = obj["Key"]
+
+        # ONLY process files ending with _v2.json
+        if not key.endswith("_v2.json"):
+            continue
+
+        print("Processing:", key)
+
+        # download JSON
+        file_obj = s3.get_object(Bucket=bucket, Key=key)
+        content = file_obj["Body"].read().decode("utf-8")
+        data = json.loads(content)
+
+        # convert to dataframe
+        df = pd.json_normalize(data)
+
+        # create excel in memory
+        buffer = io.BytesIO()
+
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False)
+
+        buffer.seek(0)
+
+        # output filename
+        filename = key.split("/")[-1].replace("_v2.json", ".xlsx")
+        output_key = output_prefix + filename
+
+        # upload to S3
+        s3.put_object(
+            Bucket=bucket,
+            Key=output_key,
+            Body=buffer.getvalue()
+        )
+
+        print("Uploaded:", output_key)
