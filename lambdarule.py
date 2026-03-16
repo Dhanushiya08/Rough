@@ -685,3 +685,44 @@ November 30, 2025 → 30/11/2025
 2025-11-30 → 30/11/2025
 
 If no valid date is found, return null.
+
+
+
+import boto3
+import json
+
+s3 = boto3.client("s3")
+lambda_client = boto3.client("lambda")
+
+PROCESS_LAMBDA = "processing-lambda-name"
+
+def lambda_handler(event, context):
+
+    bucket = event["bucket"]
+    prefix = event["prefix"]
+
+    response = s3.list_objects_v2(
+        Bucket=bucket,
+        Prefix=prefix
+    )
+
+    files = response.get("Contents", [])[:5]   # take first 5 files
+
+    for obj in files:
+        key = obj["Key"]
+
+        payload = {
+            "bucket": bucket,
+            "key": key
+        }
+
+        lambda_client.invoke(
+            FunctionName=PROCESS_LAMBDA,
+            InvocationType="Event",   # async invocation
+            Payload=json.dumps(payload)
+        )
+
+    return {
+        "message": "First 5 files invoked",
+        "count": len(files)
+    }
