@@ -744,3 +744,165 @@ def lambda_handler(event, context):
 
     print("File size:", len(data))
 
+
+    // mandarin
+    INSTRUCTION_RULES = """
+================================================
+INVOICE EXTRACTION BUSINESS RULES
+================================================
+
+1. Company Code
+Source: Barcode.
+Extract the first 4 digits of the barcode value.
+
+Barcode Structure:
+[CompanyCode(4)][Location(2)][Function(2)][DocType(2)][Year(2)][RunningNumber(n)]
+
+Example:
+2309NWAPTA25101835 → 2309
+
+------------------------------------------------
+
+2. Vendor Code
+Source: Purchase Order.
+Extract the vendor code as a numeric value.
+
+------------------------------------------------
+
+3. Reference
+Source: Invoice number field.
+Extract only the last 8 digits of the invoice number.
+
+Example:
+25362000000085009056 → 85009056
+
+------------------------------------------------
+
+4. Amount
+Source: Total amount including tax.
+Extract the total amount including tax.
+
+------------------------------------------------
+
+5. Currency
+Apply the following priority rules:
+
+Priority 1:
+If the currency symbol is explicitly stated → use that currency.
+
+Priority 2:
+If ¥ or RMB symbol is present → return RMB.
+
+Priority 3:
+If $ symbol is present → return USD.
+
+Priority 4 (Default):
+If no symbol is present AND the invoice language is Chinese → return RMB.
+
+Output format:
+Return currency code (e.g., RMB, USD).
+
+------------------------------------------------
+
+6. Document Date
+Source: Invoice date field.
+Format: DD-MM-YYYY
+
+------------------------------------------------
+
+7. Tax Code
+Source: Tax rate field.
+
+Extract the percentage value (e.g., 13%).
+
+Then map it using the SAP ASP PRD lookup table to get the corresponding tax code.
+
+Note:
+Ensure the tax code is in 3-digit padded format (e.g., 040, not 40).
+
+------------------------------------------------
+
+8. Tax Amount
+Source: Total tax amount from the "合计" section under the "税额" column.
+Extract the total tax value.
+
+------------------------------------------------
+
+9. PO Number
+🔍 Lookup Required
+
+PO numbers are 10-digit numeric sequences.
+
+Extraction steps:
+
+Step 1 — Invoice Remarks:
+Check the remarks section at the bottom of the invoice for a 10-digit number.
+
+Step 2 — Additional Pages / Attachments:
+Look for headers such as:
+- "PO:"
+- "Purchase Order"
+
+Step 3 — Handwritten Annotations:
+Check margins, blank spaces, stamps (especially bottom-right corner).
+
+Look for labels:
+- "po."
+- "PO:"
+- "Po;"
+- "po:" (case-insensitive)
+
+Extract the 10-digit number immediately following the label.
+
+Important:
+If multiple PO numbers are found, process each PO as a separate entry.
+
+------------------------------------------------
+
+10. Assignment
+Same as PO Number.
+
+------------------------------------------------
+
+11. Text
+Source: Purchase Order description.
+
+Format:
+POnumber - line item value
+
+Example:
+4500123456 - 00010
+
+------------------------------------------------
+
+12. Document Header Text
+Source: Purchase Order description.
+
+Format:
+POnumber - line item
+
+Example:
+4500123456 - 00010
+
+------------------------------------------------
+
+13. Baseline Payment Date
+
+If Company Code = '2318':
+→ Use posting date (current processing date).
+
+Otherwise:
+→ Use Document Date.
+
+Format:
+DD/MM/YYYY (e.g., 31/08/2025)
+
+------------------------------------------------
+
+14. Business Area
+To be confirmed with client.
+Return null if not available.
+
+------------------------------------------------
+"""
+
