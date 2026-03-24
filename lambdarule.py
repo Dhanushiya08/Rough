@@ -958,4 +958,62 @@ IF Company Code (field #2) = "2318" → Use posting date (current date when invo
 ELSE → Use Document Date (field #6)
 Format: DD/MM/YYYY
 Example: 31/08/2025
-
+Mandarin Invoices
+FieldExtraction Rule
+1. Company CodeSource: First 4 digits of the barcode.
+Barcode structure:
+[CompanyCode(4)][Location(2)][Function(2)][DocType(2)][Year(2)][RunningNumb
+er(n)]
+Example: 2309NWAPTA25101835 → 2309
+2. Vendor CodeSource: Purchase Order.
+Extract as a numeric value.
+3. ReferenceSource: Invoice number field.
+Extract the last 8 digits only.
+Example: 25362000000085009056 → 85009056
+4. AmountSource: Total amount including tax.
+Extract the total amount including tax.
+5. CurrencyPriority 1: If the currency symbol is explicitly stated → use that currency.
+Priority 2: If ¥ or RMB symbol is present → RMB.
+Priority 3: If $ symbol is present → USD.
+Priority 4 (Default): If no symbol is present and the invoice language is Chinese
+→ RMB.
+Output: Currency code (e.g., RMB, USD).
+6. Document DateSource: Invoice date field.
+Format: DD-MM-YYYY
+7. Tax CodeSource: Tax rate field.
+Extract the percentage value (e.g., 13%).
+Return as a percentage. Use the SAP ASP PRD lookup table to find the
+corresponding code value based on vendor type.
+Note: Ensure the SAP ASP PRD table uses the 3-digit padded format (e.g., 040,
+not 40).
+🔍 Lookup Required
+Page 3 of 8Confidential — Internal Use Only
+Invoice Data Extraction Rules
+FieldExtraction Rule
+8. Tax AmountSource: Total tax amount (合计 section, 税额 column).
+Extract the total tax value.
+9. PO Number🔍 Lookup RequiredPO numbers are 10-digit numeric sequences.
+Step 1 — Invoice Remarks: Check the remarks area at the bottom of the invoice
+for a 10-digit sequence.
+Step 2 — Next Page / Attached Documents: Look for document headers such as
+'Po:' or 'Purchase Order'. Proceed to Step 3 if not found.
+Step 3 — Handwritten Annotations: Check blank spaces, stamps, or margins
+(especially the bottom-right corner). Look for annotations starting with 'po.', 'PO:',
+'Po;', or 'po:' (case-insensitive). Extract the numeric sequence immediately
+following the label.
+If a document contains multiple PO numbers, process each PO as a separate
+entry.
+10. AssignmentSame as PO Number.
+11. TextPurchase order description.
+Format: POnumber - line item value
+Example: 4500123456 - 00010
+12. Document
+Header TextPurchase order description.
+Format: POnumber - line item
+Example:4500123456 - 00010
+13. Baseline
+Payment DateIf Company Code = '2318' → Use the posting date (current date when the invoice
+is processed).
+Otherwise → Use the Document Date.
+Format: DD/MM/YYYY (e.g., 31/08/2025)
+14. Business AreaTo be confirmed with the client.
