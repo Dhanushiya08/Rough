@@ -9,23 +9,29 @@ export const createPost = async (post: PostInput): Promise<Post> => {
   const { data } = await apiClient.post<Post>("/posts", post);
   return data;
 };
+
 export const uploadDocument = async (
   file: File,
+  id: string,
   onProgress?: (percent: number) => void,
 ) => {
-  const formData = new FormData();
-  formData.append("file", file);
+  const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+  console.log(file, blob);
+  const { data } = await apiClient.put(
+    `/upload?file_id=${id}&filename=${encodeURIComponent(file.name)}`,
+    file,
+    {
+      headers: {
+        "Content-Type": file.type || "application/pdf",
+      },
 
-  const { data } = await apiClient.put("/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
+      onUploadProgress: (event) => {
+        if (!event.total) return;
+        const percent = Math.round((event.loaded * 100) / event.total);
+        onProgress?.(percent);
+      },
     },
-    onUploadProgress: (event) => {
-      if (!event.total) return;
-      const percent = Math.round((event.loaded * 100) / event.total);
-      onProgress?.(percent);
-    },
-  });
+  );
 
   return data;
 };

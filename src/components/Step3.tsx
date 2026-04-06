@@ -5,9 +5,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import debounce from "lodash.debounce";
 import apiClient from "../services/apiClient";
-// import pdfFile from "../assets/1900000253.pdf";
+// import pdfFile from "../assets/Invoice_Extraction_Rules.docx.pdf";
 
-//  Worker (IMPORTANT)
+// //  Worker (IMPORTANT)
 // pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 //   "pdfjs-dist/build/pdf.worker.min.mjs",
 //   import.meta.url,
@@ -233,3 +233,163 @@ export default function Step3({ fileUrl }: { fileUrl?: string }) {
     </div>
   );
 }
+
+// import { useEffect, useMemo, useState } from "react";
+// import { useForm } from "react-hook-form";
+// import { z } from "zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import debounce from "lodash.debounce";
+// import apiClient from "../services/apiClient";
+
+// import { Input, DatePicker, Row, Col, Typography, Spin } from "antd";
+// import dayjs from "dayjs";
+
+// const { Text } = Typography;
+
+// // 🔹 Schema
+// const schema = z.object({
+//   companyCode: z.string(),
+//   supplier: z.string().optional(),
+//   reference: z.string().optional(),
+//   amount: z.string().optional(),
+//   currency: z.string().optional(),
+//   documentDate: z.string().optional(),
+//   text: z.string().optional(),
+//   headerText: z.string().optional(),
+//   assignment: z.string().optional(),
+//   baselineDate: z.string().optional(),
+//   cbs: z.string().optional(),
+//   internalOrder: z.string().optional(),
+// });
+
+// type FormData = z.output<typeof schema>;
+
+// // 🔥 Dynamic JSON Config
+// const fieldConfig = [
+//   { key: "companyCode", label: "Company Code", disabled: true },
+//   { key: "supplier", label: "Supplier Code" },
+//   { key: "documentDate", label: "Document Date", type: "date" },
+//   { key: "baselineDate", label: "Baseline Date", type: "date" },
+//   { key: "amount", label: "Total Amount" },
+//   { key: "currency", label: "Currency" },
+//   { key: "reference", label: "Reference" },
+//   { key: "assignment", label: "Assignment" },
+//   { key: "text", label: "Text", span: 2 },
+//   { key: "headerText", label: "Document Header Text", span: 2 },
+//   { key: "cbs", label: "CBS Value" },
+//   { key: "internalOrder", label: "Internal Order", disabled: true },
+// ];
+
+// export default function Extraction({ fileUrl }: { fileUrl?: string }) {
+//   const { watch, setValue } = useForm<FormData>({
+//     resolver: zodResolver(schema),
+//     defaultValues: {
+//       companyCode: "3001",
+//     },
+//   });
+
+//   const [loadingCBS, setLoadingCBS] = useState(false);
+
+//   const cbsValue = watch("cbs");
+//   const reference = watch("reference");
+//   const documentDate = watch("documentDate");
+
+//   // 🔹 Debounced CBS lookup
+//   const debouncedFetch = useMemo(
+//     () =>
+//       debounce(async (cbs: string) => {
+//         if (!cbs) return;
+
+//         try {
+//           setLoadingCBS(true);
+
+//           const res = await apiClient.get(`/lookup/internal-order?cbs=${cbs}`);
+
+//           setValue("internalOrder", res.data?.orderNumber || "");
+//         } catch {
+//           setValue("internalOrder", "");
+//         } finally {
+//           setLoadingCBS(false);
+//         }
+//       }, 500),
+//     [setValue],
+//   );
+
+//   useEffect(() => {
+//     debouncedFetch(cbsValue ?? "");
+//     return () => debouncedFetch.cancel();
+//   }, [cbsValue]);
+
+//   useEffect(() => {
+//     setValue("assignment", reference || "");
+//   }, [reference]);
+
+//   useEffect(() => {
+//     setValue("baselineDate", documentDate || "");
+//   }, [documentDate]);
+
+//   return (
+//     <div className="flex gap-6 h-screen">
+//       {/* 🔹 LEFT - PDF (placeholder) */}
+//       <div className="w-1/2 border rounded-xl bg-gray-100 p-4">
+//         <p className="text-center text-gray-500">
+//           PDF Preview (your existing viewer here)
+//         </p>
+//       </div>
+
+//       {/* 🔹 RIGHT - Dynamic Form */}
+//       <div className="w-1/2 border rounded-xl p-6 overflow-auto bg-[#F7F9FB]">
+//         <div className="flex justify-between items-center mb-6">
+//           <h2 className="text-lg font-semibold">Extracted Data</h2>
+//         </div>
+
+//         <Row gutter={[16, 16]}>
+//           {fieldConfig.map((field) => {
+//             const value = watch(field.key as keyof FormData);
+
+//             return (
+//               <Col span={field.span === 2 ? 24 : 12} key={field.key}>
+//                 <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+//                   <Text className="text-xs text-gray-500">
+//                     {field.label.toUpperCase()}
+//                   </Text>
+
+//                   {field.type === "date" ? (
+//                     <DatePicker
+//                       value={value ? dayjs(value) : null}
+//                       onChange={(date) =>
+//                         setValue(
+//                           field.key as keyof FormData,
+//                           date ? date.format("YYYY-MM-DD") : "",
+//                         )
+//                       }
+//                       className="w-full mt-2"
+//                       disabled={field.disabled}
+//                     />
+//                   ) : (
+//                     <Input
+//                       value={value}
+//                       onChange={(e) =>
+//                         setValue(field.key as keyof FormData, e.target.value)
+//                       }
+//                       disabled={field.disabled}
+//                       className="mt-2"
+//                     />
+//                   )}
+
+//                   {/* 🔥 CBS loading */}
+//                   {field.key === "cbs" && loadingCBS && (
+//                     <div className="mt-2 text-xs text-gray-400 flex items-center gap-2">
+//                       <Spin size="small" />
+//                       Fetching internal order...
+//                     </div>
+//                   )}
+//                 </div>
+//               </Col>
+//             );
+//           })}
+//         </Row>
+//       </div>
+//     </div>
+//   );
+// }

@@ -1,0 +1,25 @@
+.custom-ant-table .ant-table-thead > tr > th {
+  background-color: theme("colors.stepbgheader");
+  color: theme("colors.primary");
+}
+.custom-ant-table .ant-table-thead > tr > th {
+  background-color: #f0f4f7;
+  color: #002d62;
+  font-weight: 600;
+}
+
+.custom-ant-table .ant-table-tbody > tr > td {
+  background-color: #ffffff;
+}
+
+.custom-ant-table .ant-table-tbody > tr.bg-blue-50 > td {
+  background-color: #e6f0ff !important;
+}
+
+.custom-ant-table .ant-table-tbody > tr.bg-green-50 > td {
+  background-color: #eaf7ee !important;
+}
+
+.ant-checkbox-checked {
+  background-color: theme("colors.primary");
+}
