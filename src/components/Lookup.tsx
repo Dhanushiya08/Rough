@@ -43,7 +43,7 @@ const formatLabel = (key: string) =>
 
 export default function Lookup() {
   const [data, setData] = useState<ExtractedItem[]>(initialData);
-  
+
   const fetchInternalOrder = async (cbs: string) => {
     return new Promise<string>((resolve) => {
       setTimeout(() => {
@@ -171,15 +171,6 @@ export default function Lookup() {
           >
             Retry Look Up
           </Button>
-
-          {/* <Button
-            type="primary"
-            icon={<ArrowRight size={16} />}
-            iconPlacement="end"
-            className="flex items-center gap-2 bg-primary hover:!bg-secondary shadow-sm"
-          >
-            Fetch SAP Data
-          </Button> */}
           <ForwardButton label=" Fetch SAP Data" />
         </div>
       </div>

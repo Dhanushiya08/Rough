@@ -1,3 +1,35 @@
+// types/base.ts
+// export type ApiStatus =
+//   | "uploaded"
+//   | "processing"
+//   | "completed"
+//   | "failed"
+//   | "lookup_trigger"
+//   | "reconciled"
+//   | "parked";
+
+// export type ApiEvent = "start" | "retry" | "lookup" | "submit" | "final_submit";
+
+// export interface BaseRequest {
+//   file_id: string;
+//   event?: ApiEvent;
+// }
+
+// export interface BaseResponse<T = unknown> {
+//   status: ApiStatus | "error";
+//   message: string;
+//   data?: T;
+//   error_code?: string;
+// }
+// types/common.ts
+import type { BaseRequest } from "./base";
+export type RequestWithEvent<
+  TEvent extends string,
+  TExtra extends Record<string, unknown> = Record<string, never>,
+> = BaseRequest & {
+  event: TEvent;
+} & TExtra;
+
 export interface Step {
   id: number;
   label: string;
@@ -28,11 +60,11 @@ export interface LineItemsTableProps {
   data: LineItem[];
   selectedPO: string;
 }
-export type ExtractionEvent = "get-list" | "retry-list" | "look-up";
+export type ExtractionEvent = "get-list" | "retry-process" | "look-up";
 
 export type ExtractionRequest =
   | { event: "get-list"; file_id: string; status: string }
-  | { event: "retry-list"; file_id: string; status: string; retry: number }
+  | { event: "retry-process"; file_id: string; status: string; retry: number }
   | { event: "look-up"; file_id: string; status: string };
 // export type StepComponentProps = {
 //   goNext: () => void;

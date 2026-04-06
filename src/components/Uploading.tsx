@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast, { Toaster } from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 import { uploadDocument } from "../services/postService";
-import { triggerExtraction } from "../services/extractionService";
 import { CloudUpload, Zap } from "lucide-react";
 import CustomSelect from "./CustomSelect";
 import { generateUniqueID } from "../utils/useUniqueId";
 import { useAppStore } from "../store/useAppStore";
+import { startDocumentProcessing } from "../services/processingService";
 
 const MAX_SIZE = 3 * 1024 * 1024;
 
@@ -79,20 +79,26 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
     { label: "Bahasa", value: "bahasa" },
     { label: "Mandarin", value: "mandarin" },
   ];
-  const extractionMutation = useMutation({
+
+  const processingMutation = useMutation({
     mutationFn: ({ file_id, lang }: { file_id: string; lang: string }) =>
-      triggerExtraction({ file_id, lang }),
+      startDocumentProcessing({
+        event: "start-trigger",
+        lang,
+        file_id,
+        status: "uploaded",
+      }),
 
     onSuccess: () => {
-      toast.success("Extraction completed");
+      toast.success("Processing started");
       goNext?.();
     },
 
     onError: () => {
-      toast.error("Extraction failed");
+      toast.error("Processing failed");
     },
   });
-  const isProcessing = extractionMutation.isPending || uploadMutation.isPending;
+  const isProcessing = processingMutation.isPending || uploadMutation.isPending;
   const handleProcess = () => {
     if (!fileId) {
       toast.error("Upload file first");
@@ -104,7 +110,7 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
       return;
     }
 
-    extractionMutation.mutate({
+    processingMutation.mutate({
       file_id: fileId,
       lang,
     });
@@ -212,10 +218,10 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
         {fileId && (
           <button
             onClick={handleProcess}
-            disabled={!lang || extractionMutation.isPending}
+            disabled={!lang || processingMutation.isPending}
             className="w-full py-3 rounded-md text-sm font-medium flex items-center justify-center gap-2 bg-primary text-white"
           >
-            {extractionMutation.isPending
+            {processingMutation.isPending
               ? "Processing..."
               : "Start Document Processing"}
             <Zap size={16} />

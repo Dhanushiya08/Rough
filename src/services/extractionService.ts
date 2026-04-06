@@ -8,7 +8,7 @@ import type {
 import type {
   ExtractionItem,
   ExtractionRequest,
-  getExtractionRequest,
+  // getExtractionRequest,
 } from "../types/extraction";
 // get presigned url (left side)
 export const fetchFileUrl = async (
@@ -40,20 +40,20 @@ export const triggerExtraction = async (
   return data.data;
 };
 
-export const DataExtraction = async (
-  payload: getExtractionRequest,
-): Promise<ExtractionItem[]> => {
-  const { data } = await apiClient.post<ApiResponse<ExtractionItem[]>>(
-    "/posts",
-    payload,
-  );
+// export const DataExtraction = async (
+//   payload: getExtractionRequest,
+// ): Promise<ExtractionItem[]> => {
+//   const { data } = await apiClient.post<ApiResponse<ExtractionItem[]>>(
+//     "/posts",
+//     payload,
+//   );
 
-  if (!data || !data.data) {
-    throw new Error("Invalid API response");
-  }
+//   if (!data || !data.data) {
+//     throw new Error("Invalid API response");
+//   }
 
-  return data.data;
-};
+//   return data.data;
+// };
 
 export const fetchExtraction = async (
   payload: ExtractionRequest,

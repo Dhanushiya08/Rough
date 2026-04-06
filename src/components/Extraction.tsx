@@ -62,7 +62,7 @@ export default function Extraction() {
   const handleRetry = async () => {
     setLoadingRetry(true);
     setRetryCount((prev) => prev + 1);
-    setEvent("retry-list");
+    setEvent("retry-process");
     await refetch();
     setLoadingRetry(false);
   };
