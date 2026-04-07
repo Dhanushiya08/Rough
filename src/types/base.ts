@@ -8,7 +8,8 @@ export type ApiStatus =
   | "failed"
   | "lookup_trigger"
   | "reconciled"
-  | "parked";
+  | "parked"
+  | "extract"
 
 export interface BaseRequest {
   file_id: string;

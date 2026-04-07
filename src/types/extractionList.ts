@@ -5,7 +5,7 @@ import type { ExtractionItem } from "./extraction";
 export interface GetExtractionListRequest {
   event: "get-list";
   file_id: string;
-  status: ApiStatus;
+  state: ApiStatus;
 }
 
 export interface RetryExtractionRequest {

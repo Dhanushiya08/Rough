@@ -9,12 +9,12 @@ import type {
 
 export const getExtractionList = async (
   file_id: string,
-  status: GetExtractionListRequest["status"],
+  state: GetExtractionListRequest["state"],
 ): Promise<ExtractionItem[]> => {
   const payload: GetExtractionListRequest = {
     event: "get-list",
     file_id,
-    status,
+    state,
   };
 
   const { data } = await apiClient.post<ApiResponse<ExtractionItem[]>>(

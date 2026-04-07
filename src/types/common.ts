@@ -63,8 +63,8 @@ export interface LineItemsTableProps {
 export type ExtractionEvent = "get-list" | "retry-process" | "look-up";
 
 export type ExtractionRequest =
-  | { event: "get-list"; file_id: string; status: string }
-  | { event: "retry-process"; file_id: string; status: string; retry: number }
+  | { event: "get-list"; file_id: string; status: "extract" }
+  | { event: "retry-process"; file_id: string; extract: string; retry: number }
   | { event: "look-up"; file_id: string; status: string };
 // export type StepComponentProps = {
 //   goNext: () => void;

@@ -15,7 +15,7 @@ export function useExtraction(
     queryKey: ["extraction", fileId, event, retryCount],
     queryFn: () => {
       if (event === "get-list") {
-        return getExtractionList(fileId, "processing");
+        return getExtractionList(fileId, "extract");
       }
 
       if (event === "retry-process") {
