@@ -6,6 +6,9 @@ import { File, RotateCcw } from "lucide-react";
 import type { ExtractedItem } from "../types/common";
 import ForwardButton from "./ForwardButton";
 import BackButton from "./BackButton";
+import { triggerLookupProcess } from "../services/lookupService";
+import { useAppStore } from "../store/useAppStore";
+
 const { Text } = Typography;
 
 const initialData: ExtractedItem[] = [
@@ -38,72 +41,73 @@ const initialData: ExtractedItem[] = [
     dependsOn: "cbsValue",
   },
 ];
+
 const formatLabel = (key: string) =>
   key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 
 export default function Lookup() {
   const [data, setData] = useState<ExtractedItem[]>(initialData);
+  const [loading, setLoading] = useState(false);
+  const fileId = useAppStore((s) => s.fileId);
+  const callApi = async (
+    event: "lookup-trigger" | "lookup-change" | "sap-trigger",
+    status: "uploaded" | "lookup",
+    payloadData?: ExtractedItem[],
+  ) => {
+    try {
+      setLoading(true);
 
-  const fetchInternalOrder = async (cbs: string) => {
-    return new Promise<string>((resolve) => {
-      setTimeout(() => {
-        resolve("INT-" + cbs.replace(/\./g, ""));
-      }, 1000);
-    });
+      const result = await triggerLookupProcess({
+        event,
+        file_id: fileId,
+        status,
+        data: payloadData,
+      });
+
+      if (result) {
+        setData(result);
+      }
+    } catch (err) {
+      console.error("API Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //  Debounced function
+  useEffect(() => {
+    callApi("lookup-trigger", "uploaded");
+  }, []);
+
   const debouncedLookup = useMemo(
     () =>
-      debounce(async (cbs: string) => {
-        if (!cbs) return;
-
-        // set loading
-        setData((prev) =>
-          prev.map((item) =>
-            item.dependsOn === "cbsValue" ? { ...item, loading: true } : item,
-          ),
-        );
-
-        const result = await fetchInternalOrder(cbs);
-
-        setData((prev) =>
-          prev.map((item) =>
-            item.dependsOn === "cbsValue"
-              ? {
-                  ...item,
-                  value: result,
-                  loading: false,
-                }
-              : item,
-          ),
-        );
+      debounce((updatedData: ExtractedItem[]) => {
+        callApi("lookup-change", "uploaded", updatedData);
       }, 500),
     [],
   );
 
-  //  Handle change
   const handleChange = (key: string, value: string) => {
-    setData((prev) =>
-      prev.map((item) => (item.key === key ? { ...item, value } : item)),
+    const updatedData = data.map((item) =>
+      item.key === key ? { ...item, value } : item,
     );
 
-    // trigger dependency
+    setData(updatedData);
+
     if (key === "cbsValue") {
-      debouncedLookup(value);
+      debouncedLookup(updatedData);
     }
   };
 
   useEffect(() => {
     return () => {
-      debouncedLookup.cancel(); // cleanup
+      debouncedLookup.cancel();
     };
   }, []);
 
   return (
     <div className="flex gap-6 h-screen">
       <PdfPreview />
-      {/* RIGHT PANEL */}
+
       <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
@@ -146,7 +150,7 @@ export default function Lookup() {
                       />
                     ) : (
                       <div className="mt-2 text-sm text-gray-800">
-                        {item.loading ? (
+                        {loading ? (
                           <span className="flex items-center gap-2">
                             <Spin size="small" />
                             Fetching...
@@ -163,15 +167,20 @@ export default function Lookup() {
           </Row>
         </div>
 
-        {/*  FOOTER (FIXED) */}
+        {/* FOOTER */}
         <div className="p-4 border-t bg-stepbgbody flex justify-between items-center">
           <Button
             icon={<RotateCcw size={16} />}
+            onClick={() => callApi("lookup-trigger", "uploaded")}
             className="flex items-center gap-2 border border-borderer text-primary bg-white hover:!bg-secondary hover:!text-white hover:!border-secondary shadow-sm"
           >
             Retry Look Up
           </Button>
-          <ForwardButton label=" Fetch SAP Data" />
+
+          <ForwardButton
+            label="Fetch SAP Data"
+            onClick={() => callApi("sap-trigger", "lookup")}
+          />
         </div>
       </div>
     </div>

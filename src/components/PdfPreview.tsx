@@ -100,7 +100,7 @@ export default function PdfPreview() {
       </div>
 
       <div className="flex-1 overflow-auto p-3">
-        {fileMutation.isPending && <p>Loading file...</p>}
+        {/* {fileMutation.isPending && <p>Loading file...</p>} */}
 
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (

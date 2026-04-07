@@ -12,5 +12,5 @@ export type ApiStatus =
 
 export interface BaseRequest {
   file_id: string;
-  event?: ApiEvent;
+  event: ApiEvent;
 }

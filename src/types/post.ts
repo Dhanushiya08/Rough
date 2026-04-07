@@ -25,8 +25,8 @@ export interface Post {
   body: string;
   userId: number;
 }
-export interface  ExtractionPayload = {
+export interface ExtractionPayload {
   file_id: string;
   event: "list" | "retry";
   retry?: number; // optional
-};
+}
