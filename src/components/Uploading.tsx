@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,7 +16,14 @@ import axios from "axios";
 import apiClient from "../services/apiClient";
 
 const MAX_SIZE = 3 * 1024 * 1024;
+type StepStatus = "pending" | "processing" | "completed";
 
+interface Progress {
+  extract: StepStatus;
+  lookup: StepStatus;
+  sap: StepStatus;
+  park: StepStatus;
+}
 const schema = z.object({
   file: z
     .instanceof(File)
@@ -294,6 +301,7 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
   //     }
   //   }, 3000); // every 3 sec
   // };
+  const prevProgressRef = useRef<Progress | null>(null);
 
   const pollDocumentStatus = (file_id: string) => {
     const interval = setInterval(async () => {
@@ -306,11 +314,39 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
         const body =
           typeof data.body === "string" ? JSON.parse(data.body) : data.body;
 
-        console.log("Polling:", body);
+        // const progress = body?.progress;
+        const progress: Progress | undefined = body?.progress;
+        console.log("Polling:", progress);
+        if (!progress) return;
 
-        const progress = body?.progress;
+        const prev = prevProgressRef.current;
 
-        // ✅ check completion
+        //  Step-by-step detection
+        if (prev) {
+          if (
+            prev.extract !== "completed" &&
+            progress?.extract === "completed"
+          ) {
+            goNext?.();
+          }
+
+          if (prev.lookup !== "completed" && progress?.lookup === "completed") {
+            goNext?.();
+          }
+
+          if (prev.sap !== "completed" && progress?.sap === "completed") {
+            goNext?.();
+          }
+
+          if (prev.park !== "completed" && progress?.park === "completed") {
+            goNext?.();
+          }
+        }
+
+        // save current state
+        prevProgressRef.current = progress;
+
+        //  final completion
         if (
           progress?.extract === "completed" &&
           progress?.lookup === "completed" &&
@@ -319,7 +355,6 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
         ) {
           clearInterval(interval);
           toast.success("Processing completed");
-          return;
         }
       } catch (err: unknown) {
         clearInterval(interval);
@@ -336,6 +371,7 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
       }
     }, 20000);
   };
+
   return (
     <div className="h-full flex items-center justify-center bg-[#F7F9FB]">
       <Toaster />
