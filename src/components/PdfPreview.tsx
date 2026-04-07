@@ -20,7 +20,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 export default function PdfPreview() {
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1);
-  const [fileUrl, setFileUrl] = useState<string>("1234567");
+  const [fileUrl, setFileUrl] = useState<string>("");
   const [fileType, setFileType] = useState<string>("pdf");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
@@ -56,8 +56,9 @@ export default function PdfPreview() {
     mutationFn: fetchFileUrl,
 
     onSuccess: (res) => {
-      setFileUrl(res.file_url);
-      detectFileType(res.file_url);
+      const url = res.body;
+      setFileUrl(url);
+      detectFileType(url);
     },
 
     onError: () => {

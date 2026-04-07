@@ -10,8 +10,10 @@ export interface FileUrlPayload {
 }
 
 export interface FileUrlResponse {
-  file_url: string;
+  file_url?: string;
   file_type?: string;
+  statusCode: number;
+  body: string;
 }
 
 export interface PostInput {

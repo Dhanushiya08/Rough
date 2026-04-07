@@ -23,6 +23,7 @@ export const getExtractionList = async (
   );
 
   if (!data?.data) throw new Error("Invalid API response");
+  console.log(data);
   return data.data;
 };
 

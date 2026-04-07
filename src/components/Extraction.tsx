@@ -11,31 +11,31 @@ import type { ExtractionEvent } from "../types/common";
 
 const { Text } = Typography;
 
-type ExtractedItem = {
-  key: string;
-  value: string;
-};
+// type ExtractedItem = {
+//   key: string;
+//   value: string;
+// };
 
-const extractedData: ExtractedItem[] = [
-  { key: "companyCode", value: "3001" },
-  { key: "supplierCode", value: "200399" },
-  { key: "documentDate", value: "Oct 24, 2024" },
-  { key: "baselineDate", value: "Oct 24, 2024" },
-  { key: "totalAmount", value: "12,990,920,120.00" },
-  { key: "currency", value: "USD" },
-  { key: "reference", value: "IBCE260262/ABCLV10" },
-  { key: "assignment", value: "IBCE260262/ABCLV10" },
-  {
-    key: "text",
-    value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-  },
-  {
-    key: "headerText",
-    value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-  },
-  { key: "cbsValue", value: "2.5.2.1.1" },
-  { key: "internalOrder", value: "-- LOOK UP --" },
-];
+// const extractedData: ExtractedItem[] = [
+//   { key: "companyCode", value: "3001" },
+//   { key: "supplierCode", value: "200399" },
+//   { key: "documentDate", value: "Oct 24, 2024" },
+//   { key: "baselineDate", value: "Oct 24, 2024" },
+//   { key: "totalAmount", value: "12,990,920,120.00" },
+//   { key: "currency", value: "USD" },
+//   { key: "reference", value: "IBCE260262/ABCLV10" },
+//   { key: "assignment", value: "IBCE260262/ABCLV10" },
+//   {
+//     key: "text",
+//     value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
+//   },
+//   {
+//     key: "headerText",
+//     value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
+//   },
+//   { key: "cbsValue", value: "2.5.2.1.1" },
+//   { key: "internalOrder", value: "-- LOOK UP --" },
+// ];
 
 const formatLabel = (key: string) =>
   key
@@ -97,7 +97,7 @@ export default function Extraction() {
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {(data ?? extractedData).map((item) => {
+              {(data ?? []).map((item) => {
                 const isFullWidth =
                   item.key === "text" || item.key === "headerText";
                 return (
