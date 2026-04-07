@@ -6,6 +6,7 @@ export interface ApiResponse<T> {
 export interface FileUrlPayload {
   file_id: string;
   event: string;
+  file_name: string;
 }
 
 export interface FileUrlResponse {
@@ -28,5 +29,5 @@ export interface Post {
 export interface ExtractionPayload {
   file_id: string;
   event: "list" | "retry";
-  retry?: number; // optional
+  retry?: number;
 }

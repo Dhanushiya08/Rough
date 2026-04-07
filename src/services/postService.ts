@@ -18,7 +18,7 @@ export const uploadDocument = async (
   const blob = new Blob([await file.arrayBuffer()], { type: file.type });
   console.log(file, blob);
   const { data } = await apiClient.put(
-    `/upload?file_id=${id}&filename=${encodeURIComponent(file.name)}`,
+    `/upload?id=${id}&filename=${encodeURIComponent(file.name)}`,
     file,
     {
       headers: {

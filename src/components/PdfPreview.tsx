@@ -23,6 +23,7 @@ export default function PdfPreview() {
   const [fileUrl, setFileUrl] = useState<string>("1234567");
   const [fileType, setFileType] = useState<string>("pdf");
   const file_id = useAppStore((s) => s.fileId);
+  const fileName = useAppStore((s) => s.fileName);
 
   const pages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => i + 1),
@@ -69,6 +70,7 @@ export default function PdfPreview() {
     fileMutation.mutate({
       file_id,
       event: "get_file_url",
+      file_name: fileName,
     });
   }, [file_id]);
 

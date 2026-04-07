@@ -5,7 +5,8 @@ export interface StartProcessingRequest {
   event: "start-trigger";
   lang: string;
   file_id: string;
-  status: ApiStatus; // "uploaded"
+  // file_name: sting;
+  // status: ApiStatus; // "uploaded"
 }
 
 export interface StartProcessingResponse {
