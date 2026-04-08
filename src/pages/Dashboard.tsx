@@ -1,0 +1,239 @@
+import { Table, Tag, Input, Select } from "antd";
+import { useEffect, useState, useMemo } from "react";
+import { Eye } from "lucide-react";
+import { useAppStore } from "../store/useAppStore";
+import { getTableData } from "../services/dashboardService";
+
+const { Option } = Select;
+
+interface DataType {
+  file_id: string;
+  file_name: string;
+  state: "extract" | "lookup" | "sap" | "park";
+  status: "pending" | "processing" | "waiting" | "completed" | "failed";
+}
+
+// const mockResponse = {
+//   statusCode: 200,
+//   body: {
+//     data: [
+//       {
+//         file_id: "001",
+//         file_name: "190000058.pdf",
+//         state: "extract",
+//         status: "processing",
+//       },
+//       {
+//         file_id: "002",
+//         file_name: "190000084.pdf",
+//         state: "sap",
+//         status: "completed",
+//       },
+//       {
+//         file_id: "003",
+//         file_name: "190000099.pdf",
+//         state: "lookup",
+//         status: "waiting",
+//       },
+//       {
+//         file_id: "004",
+//         file_name: "190000120.pdf",
+//         state: "park",
+//         status: "failed",
+//       },
+//       {
+//         file_id: "005",
+//         file_name: "190000130.pdf",
+//         state: "extract",
+//         status: "pending",
+//       },
+//     ],
+//   },
+// };
+
+export default function Dashboard() {
+  const [data, setData] = useState<DataType[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    DataType["status"] | undefined
+  >(undefined);
+
+  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(
+    undefined,
+  );
+  const openStepper = useAppStore((s) => s.openStepper);
+  const [loading, setLoading] = useState(false);
+  const handleView = (record: DataType) => {
+    openStepper(record.file_id, record.file_name);
+  };
+
+  //   useEffect(() => {
+  //     setData(mockResponse.body.data);
+  //   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await getTableData();
+        setData(res);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  //  Filtering logic
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      return (
+        item.file_name.toLowerCase().includes(searchText.toLowerCase()) &&
+        (!statusFilter || item.status === statusFilter) &&
+        (!stateFilter || item.state === stateFilter)
+      );
+    });
+  }, [data, searchText, statusFilter, stateFilter]);
+
+  const statusColorMap: Record<DataType["status"], string> = {
+    pending: "default",
+    processing: "blue",
+    waiting: "orange",
+    completed: "green",
+    failed: "red",
+  };
+
+  const stateColorMap: Record<DataType["state"], string> = {
+    extract: "purple",
+    lookup: "cyan",
+    sap: "geekblue",
+    park: "magenta",
+  };
+
+  const columns = [
+    {
+      title: "File ID",
+      dataIndex: "file_id",
+      width: 120,
+    },
+    {
+      title: "File Name",
+      dataIndex: "file_name",
+      render: (text: string) => (
+        <span className="font-medium text-gray-800">{text}</span>
+      ),
+    },
+    {
+      title: "State",
+      dataIndex: "state",
+      render: (state: DataType["state"]) => (
+        <Tag
+          color={stateColorMap[state]}
+          className="capitalize px-3 py-1 rounded-full"
+        >
+          {state}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (status: DataType["status"]) => (
+        <Tag
+          color={statusColorMap[status]}
+          className="capitalize px-3 py-1 rounded-full font-medium"
+        >
+          {status}
+        </Tag>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      width: 140,
+      render: (_: unknown, record: DataType) => {
+        const isDisabled = record.status === "pending";
+
+        return (
+          <button
+            disabled={isDisabled}
+            onClick={() => handleView(record)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
+    ${
+      isDisabled
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : "bg-stepbgbody text-primary hover:bg-blue-100"
+    }`}
+          >
+            <Eye size={16} />
+            View
+          </button>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* HEADER */}
+      <div className="mb-5">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          Parking Data History
+        </h2>
+        <p className="text-gray-500 text-sm">
+          Track file processing across all stages
+        </p>
+      </div>
+
+      {/*  FILTER BAR */}
+      <div className="bg-white p-4 rounded-xl shadow-sm mb-4 flex flex-wrap gap-4">
+        <Input
+          placeholder="Search file name..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="w-64"
+          allowClear
+        />
+
+        <Select
+          placeholder="Status"
+          allowClear
+          className="w-44"
+          onChange={(val) => setStatusFilter(val)}
+        >
+          <Option value="pending">Pending</Option>
+          <Option value="processing">Processing</Option>
+          <Option value="waiting">Waiting</Option>
+          <Option value="completed">Completed</Option>
+          <Option value="failed">Failed</Option>
+        </Select>
+
+        <Select
+          placeholder="State"
+          allowClear
+          className="w-44"
+          onChange={(val) => setStateFilter(val)}
+        >
+          <Option value="extract">Extract</Option>
+          <Option value="lookup">Lookup</Option>
+          <Option value="sap">SAP</Option>
+          <Option value="park">Park</Option>
+        </Select>
+      </div>
+
+      {/*  TABLE */}
+      <div className="bg-white rounded-xl shadow-sm p-4">
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          loading={loading}
+          rowKey="file_id"
+          pagination={{ pageSize: 6 }}
+          className="custom-ant-table rounded-lg"
+        />
+      </div>
+    </div>
+  );
+}

@@ -23,15 +23,33 @@ const stepProgressKey: Record<
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
+  console.log(progress);
 
+  // const isStepDisabled = (stepId: number): boolean => {
+  //   const key = stepProgressKey[stepId];
+  //   if (!key) return false; // Upload always enabled
+  //   if (!progress) return stepId !== 1; // Before polling starts, lock all except upload
+
+  //   const status = progress[key];
+  //   // Disable if currently "processing" — user must wait
+  //   return status === "processing";
+  // };
   const isStepDisabled = (stepId: number): boolean => {
     const key = stepProgressKey[stepId];
-    if (!key) return false; // Upload always enabled
-    if (!progress) return stepId !== 1; // Before polling starts, lock all except upload
+
+    // Step 1 (Upload) always allowed
+    if (!key) return false;
+
+    // Before progress → only upload allowed
+    if (!progress) return stepId !== 1;
 
     const status = progress[key];
-    // Disable if currently "processing" — user must wait
-    return status === "processing";
+
+    //  Block pending (cannot open page)
+    if (status === "pending") return true;
+
+    //  Allow everything else (processing, waiting, completed, failed)
+    return false;
   };
 
   const steps: Step[] = [
@@ -61,9 +79,12 @@ function StepProgressBarInner() {
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
         <div className="flex items-center justify-between relative w-full">
-          <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-300" />
+          {/* Background line */}
+          <div className="absolute top-5 left-0 right-0 h-px bg-gray-200" />
+
+          {/* Progress fill line */}
           <div
-            className="absolute top-5 left-0 h-0.5 bg-primary transition-all duration-500"
+            className="absolute top-5 left-0 h-px bg-primary transition-all duration-500"
             style={{ width: `${((current - 1) / (steps.length - 1)) * 100}%` }}
           />
 
@@ -81,28 +102,29 @@ function StepProgressBarInner() {
                   disabled ? "This step is currently processing..." : undefined
                 }
                 className={`relative z-10 flex flex-col items-center gap-2 ${
-                  disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                  disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
                 }`}
               >
                 <div
                   className={[
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2",
+                    "w-9 h-9 rounded-lg flex items-center justify-center text-sm font-medium border",
                     isCompleted
                       ? "bg-primary border-primary text-white"
                       : isActive
-                        ? "bg-white border-primary text-primary scale-110"
-                        : "bg-gray-100 border-gray-300 text-gray-400",
+                        ? "bg-primary border-primary text-white"
+                        : "bg-stepbgheader border-gray-300 text-gray-400",
                   ].join(" ")}
                 >
                   {isCompleted ? "✓" : step.id}
                 </div>
+
                 <span
                   className={[
-                    "text-xs font-semibold",
+                    "text-xs font-semibold uppercase tracking-wide",
                     isActive
                       ? "text-primary"
                       : isCompleted
-                        ? "text-gray-700"
+                        ? "text-gray-600"
                         : "text-gray-400",
                   ].join(" ")}
                 >

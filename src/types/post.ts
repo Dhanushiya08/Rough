@@ -17,12 +17,12 @@ export interface FileUrlPayload {
 // }
 export interface FileUrlBody {
   file_name: string;
-  url: string;
+  presignedUrl: string;
   file_type: string;
 }
 export interface FileUrlResponse {
   statusCode: number;
-  body: FileUrlBody; 
+  body: FileUrlBody;
 }
 
 export interface PostInput {

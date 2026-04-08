@@ -1,7 +1,7 @@
 // store/useAppStore.ts
 import { create } from "zustand";
 
-type StepStatus = "pending" | "processing" | "completed" | "failed";
+type StepStatus = "pending" | "processing" | "waiting" | "completed" | "failed";
 
 interface ProcessingProgress {
   extract: StepStatus;
@@ -21,6 +21,10 @@ interface AppStore {
 
   pollingActive: boolean;
   setPollingActive: (v: boolean) => void;
+
+  showStepper: boolean;
+  openStepper: (id: string, name: string) => void;
+  closeStepper: () => void;
 }
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -34,4 +38,20 @@ export const useAppStore = create<AppStore>((set) => ({
 
   pollingActive: false,
   setPollingActive: (v) => set({ pollingActive: v }),
+
+  showStepper: false,
+
+  openStepper: (id, name) =>
+    set({
+      fileId: id,
+      fileName: name,
+      showStepper: true,
+    }),
+
+  closeStepper: () =>
+    set({
+      fileId: "",
+      fileName: "",
+      showStepper: false,
+    }),
 }));

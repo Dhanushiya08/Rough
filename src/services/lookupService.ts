@@ -1,8 +1,9 @@
 // types/lookup.ts
 import type { LookupItem, LookupTriggerRequest } from "../types/lookup";
 import type { ApiResponse } from "../types/post";
-
 import apiClient from "./apiClient";
+
+
 
 // export const triggerLookupProcess = async (
 //   file_id: string,
@@ -35,3 +36,4 @@ export const triggerLookupProcess = async (
 
   return data.data;
 };
+

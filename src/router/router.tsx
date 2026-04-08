@@ -1,16 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import UploadPage from "../pages/UploadPage";
-// import CreatePostPage from "../pages/CreatePostpage";
-// import StepProgressBar from "../components/ StepProgressBar";
+import { Routes, Route, HashRouter, Navigate } from "react-router-dom";
 import Mainpage from "../pages/Mainpage";
+import UploadPage from "../pages/UploadPage";
 
 export default function Router() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
-        {/* <Route path="/upload" element={<UploadPage />} /> */}
+        <Route path="/upload" element={<UploadPage />} />
         <Route path="/" element={<Mainpage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

@@ -1,186 +1,190 @@
-import { useEffect, useMemo, useState } from "react";
-import { Row, Col, Typography, Input, Spin, Button } from "antd";
-import debounce from "lodash.debounce";
-import PdfPreview from "./PdfPreview";
+import { useState, useEffect } from "react";
+import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
-import type { ExtractedItem } from "../types/common";
+import PdfPreview from "./PdfPreview";
 import ForwardButton from "./ForwardButton";
 import BackButton from "./BackButton";
-import { triggerLookupProcess } from "../services/lookupService";
 import { useAppStore } from "../store/useAppStore";
+import ProcessingOverlay from "./ProcessingOverlay";
+import { useLookup } from "../hooks/useLookup";
+import { retryLookupProcess } from "../services/lookupListService";
+import type { LookupItem } from "../types/lookup";
 
 const { Text } = Typography;
-
-const initialData: ExtractedItem[] = [
-  { key: "companyCode", value: "3001" },
-  { key: "supplierCode", value: "200399" },
-  { key: "documentDate", value: "Oct 24, 2024" },
-  { key: "baselineDate", value: "Oct 24, 2024" },
-  { key: "totalAmount", value: "12,990,920,120.00" },
-  { key: "currency", value: "USD" },
-  { key: "reference", value: "IBCE260262/ABCLV10" },
-  { key: "assignment", value: "IBCE260262/ABCLV10" },
-  {
-    key: "text",
-    value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-  },
-  {
-    key: "headerText",
-    value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-  },
-  {
-    key: "cbsValue",
-    value: "2.5.2.1.1",
-    originalValue: "2.5.2.1.1",
-    editable: true,
-  },
-  {
-    key: "internalOrder",
-    value: "-- LOOK UP --",
-    originalValue: "-- LOOK UP --",
-    dependsOn: "cbsValue",
-  },
-];
 
 const formatLabel = (key: string) =>
   key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 
 export default function Lookup() {
-  const [data, setData] = useState<ExtractedItem[]>(initialData);
-  const [loading, setLoading] = useState(false);
   const fileId = useAppStore((s) => s.fileId);
-  const callApi = async (
-    event: "lookup-trigger" | "lookup-change" | "sap-trigger",
-    status: "uploaded" | "lookup",
-    payloadData?: ExtractedItem[],
-  ) => {
-    try {
-      setLoading(true);
+  const fileName = useAppStore((s) => s.fileName);
+  const progress = useAppStore((s) => s.progress);
+  const pollingActive = useAppStore((s) => s.pollingActive);
 
-      const result = await triggerLookupProcess({
-        event,
-        file_id: fileId,
-        status,
-        data: payloadData,
-      });
+  const isAnyProcessing =
+    !!progress &&
+    pollingActive &&
+    Object.values(progress).some((s) => s === "processing");
 
-      if (result) {
-        setData(result);
-      }
-    } catch (err) {
-      console.error("API Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data = { poNumbers: [], data: [] },
+    isLoading,
+    error,
+    refetch,
+  } = useLookup(fileId);
+
+  const [localData, setLocalData] = useState<LookupItem[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const [loadingRetry, setLoadingRetry] = useState(false);
 
   useEffect(() => {
-    callApi("lookup-trigger", "uploaded");
-  }, []);
-
-  const debouncedLookup = useMemo(
-    () =>
-      debounce((updatedData: ExtractedItem[]) => {
-        callApi("lookup-change", "uploaded", updatedData);
-      }, 500),
-    [],
-  );
+    setLocalData(data.data);
+    setIsDirty(false);
+  }, [data.data]);
 
   const handleChange = (key: string, value: string) => {
-    const updatedData = data.map((item) =>
+    const updated = localData.map((item) =>
       item.key === key ? { ...item, value } : item,
     );
 
-    setData(updatedData);
-
-    if (key === "cbsValue") {
-      debouncedLookup(updatedData);
-    }
+    setLocalData(updated);
+    setIsDirty(true);
   };
 
-  useEffect(() => {
-    return () => {
-      debouncedLookup.cancel();
-    };
-  }, []);
+  const handleRetry = async () => {
+    setLoadingRetry(true);
+
+    try {
+      await retryLookupProcess(fileId, "lookup", fileName, {
+        poNumbers: data.poNumbers,
+        data: localData,
+      });
+
+      await refetch();
+
+      setIsDirty(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingRetry(false);
+    }
+  };
 
   return (
     <div className="flex gap-6 h-screen">
       <PdfPreview />
 
       <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
+        {/* Overlay */}
+        {isAnyProcessing && (
+          <ProcessingOverlay
+            title="Processing in Progress"
+            description="Please wait..."
+          />
+        )}
+
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-            <File size={18} className="text-primary" />
-            Extracted Data
+            <File size={18} />
+            Lookup Data
           </h2>
-
           <BackButton />
         </div>
 
         {/* CONTENT */}
         <div className="flex-1 overflow-auto p-6">
-          <Row gutter={[16, 16]}>
-            {data.map((item) => {
-              const isFullWidth =
-                item.key === "text" || item.key === "headerText";
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Spin />
+            </div>
+          ) : error ? (
+            <Alert message="Failed to load data" type="error" />
+          ) : (
+            <>
+              {isDirty && (
+                <div className="mb-4">
+                  <Alert
+                    message="You have unsaved changes. Click 'Retry Look Up' to save them, or they will be lost."
+                    type="warning"
+                    showIcon
+                  />
+                </div>
+              )}
 
-              const isEdited =
-                item.originalValue && item.value !== item.originalValue;
+              <Row gutter={[16, 16]}>
+                {/* PO Numbers */}
+                {data.poNumbers.length > 0 && (
+                  <Col span={24}>
+                    <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+                      <Text className="text-xs text-gray-500">PO Numbers</Text>
+                      <div className="mt-2 text-sm">
+                        {data.poNumbers.join(", ")}
+                      </div>
+                    </div>
+                  </Col>
+                )}
 
-              return (
-                <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                  <div
-                    className={`rounded-xl p-4 shadow-sm ${
-                      isEdited
-                        ? "border border-blue-400 bg-blue-50"
-                        : "bg-[#E9EEF3]"
-                    }`}
-                  >
-                    <Text className="text-xs text-gray-500">
-                      {formatLabel(item.key)}
-                    </Text>
+                {/* Fields */}
+                {localData.map((item: LookupItem) => {
+                  const isFullWidth =
+                    item.key === "text" || item.key === "headerText";
 
-                    {item.editable ? (
-                      <Input
-                        value={item.value}
-                        onChange={(e) => handleChange(item.key, e.target.value)}
-                        className="mt-2"
-                      />
-                    ) : (
-                      <div className="mt-2 text-sm text-gray-800">
-                        {loading ? (
-                          <span className="flex items-center gap-2">
-                            <Spin size="small" />
-                            Fetching...
-                          </span>
+                  const isEdited =
+                    item.originalValue && item.value !== item.originalValue;
+
+                  const isDisabled = item.dependsOn
+                    ? !localData.find((i) => i.key === item.dependsOn)?.value
+                    : false;
+
+                  return (
+                    <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                      <div
+                        className={`rounded-xl p-4 shadow-sm ${
+                          isEdited
+                            ? "border border-blue-400 bg-blue-50"
+                            : "bg-[#E9EEF3]"
+                        }`}
+                      >
+                        <Text className="text-xs text-gray-500">
+                          {formatLabel(item.key)}
+                        </Text>
+
+                        {item.editable ? (
+                          <Input
+                            value={item.value}
+                            disabled={isDisabled}
+                            onChange={(e) =>
+                              handleChange(item.key, e.target.value)
+                            }
+                            className="mt-2"
+                          />
                         ) : (
-                          item.value || "--"
+                          <div className="mt-2 text-sm">
+                            {item.value || "--"}
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </>
+          )}
         </div>
 
         {/* FOOTER */}
-        <div className="p-4 border-t bg-stepbgbody flex justify-between items-center">
+        <div className="p-4 border-t flex justify-between items-center">
           <Button
             icon={<RotateCcw size={16} />}
-            onClick={() => callApi("lookup-trigger", "uploaded")}
-            className="flex items-center gap-2 border border-borderer text-primary bg-white hover:!bg-secondary hover:!text-white hover:!border-secondary shadow-sm"
+            loading={loadingRetry}
+            disabled={isAnyProcessing}
+            onClick={handleRetry}
           >
             Retry Look Up
           </Button>
 
-          <ForwardButton
-            label="Fetch SAP Data"
-            onClick={() => callApi("sap-trigger", "lookup")}
-          />
+          <ForwardButton label="Next Step" disabled={isAnyProcessing} />
         </div>
       </div>
     </div>

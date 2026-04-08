@@ -32,12 +32,12 @@ export default function Extraction() {
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
 
-  const { data, isLoading, error, refetch } = useExtraction(
-    fileId,
-    fileName,
-    event,
-    retryCount,
-  );
+  const {
+    data = { poNumbers: [], data: [] },
+    isLoading,
+    error,
+    refetch,
+  } = useExtraction(fileId, fileName, event, retryCount);
 
   const handleRetry = async () => {
     setLoadingRetry(true);
@@ -48,8 +48,8 @@ export default function Extraction() {
   };
 
   const handleLookUp = async () => {
-    setEvent("look-up");
-    await refetch();
+    // setEvent("look-up");
+    // await refetch();
   };
 
   return (
@@ -92,7 +92,19 @@ export default function Extraction() {
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {(data ?? []).map((item) => {
+              {data?.poNumbers?.length > 0 && (
+                <Col span={24}>
+                  <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+                    <Text className="text-xs text-gray-500">PO Numbers</Text>
+
+                    <div className="mt-2 text-sm text-gray-800 break-words">
+                      {data.poNumbers.filter(Boolean).join(", ") || "--"}
+                    </div>
+                  </div>
+                </Col>
+              )}
+
+              {(data?.data ?? []).map((item) => {
                 const isFullWidth =
                   item.key === "text" || item.key === "headerText";
 
@@ -102,6 +114,7 @@ export default function Extraction() {
                       <Text className="text-xs text-gray-500">
                         {formatLabel(item.key)}
                       </Text>
+
                       <div className="mt-2 text-sm text-gray-800 break-words">
                         {item.value || "--"}
                       </div>

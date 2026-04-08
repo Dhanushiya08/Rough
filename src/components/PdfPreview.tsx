@@ -58,7 +58,7 @@ export default function PdfPreview() {
 
     onSuccess: (res) => {
       setFileType(res.body.file_type);
-      const url = res.body.url;
+      const url = res.body.presignedUrl;
       setFileUrl(url);
       // detectFileType(url);
     },

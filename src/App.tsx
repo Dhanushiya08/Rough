@@ -1,3 +1,4 @@
+// App.tsx
 import "./index.css";
 import Router from "./router/router";
 

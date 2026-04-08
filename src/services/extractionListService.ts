@@ -1,6 +1,6 @@
 // services/extractionListService.ts
 import apiClient from "./apiClient";
-import type { ApiResponse } from "../types/post";
+import type { ApiResponse } from "../types/extraction";
 import type { ExtractionItem } from "../types/extraction";
 import type {
   GetExtractionListRequest,
@@ -10,7 +10,10 @@ import type {
 export const getExtractionList = async (
   file_id: string,
   state: GetExtractionListRequest["state"],
-): Promise<ExtractionItem[]> => {
+): Promise<{
+  poNumbers: string[];
+  data: ExtractionItem[];
+}> => {
   const payload: GetExtractionListRequest = {
     event: "get-list",
     file_id,
@@ -23,16 +26,24 @@ export const getExtractionList = async (
   );
   console.log(data);
 
-  if (!data?.data) throw new Error("Invalid API response");
-  console.log(data);
-  return data.data;
+  const body = data?.response?.body;
+
+  if (!body) throw new Error("Invalid API response");
+
+  return {
+    poNumbers: body.poNumbers ?? [],
+    data: body.data ?? [],
+  };
 };
 
 export const retryExtractionProcess = async (
   file_id: string,
   state: RetryExtractionRequest["state"],
   file_name: string,
-): Promise<ExtractionItem[]> => {
+): Promise<{
+  poNumbers: string[];
+  data: ExtractionItem[];
+}> => {
   const payload: RetryExtractionRequest = {
     event: "retry-process",
     file_id,
@@ -45,6 +56,12 @@ export const retryExtractionProcess = async (
     payload,
   );
 
-  if (!data?.data) throw new Error("Invalid API response");
-  return data.data;
+  const body = data?.response?.body;
+
+  if (!body) throw new Error("Invalid API response");
+
+  return {
+    poNumbers: body.poNumbers ?? [],
+    data: body.data ?? [],
+  };
 };

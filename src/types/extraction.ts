@@ -6,7 +6,15 @@
 //   retry?: number;
 // }
 import type { RequestWithEvent } from "./common";
-
+export interface ApiResponse<T> {
+  response: {
+    statusCode: number;
+    body: {
+      poNumbers: string[];
+      data: T;
+    };
+  };
+}
 export type ExtractionRequest = RequestWithEvent<
   "start" | "retry",
   { retry?: number }
@@ -22,8 +30,6 @@ export interface ExtractionResponse {
   message: string;
   data?: ExtractionData;
 }
-
-///old
 
 export interface ExtractionItem {
   key: string;

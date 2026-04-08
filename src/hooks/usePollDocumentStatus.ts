@@ -5,7 +5,7 @@ import apiClient from "../services/apiClient";
 // import axios from "axios";
 import toast from "react-hot-toast";
 
-type StepStatus = "pending" | "processing" | "completed" | "failed";
+type StepStatus = "pending" | "processing" | "waiting" | "completed" | "failed";
 
 interface Progress {
   extract: StepStatus;
@@ -13,7 +13,6 @@ interface Progress {
   sap: StepStatus;
   park: StepStatus;
 }
-
 export function usePollDocumentStatus() {
   const setProgress = useAppStore((s) => s.setProgress);
   const setPollingActive = useAppStore((s) => s.setPollingActive);
@@ -22,7 +21,7 @@ export function usePollDocumentStatus() {
   const startPolling = (
     file_id: string,
     goTo: (step: number) => void,
-    getCurrent: () => number, 
+    getCurrent: () => number,
   ) => {
     if (intervalRef.current) return;
     setPollingActive(true);

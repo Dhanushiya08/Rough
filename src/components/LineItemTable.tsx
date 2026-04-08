@@ -1,58 +1,54 @@
 import { Table } from "antd";
-import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
-import type { LineItem, LineItemsTableProps } from "../types/common";
-
-export const LineItemsTable: React.FC<LineItemsTableProps> = ({
+import type { LineItem } from "../types/reconciliation";
+type LineItemsTableProps = {
+  data: LineItem[];
+  selectedPO: string;
+  onChange: (map: Record<string, string[]>) => void;
+};
+export const LineItemsTable = ({
   data,
   selectedPO,
-}) => {
-  /**
-   * Store selection per PO
-   */
-  const [selectionMap, setSelectionMap] = useState<Record<string, React.Key[]>>(
+  onChange,
+}: LineItemsTableProps) => {
+  const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
     {},
   );
 
-  if (!data || data.length === 0) return null;
+  const computedInitialKeys = data
+    ?.map((item, index) =>
+      item.genaiSelected ? `${selectedPO}-${index}` : null,
+    )
+    .filter(Boolean) as string[];
 
-  const keys = Object.keys(data[0]);
-
-  const columns: ColumnsType<LineItem> = keys.map((key) => ({
-    title: key.toUpperCase(),
-    dataIndex: key,
-    key,
-    render: (value: unknown) => (value != null ? String(value) : "-"),
-  }));
-
-  const selectedRowKeys = selectionMap[selectedPO] || [];
+  const selectedRowKeys = selectionMap[selectedPO] ?? computedInitialKeys;
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (selectedKeys: React.Key[]) => {
-      setSelectionMap((prev) => ({
-        ...prev,
-        [selectedPO]: selectedKeys,
-      }));
+    onChange: (keys: React.Key[]) => {
+      const updated = {
+        ...selectionMap,
+        [selectedPO]: keys as string[],
+      };
+      setSelectionMap(updated);
+      onChange(updated);
     },
   };
 
+  const columns = Object.keys(data[0] || {}).map((key) => ({
+    title: key.toUpperCase(),
+    dataIndex: key,
+    key,
+  }));
+
   return (
-    <Table<LineItem>
+    <Table
       rowKey={(_, index) => `${selectedPO}-${index}`}
-      //   rowKey={(_, index) => index!.toString()} // still ok now (scoped by PO)
       columns={columns}
       dataSource={data}
       pagination={false}
-      bordered
       rowSelection={rowSelection}
       className="custom-ant-table"
-      rowClassName={(_, index) =>
-        // selectedRowKeys.includes(index!.toString())
-        selectedRowKeys.includes(`${selectedPO}-${index}`)
-          ? "bg-blue-50 border border-primary"
-          : "hover:bg-gray-50 cursor-pointer"
-      }
     />
   );
 };

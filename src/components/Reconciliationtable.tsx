@@ -1,72 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CircleCheck } from "lucide-react";
 
-export interface ReconciliationItem {
-  key: string;
-  label: string;
-  extractedValue: string;
-  sapValue: string;
-  value: string;
-  originalValue: string;
-  source?: "sap" | "extracted" | null;
-}
+import type { ReconciliationItem } from "../types/reconciliation";
 
 interface Props {
-  initialData: ReconciliationItem[];
+  data: ReconciliationItem[];
+  onChange: (data: ReconciliationItem[]) => void;
 }
 
-const ReconciliationTable: React.FC<Props> = ({ initialData }) => {
-  const [data, setData] = useState<ReconciliationItem[]>(initialData);
+const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
+  const [localData, setLocalData] = useState<ReconciliationItem[]>(data);
 
-  const handleUseSAP = (key: string) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.key === key
-          ? { ...item, value: item.sapValue, source: "sap" }
-          : item,
-      ),
-    );
-  };
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
 
-  const handleReset = (key: string) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.key === key
-          ? { ...item, value: item.originalValue, source: "extracted" }
-          : item,
-      ),
+  const updateRow = (key: string, source: "sap" | "extracted") => {
+    const updated = localData.map((item) =>
+      item.key === key
+        ? {
+            ...item,
+            source,
+            value: source === "sap" ? item.sapValue : item.extractedValue,
+          }
+        : item,
     );
+
+    setLocalData(updated);
+    onChange(updated);
   };
 
   const columns: ColumnsType<ReconciliationItem> = [
-    {
-      title: "Field",
-      dataIndex: "label",
-      key: "label",
-    },
-    {
-      title: "Extracted Value",
-      dataIndex: "extractedValue",
-      key: "extractedValue",
-    },
-    {
-      title: "SAP Value",
-      dataIndex: "sapValue",
-      key: "sapValue",
-    },
+    { title: "Field", dataIndex: "label" },
+    { title: "Extracted", dataIndex: "extractedValue" },
+    { title: "SAP", dataIndex: "sapValue" },
     {
       title: "Action",
-      key: "action",
-      render: (_: unknown, record: ReconciliationItem) => {
+      render: (_, record) => {
         const isSame = record.extractedValue === record.sapValue;
 
         if (isSame) {
           return (
-            <div className="flex items-center gap-2 text-primary font-medium">
-              <CircleCheck size={16} />
-              Matched
+            <div className="flex items-center gap-2 text-primary">
+              <CircleCheck size={16} /> Matched
             </div>
           );
         }
@@ -75,11 +53,11 @@ const ReconciliationTable: React.FC<Props> = ({ initialData }) => {
           <div className="flex gap-2">
             <Button
               size="small"
-              onClick={() => handleUseSAP(record.key)}
+              onClick={() => updateRow(record.key, "sap")}
               className={
                 record.source === "sap"
-                  ? "!bg-primary !text-white !border-primary"
-                  : "!bg-white !text-secondary !border-accent"
+                  ? "!bg-primary !text-white"
+                  : "!bg-white"
               }
             >
               Use SAP
@@ -87,14 +65,14 @@ const ReconciliationTable: React.FC<Props> = ({ initialData }) => {
 
             <Button
               size="small"
-              onClick={() => handleReset(record.key)}
+              onClick={() => updateRow(record.key, "extracted")}
               className={
                 record.source === "extracted"
-                  ? "!bg-primary !text-white !border-primary"
-                  : "!bg-white !text-secondary !border-accent"
+                  ? "!bg-primary !text-white"
+                  : "!bg-white"
               }
             >
-              Use Default
+              Use Extracted
             </Button>
           </div>
         );
@@ -103,20 +81,12 @@ const ReconciliationTable: React.FC<Props> = ({ initialData }) => {
   ];
 
   return (
-    <Table<ReconciliationItem>
-      columns={columns}
-      dataSource={data}
+    <Table
       rowKey="key"
+      columns={columns}
+      dataSource={localData}
       pagination={false}
       className="custom-ant-table"
-      rowClassName={(record) => {
-        if (record.extractedValue === record.sapValue) return "";
-
-        if (record.source === "sap") return "bg-green-50";
-        if (record.source === "extracted") return "bg-stepbgbody";
-
-        return "";
-      }}
     />
   );
 };
