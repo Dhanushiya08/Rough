@@ -11,18 +11,29 @@ import type {
   // getExtractionRequest,
 } from "../types/extraction";
 // get presigned url (left side)
+// export const fetchFileUrl = async (
+//   payload: FileUrlPayload,
+// ): Promise<FileUrlResponse> => {
+//   const { data } = await apiClient.post<{
+//     data: FileUrlResponse;
+//   }>("/posts", payload);
+
+//   if (!data || !data.body) {
+//     throw new Error("Invalid API response");
+//   }
+
+//   return data;
+// };
 export const fetchFileUrl = async (
   payload: FileUrlPayload,
 ): Promise<FileUrlResponse> => {
-  const { data } = await apiClient.post<{
-    data: FileUrlResponse;
-  }>("/posts", payload);
+  const { data } = await apiClient.post<FileUrlResponse>("/posts", payload);
 
-  if (!data || !data.data) {
+  if (!data || !data.body) {
     throw new Error("Invalid API response");
   }
 
-  return data.data;
+  return data; 
 };
 //triggerExtraction  (upload page)
 export const triggerExtraction = async (

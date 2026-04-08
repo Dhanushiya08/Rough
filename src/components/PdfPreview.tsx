@@ -33,22 +33,23 @@ export default function PdfPreview() {
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
-  const detectFileType = (url: string) => {
-    try {
-      const cleanUrl = url.split("?")[0];
-      const ext = cleanUrl.split(".").pop()?.toLowerCase();
+  
+  // const detectFileType = (url: string) => {
+  //   try {
+  //     const cleanUrl = url.split("?")[0];
+  //     const ext = cleanUrl.split(".").pop()?.toLowerCase();
 
-      if (ext === "pdf") {
-        setFileType("pdf");
-      } else if (ext === "tiff" || ext === "tif") {
-        setFileType("tiff");
-      } else {
-        setFileType("unknown");
-      }
-    } catch {
-      setFileType("unknown");
-    }
-  };
+  //     if (ext === "pdf") {
+  //       setFileType("pdf");
+  //     } else if (ext === "tiff" || ext === "tif") {
+  //       setFileType("tiff");
+  //     } else {
+  //       setFileType("unknown");
+  //     }
+  //   } catch {
+  //     setFileType("unknown");
+  //   }
+  // };
 
   const canZoomOut = scale > 0.5;
   const canZoomIn = scale < 3;
@@ -56,9 +57,10 @@ export default function PdfPreview() {
     mutationFn: fetchFileUrl,
 
     onSuccess: (res) => {
-      const url = res.body;
+      setFileType(res.body.file_type);
+      const url = res.body.url;
       setFileUrl(url);
-      detectFileType(url);
+      // detectFileType(url);
     },
 
     onError: () => {

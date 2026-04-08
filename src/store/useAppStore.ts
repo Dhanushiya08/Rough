@@ -1,21 +1,37 @@
 // store/useAppStore.ts
 import { create } from "zustand";
 
-type AppState = {
+type StepStatus = "pending" | "processing" | "completed" | "failed";
+
+interface ProcessingProgress {
+  extract: StepStatus;
+  lookup: StepStatus;
+  sap: StepStatus;
+  park: StepStatus;
+}
+
+interface AppStore {
   fileId: string;
-  status: string;
-  fileName: string;
   setFileId: (id: string) => void;
-  setStatus: (status: string) => void;
+  fileName: string;
   setFileName: (name: string) => void;
-};
 
-export const useAppStore = create<AppState>((set) => ({
-  fileId: "1234567",
-  status: "",
-  fileName: "",
+  progress: ProcessingProgress | null;
+  setProgress: (p: ProcessingProgress) => void;
 
+  pollingActive: boolean;
+  setPollingActive: (v: boolean) => void;
+}
+
+export const useAppStore = create<AppStore>((set) => ({
+  fileId: "",
   setFileId: (id) => set({ fileId: id }),
-  setStatus: (status) => set({ status }),
+  fileName: "",
   setFileName: (name) => set({ fileName: name }),
+
+  progress: null,
+  setProgress: (p) => set({ progress: p }),
+
+  pollingActive: false,
+  setPollingActive: (v) => set({ pollingActive: v }),
 }));

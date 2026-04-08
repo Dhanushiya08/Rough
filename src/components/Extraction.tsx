@@ -1,41 +1,15 @@
 import { useState } from "react";
-import { Row, Col, Typography, Button, Spin } from "antd";
+import { Row, Col, Typography, Button, Spin, Alert } from "antd";
 import { RotateCcw, File } from "lucide-react";
 import PdfPreview from "./PdfPreview";
 import BackButton from "./BackButton";
 import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
-import { Alert } from "antd";
 import type { ExtractionEvent } from "../types/common";
+import ProcessingOverlay from "./ProcessingOverlay";
 
 const { Text } = Typography;
-
-// type ExtractedItem = {
-//   key: string;
-//   value: string;
-// };
-
-// const extractedData: ExtractedItem[] = [
-//   { key: "companyCode", value: "3001" },
-//   { key: "supplierCode", value: "200399" },
-//   { key: "documentDate", value: "Oct 24, 2024" },
-//   { key: "baselineDate", value: "Oct 24, 2024" },
-//   { key: "totalAmount", value: "12,990,920,120.00" },
-//   { key: "currency", value: "USD" },
-//   { key: "reference", value: "IBCE260262/ABCLV10" },
-//   { key: "assignment", value: "IBCE260262/ABCLV10" },
-//   {
-//     key: "text",
-//     value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-//   },
-//   {
-//     key: "headerText",
-//     value: "PPMC Invoice 25C03-013 - November 2025 - DECEMBER 2025",
-//   },
-//   { key: "cbsValue", value: "2.5.2.1.1" },
-//   { key: "internalOrder", value: "-- LOOK UP --" },
-// ];
 
 const formatLabel = (key: string) =>
   key
@@ -45,19 +19,25 @@ const formatLabel = (key: string) =>
 
 export default function Extraction() {
   const fileId = useAppStore((s) => s.fileId);
+  const fileName = useAppStore((s) => s.fileName);
+  const progress = useAppStore((s) => s.progress);
+  const pollingActive = useAppStore((s) => s.pollingActive);
+
   const [event, setEvent] = useState<ExtractionEvent>("get-list");
   const [retryCount, setRetryCount] = useState(0);
   const [loadingRetry, setLoadingRetry] = useState(false);
 
+  const isAnyProcessing =
+    !!progress &&
+    pollingActive &&
+    Object.values(progress).some((s) => s === "processing");
+
   const { data, isLoading, error, refetch } = useExtraction(
     fileId,
+    fileName,
     event,
     retryCount,
   );
-
-  // useEffect(() => {
-  //   // setEvent("get-list");
-  // }, [fileId]);
 
   const handleRetry = async () => {
     setLoadingRetry(true);
@@ -74,8 +54,19 @@ export default function Extraction() {
 
   return (
     <div className="flex gap-6 h-screen overflow-hidden">
+      {/* LEFT SIDE (PDF) */}
       <PdfPreview />
-      <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
+
+      {/* RIGHT SIDE (EXTRACTION PANEL) */}
+      <div className="relative w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
+        {/*  OVERLAY ONLY INSIDE RIGHT PANEL */}
+        {isAnyProcessing && (
+          <ProcessingOverlay
+            title="Processing in Progress"
+            description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+          />
+        )}
+
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
@@ -85,7 +76,7 @@ export default function Extraction() {
           <BackButton />
         </div>
 
-        {/* SCROLLABLE CONTENT */}
+        {/* CONTENT */}
         <div className="flex-1 overflow-auto p-6">
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
@@ -93,13 +84,18 @@ export default function Extraction() {
             </div>
           ) : error ? (
             <div className="text-red-500 text-sm">
-              <Alert title="Failed to load extracted data." type="error" />
+              <Alert
+                message="Failed to load extracted data."
+                type="error"
+                showIcon
+              />
             </div>
           ) : (
             <Row gutter={[16, 16]}>
               {(data ?? []).map((item) => {
                 const isFullWidth =
                   item.key === "text" || item.key === "headerText";
+
                 return (
                   <Col span={isFullWidth ? 24 : 12} key={item.key}>
                     <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
@@ -117,17 +113,23 @@ export default function Extraction() {
           )}
         </div>
 
+        {/* FOOTER */}
         <div className="p-4 border-t bg-stepbgbody flex justify-between items-center">
           <Button
             icon={<RotateCcw size={16} />}
             loading={loadingRetry}
             onClick={handleRetry}
+            disabled={isAnyProcessing}
             className="flex items-center gap-2 border border-borderer text-primary bg-white hover:!bg-secondary hover:!text-white hover:!border-secondary shadow-sm"
           >
             Retry Extraction
           </Button>
 
-          <ForwardButton label="Look Up" onClick={handleLookUp} />
+          <ForwardButton
+            label="Look Up"
+            onClick={handleLookUp}
+            disabled={isAnyProcessing}
+          />
         </div>
       </div>
     </div>

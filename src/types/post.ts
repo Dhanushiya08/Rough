@@ -9,11 +9,20 @@ export interface FileUrlPayload {
   file_name: string;
 }
 
+// export interface FileUrlResponse {
+//   file_url?: string;
+//   file_type?: string;
+//   statusCode: number;
+//   body: string;
+// }
+export interface FileUrlBody {
+  file_name: string;
+  url: string;
+  file_type: string;
+}
 export interface FileUrlResponse {
-  file_url?: string;
-  file_type?: string;
   statusCode: number;
-  body: string;
+  body: FileUrlBody; 
 }
 
 export interface PostInput {

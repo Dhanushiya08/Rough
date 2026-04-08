@@ -1,18 +1,18 @@
 // types/extractionList.ts
-import type { ApiStatus } from "./base";
+// import type { ApiStatus } from "./base";
 import type { ExtractionItem } from "./extraction";
 
 export interface GetExtractionListRequest {
   event: "get-list";
   file_id: string;
-  state: ApiStatus;
+  state: "extract";
 }
 
 export interface RetryExtractionRequest {
   event: "retry-process";
   file_id: string;
-  status: ApiStatus;
-  retry: true;
+  state: "extract";
+  file_name: string;
 }
 
 export type ExtractionListResponse = ExtractionItem[];

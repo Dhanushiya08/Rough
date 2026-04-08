@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,16 +14,19 @@ import { useAppStore } from "../store/useAppStore";
 import axios from "axios";
 // import axios, { AxiosError } from "axios";
 import apiClient from "../services/apiClient";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { useStep } from "../hooks/useStep";
+import ProcessingOverlay from "./ProcessingOverlay";
 
 const MAX_SIZE = 3 * 1024 * 1024;
-type StepStatus = "pending" | "processing" | "completed";
+// type StepStatus = "pending" | "processing" | "completed";
 
-interface Progress {
-  extract: StepStatus;
-  lookup: StepStatus;
-  sap: StepStatus;
-  park: StepStatus;
-}
+// interface Progress {
+//   extract: StepStatus;
+//   lookup: StepStatus;
+//   sap: StepStatus;
+//   park: StepStatus;
+// }
 const schema = z.object({
   file: z
     .instanceof(File)
@@ -36,18 +39,19 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
-export default function Uploading({ goNext }: { goNext?: () => void }) {
+export default function Uploading() {
+  // export default function Uploading({ goNext }: { goNext?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [confirm, setConfirm] = useState(false);
   const [lang, setLang] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
-
+  const { startPolling } = usePollDocumentStatus();
   const fileId = useAppStore((s) => s.fileId);
   const setFileId = useAppStore((s) => s.setFileId);
   const fileName = useAppStore((s) => s.fileName);
   const setFileName = useAppStore((s) => s.setFileName);
+  const { current, goTo } = useStep();
 
   const {
     setValue,
@@ -199,10 +203,10 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
       toast.success("Processing started");
 
       if (fileId) {
-        pollDocumentStatus(fileId);
+        startPolling(fileId, goTo, () => current);
       }
 
-      goNext?.();
+      // goNext?.();
     },
 
     onError: (error: unknown) => {
@@ -301,76 +305,76 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
   //     }
   //   }, 3000); // every 3 sec
   // };
-  const prevProgressRef = useRef<Progress | null>(null);
+  // const prevProgressRef = useRef<Progress | null>(null);
 
-  const pollDocumentStatus = (file_id: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const { data } = await apiClient.post("/posts", {
-          event: "get-doc",
-          file_id,
-        });
+  // const pollDocumentStatus = (file_id: string) => {
+  //   const interval = setInterval(async () => {
+  //     try {
+  //       const { data } = await apiClient.post("/posts", {
+  //         event: "get-doc",
+  //         file_id,
+  //       });
 
-        const body =
-          typeof data.body === "string" ? JSON.parse(data.body) : data.body;
+  //       const body =
+  //         typeof data.body === "string" ? JSON.parse(data.body) : data.body;
 
-        // const progress = body?.progress;
-        const progress: Progress | undefined = body?.progress;
-        console.log("Polling:", progress);
-        if (!progress) return;
+  //       // const progress = body?.progress;
+  //       const progress: Progress | undefined = body?.progress;
+  //       console.log("Polling:", progress);
+  //       if (!progress) return;
 
-        const prev = prevProgressRef.current;
+  //       const prev = prevProgressRef.current;
 
-        //  Step-by-step detection
-        if (prev) {
-          if (
-            prev.extract !== "completed" &&
-            progress?.extract === "completed"
-          ) {
-            goNext?.();
-          }
+  //       //  Step-by-step detection
+  //       if (prev) {
+  //         if (
+  //           prev.extract !== "completed" &&
+  //           progress?.extract === "completed"
+  //         ) {
+  //           goNext?.();
+  //         }
 
-          if (prev.lookup !== "completed" && progress?.lookup === "completed") {
-            goNext?.();
-          }
+  //         if (prev.lookup !== "completed" && progress?.lookup === "completed") {
+  //           goNext?.();
+  //         }
 
-          if (prev.sap !== "completed" && progress?.sap === "completed") {
-            goNext?.();
-          }
+  //         if (prev.sap !== "completed" && progress?.sap === "completed") {
+  //           goNext?.();
+  //         }
 
-          if (prev.park !== "completed" && progress?.park === "completed") {
-            goNext?.();
-          }
-        }
+  //         if (prev.park !== "completed" && progress?.park === "completed") {
+  //           goNext?.();
+  //         }
+  //       }
 
-        // save current state
-        prevProgressRef.current = progress;
+  //       // save current state
+  //       prevProgressRef.current = progress;
 
-        //  final completion
-        if (
-          progress?.extract === "completed" &&
-          progress?.lookup === "completed" &&
-          progress?.sap === "completed" &&
-          progress?.park === "completed"
-        ) {
-          clearInterval(interval);
-          toast.success("Processing completed");
-        }
-      } catch (err: unknown) {
-        clearInterval(interval);
+  //       //  final completion
+  //       if (
+  //         progress?.extract === "completed" &&
+  //         progress?.lookup === "completed" &&
+  //         progress?.sap === "completed" &&
+  //         progress?.park === "completed"
+  //       ) {
+  //         clearInterval(interval);
+  //         toast.success("Processing completed");
+  //       }
+  //     } catch (err: unknown) {
+  //       clearInterval(interval);
 
-        let message = "Polling failed";
+  //       let message = "Polling failed";
 
-        if (axios.isAxiosError(err)) {
-          message = err.response?.data?.message || err.message || message;
-        } else if (err instanceof Error) {
-          message = err.message;
-        }
+  //       if (axios.isAxiosError(err)) {
+  //         message = err.response?.data?.message || err.message || message;
+  //       } else if (err instanceof Error) {
+  //         message = err.message;
+  //       }
 
-        toast.error(message);
-      }
-    }, 20000);
-  };
+  //       toast.error(message);
+  //     }
+  //   }, 20000);
+  // };
 
   return (
     <div className="h-full flex items-center justify-center bg-[#F7F9FB]">
@@ -378,9 +382,10 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
 
       <div className="w-[420px] bg-white rounded-md p-5 space-y-4 shadow-md relative">
         {isProcessing && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center text-sm font-medium text-primary z-10">
-            Processing...
-          </div>
+          <ProcessingOverlay
+            title="Uploading Document"
+            description="Uploading your file and preparing it for further processing. This may take a few seconds."
+          />
         )}
 
         {/* HEADER */}
@@ -465,7 +470,7 @@ export default function Uploading({ goNext }: { goNext?: () => void }) {
           </div>
         )}
 
-        {/* ✅ START BUTTON ONLY AFTER UPLOAD */}
+        {/*  START BUTTON ONLY AFTER UPLOAD */}
         {isUploaded && fileId && (
           <button
             onClick={handleProcess}

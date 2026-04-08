@@ -1,5 +1,7 @@
+// components/StepProgressBar.tsx
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
+import { useAppStore } from "../store/useAppStore";
 import Uploading from "./Uploading";
 import Extraction from "./Extraction";
 import Lookup from "./Lookup";
@@ -7,64 +9,80 @@ import Reconciliation from "./Reconciliation";
 import Parking from "./Parking";
 import type { Step } from "../types/common";
 
-const steps: Step[] = [
-  {
-    id: 1,
-    label: "Upload",
-    description: "Upload a PDF or TIFF document for processing",
-    component: <Uploading />,
-  },
-  {
-    id: 2,
-    label: "Extraction",
-    description: "Analyze the document and extract raw data using OCR",
-    component: <Extraction />,
-  },
-  {
-    id: 3,
-    label: "Lookup",
-    description: "Review and edit the extracted key fields for accuracy",
-    component: <Lookup />,
-  },
-  {
-    id: 4,
-    label: "Reconciliation",
-    description: "Fetch additional details using the document identifier",
-    component: <Reconciliation />,
-  },
-  {
-    id: 5,
-    label: "Parking",
-    description: "Ensure all fields are complete and validated",
-    component: <Parking />,
-  },
-];
+const stepProgressKey: Record<
+  number,
+  keyof NonNullable<ReturnType<typeof useAppStore.getState>["progress"]> | null
+> = {
+  1: null,
+  2: "extract",
+  3: "lookup",
+  4: "sap",
+  5: "park",
+};
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
+  const progress = useAppStore((s) => s.progress);
+
+  const isStepDisabled = (stepId: number): boolean => {
+    const key = stepProgressKey[stepId];
+    if (!key) return false; // Upload always enabled
+    if (!progress) return stepId !== 1; // Before polling starts, lock all except upload
+
+    const status = progress[key];
+    // Disable if currently "processing" — user must wait
+    return status === "processing";
+  };
+
+  const steps: Step[] = [
+    {
+      id: 1,
+      label: "Upload",
+      description: "...",
+      component: <Uploading />,
+    },
+    {
+      id: 2,
+      label: "Extraction",
+      description: "...",
+      component: <Extraction />,
+    },
+    { id: 3, label: "Lookup", description: "...", component: <Lookup /> },
+    {
+      id: 4,
+      label: "Reconciliation",
+      description: "...",
+      component: <Reconciliation />,
+    },
+    { id: 5, label: "Parking", description: "...", component: <Parking /> },
+  ];
 
   return (
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
         <div className="flex items-center justify-between relative w-full">
           <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-300" />
-
           <div
             className="absolute top-5 left-0 h-0.5 bg-primary transition-all duration-500"
-            style={{
-              width: `${((current - 1) / (steps.length - 1)) * 100}%`,
-            }}
+            style={{ width: `${((current - 1) / (steps.length - 1)) * 100}%` }}
           />
 
           {steps.map((step) => {
             const isCompleted = step.id < current;
             const isActive = step.id === current;
+            const disabled = isStepDisabled(step.id);
 
             return (
               <button
                 key={step.id}
-                onClick={() => goTo(step.id)}
-                className="relative z-10 flex flex-col items-center gap-2"
+                onClick={() => !disabled && goTo(step.id)}
+                disabled={disabled}
+                title={
+                  disabled ? "This step is currently processing..." : undefined
+                }
+                className={`relative z-10 flex flex-col items-center gap-2 ${
+                  disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                }`}
               >
                 <div
                   className={[
@@ -107,7 +125,7 @@ function StepProgressBarInner() {
 
 export default function StepProgressBar() {
   return (
-    <StepProvider totalSteps={steps.length}>
+    <StepProvider totalSteps={5}>
       <StepProgressBarInner />
     </StepProvider>
   );

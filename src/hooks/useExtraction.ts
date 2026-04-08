@@ -7,6 +7,7 @@ import {
 
 export function useExtraction(
   fileId: string,
+  fileName: string,
   event: ExtractionEvent,
   retryCount: number = 0,
   enabled: boolean = true,
@@ -19,10 +20,10 @@ export function useExtraction(
       }
 
       if (event === "retry-process") {
-        return retryExtractionProcess(fileId, "processing");
+        return retryExtractionProcess(fileId, "extract", fileName);
       }
 
-      return getExtractionList(fileId, "lookup_trigger");
+      return getExtractionList(fileId, "extract");
     },
     enabled,
     refetchOnWindowFocus: false,

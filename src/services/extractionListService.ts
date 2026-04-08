@@ -21,6 +21,7 @@ export const getExtractionList = async (
     "/posts",
     payload,
   );
+  console.log(data);
 
   if (!data?.data) throw new Error("Invalid API response");
   console.log(data);
@@ -29,13 +30,14 @@ export const getExtractionList = async (
 
 export const retryExtractionProcess = async (
   file_id: string,
-  status: RetryExtractionRequest["status"],
+  state: RetryExtractionRequest["state"],
+  file_name: string,
 ): Promise<ExtractionItem[]> => {
   const payload: RetryExtractionRequest = {
     event: "retry-process",
     file_id,
-    status,
-    retry: true,
+    state,
+    file_name,
   };
 
   const { data } = await apiClient.post<ApiResponse<ExtractionItem[]>>(
