@@ -45,6 +45,7 @@ export default function Reconciliation() {
 
   const fileId = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
+  const lang = useAppStore((s) => s.lang);
 
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
@@ -122,6 +123,7 @@ export default function Reconciliation() {
         event: "retry-process",
         file_id: fileId,
         file_name: fileName,
+        lang: lang,
         state: "sap",
         data: {
           poNumbers: poList,

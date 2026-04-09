@@ -1,8 +1,12 @@
 import { Table, Tag, Input, Select } from "antd";
-import { useEffect, useState, useMemo } from "react";
-import { Eye } from "lucide-react";
+import {
+  useState,
+  useMemo,
+  // useEffect
+} from "react";
+import { Eye, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { getTableData } from "../services/dashboardService";
+// import { getTableData } from "../services/dashboardService";
 
 const { Option } = Select;
 
@@ -11,6 +15,7 @@ interface DataType {
   file_name: string;
   state: "extract" | "lookup" | "sap" | "park";
   status: "pending" | "processing" | "waiting" | "completed" | "failed";
+  lang: "english" | "bahasa" | "mandarin";
 }
 
 // const mockResponse = {
@@ -22,30 +27,35 @@ interface DataType {
 //         file_name: "190000058.pdf",
 //         state: "extract",
 //         status: "processing",
+//         lang: "english",
 //       },
 //       {
 //         file_id: "002",
 //         file_name: "190000084.pdf",
 //         state: "sap",
 //         status: "completed",
+//         lang: "bahasa",
 //       },
 //       {
 //         file_id: "003",
 //         file_name: "190000099.pdf",
 //         state: "lookup",
 //         status: "waiting",
+//         lang: "mandarin",
 //       },
 //       {
 //         file_id: "004",
 //         file_name: "190000120.pdf",
 //         state: "park",
 //         status: "failed",
+//         lang: "english",
 //       },
 //       {
 //         file_id: "005",
 //         file_name: "190000130.pdf",
 //         state: "extract",
 //         status: "pending",
+//         lang: "bahasa",
 //       },
 //     ],
 //   },
@@ -62,30 +72,30 @@ export default function Dashboard() {
     undefined,
   );
   const openStepper = useAppStore((s) => s.openStepper);
-  const [loading, setLoading] = useState(false);
+  //   const [loading, setLoading] = useState(false);
   const handleView = (record: DataType) => {
-    openStepper(record.file_id, record.file_name);
+    openStepper(record.file_id, record.file_name, record.state);
   };
 
   //   useEffect(() => {
   //     setData(mockResponse.body.data);
   //   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await getTableData();
-        setData(res);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const res = await getTableData();
+  //       setData(res);
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
   //  Filtering logic
   const filteredData = useMemo(() => {
     return data.filter((item) => {
@@ -111,6 +121,11 @@ export default function Dashboard() {
     sap: "geekblue",
     park: "magenta",
   };
+  const langColorMap = {
+    english: "blue",
+    bahasa: "green",
+    mandarin: "orange",
+  };
 
   const columns = [
     {
@@ -123,6 +138,18 @@ export default function Dashboard() {
       dataIndex: "file_name",
       render: (text: string) => (
         <span className="font-medium text-gray-800">{text}</span>
+      ),
+    },
+    {
+      title: "Language",
+      dataIndex: "lang",
+      render: (lang: DataType["lang"]) => (
+        <Tag
+          color={langColorMap[lang]}
+          className="capitalize px-3 py-1 rounded-full"
+        >
+          {lang}
+        </Tag>
       ),
     },
     {
@@ -178,13 +205,23 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* HEADER */}
-      <div className="mb-5">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          Parking Data History
-        </h2>
-        <p className="text-gray-500 text-sm">
-          Track file processing across all stages
-        </p>
+      <div className="mb-5 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-semibold text-primary">
+            Parking Data History
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Track file processing across all stages
+          </p>
+        </div>
+
+        <button
+          onClick={() => openStepper("", "", "upload")}
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-blue-800 transition"
+        >
+          <Upload size={18} />
+          Upload
+        </button>
       </div>
 
       {/*  FILTER BAR */}
@@ -228,7 +265,7 @@ export default function Dashboard() {
         <Table
           columns={columns}
           dataSource={filteredData}
-          loading={loading}
+          //   loading={loading}
           rowKey="file_id"
           pagination={{ pageSize: 6 }}
           className="custom-ant-table rounded-lg"

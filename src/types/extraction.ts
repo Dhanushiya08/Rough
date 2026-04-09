@@ -6,13 +6,20 @@
 //   retry?: number;
 // }
 import type { RequestWithEvent } from "./common";
+// export interface ApiResponse<T> {
+//   response: {
+//     statusCode: number;
+//     body: {
+//       poNumbers: string[];
+//       data: T;
+//     };
+//   };
+// }
 export interface ApiResponse<T> {
-  response: {
-    statusCode: number;
-    body: {
-      poNumbers: string[];
-      data: T;
-    };
+  statusCode: number;
+  body: {
+    poNumbers: string[];
+    data: T;
   };
 }
 export type ExtractionRequest = RequestWithEvent<
@@ -34,6 +41,8 @@ export interface ExtractionResponse {
 export interface ExtractionItem {
   key: string;
   value: string;
+  originalValue?: string;
+  editable?: boolean;
 }
 
 // export interface ExtractionRequest {

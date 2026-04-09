@@ -16,12 +16,10 @@ export interface LookupItem {
 
 export type LookupEvent = "lookup-trigger" | "lookup-change" | "sap-trigger";
 export interface ApiResponse<T> {
-  response: {
-    statusCode: number;
-    body: {
-      poNumbers: string[];
-      data: T;
-    };
+  statusCode: number;
+  body: {
+    poNumbers: string[];
+    data: T;
   };
 }
 export interface LookupTriggerRequest {

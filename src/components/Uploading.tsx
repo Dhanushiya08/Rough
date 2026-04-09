@@ -44,13 +44,15 @@ export default function Uploading() {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [confirm, setConfirm] = useState(false);
-  const [lang, setLang] = useState<string | null>(null);
+  // const [lang, setLangname] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const { startPolling } = usePollDocumentStatus();
   const fileId = useAppStore((s) => s.fileId);
   const setFileId = useAppStore((s) => s.setFileId);
   const fileName = useAppStore((s) => s.fileName);
   const setFileName = useAppStore((s) => s.setFileName);
+  const lang = useAppStore((s) => s.lang);
+  const setLang = useAppStore((s) => s.setLang);
   const { current, goTo } = useStep();
 
   const {
@@ -250,7 +252,7 @@ export default function Uploading() {
   const resetAll = () => {
     setFile(null);
     setFileId("");
-    setLang(null);
+    setLang("");
     setConfirm(false);
     setProgress(0);
     setIsUploaded(false);

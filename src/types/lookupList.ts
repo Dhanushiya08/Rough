@@ -11,6 +11,7 @@ export interface RetryLookupRequest {
   file_id: string;
   state: "lookup";
   file_name: string;
+  lang: string;
   data: {
     poNumbers: string[];
     data: LookupItem[];

@@ -23,6 +23,7 @@ export default function Parking() {
   const fileId = useAppStore((s) => s.fileId);
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
+  const lang = useAppStore((s) => s.lang);
 
   const [data, setData] = useState<ParkItem[]>([]);
   const [poNumbers, setPoNumbers] = useState<string[]>([]);
@@ -80,6 +81,7 @@ export default function Parking() {
       await apiClient.post("/posts", {
         event: "park_data",
         file_id: fileId,
+        lang: lang,
         data: {
           poNumbers,
           data,

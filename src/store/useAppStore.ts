@@ -15,6 +15,8 @@ interface AppStore {
   setFileId: (id: string) => void;
   fileName: string;
   setFileName: (name: string) => void;
+  lang: string;
+  setLang: (name: string) => void;
 
   progress: ProcessingProgress | null;
   setProgress: (p: ProcessingProgress) => void;
@@ -22,16 +24,23 @@ interface AppStore {
   pollingActive: boolean;
   setPollingActive: (v: boolean) => void;
 
+  currentStep: string;
+  setCurrentStep: (step: string) => void;
+
   showStepper: boolean;
-  openStepper: (id: string, name: string) => void;
+  openStepper: (id: string, name: string, currentStep: string) => void;
   closeStepper: () => void;
 }
 
 export const useAppStore = create<AppStore>((set) => ({
   fileId: "",
   setFileId: (id) => set({ fileId: id }),
+
   fileName: "",
   setFileName: (name) => set({ fileName: name }),
+
+  lang: "",
+  setLang: (name) => set({ lang: name }),
 
   progress: null,
   setProgress: (p) => set({ progress: p }),
@@ -39,12 +48,16 @@ export const useAppStore = create<AppStore>((set) => ({
   pollingActive: false,
   setPollingActive: (v) => set({ pollingActive: v }),
 
+  currentStep: "",
+  setCurrentStep: (step) => set({ currentStep: step }), 
+
   showStepper: false,
 
-  openStepper: (id, name) =>
+  openStepper: (id, name, currentStep) =>
     set({
       fileId: id,
       fileName: name,
+      currentStep,
       showStepper: true,
     }),
 
@@ -52,6 +65,7 @@ export const useAppStore = create<AppStore>((set) => ({
     set({
       fileId: "",
       fileName: "",
+      currentStep: "",
       showStepper: false,
     }),
 }));

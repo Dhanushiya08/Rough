@@ -10,6 +10,7 @@ export default {
         borderer: "#A5A5A5",
         stepbgheader: "#F0F4F7",
         stepbgbody: "#F7F9FB",
+        heplercolor: "#D9E4EA",
       },
     },
   },

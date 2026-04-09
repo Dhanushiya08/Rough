@@ -1,20 +1,20 @@
 import Navbar from "../components/Navbar";
 import StepProgressBar from "../components/ StepProgressBar";
-// import Dashboard from "./Dashboard";
-// import { useAppStore } from "../store/useAppStore";
-// import { FloatButton } from "antd";
-// import { ArrowLeft } from "lucide-react";
+import Dashboard from "./Dashboard";
+import { useAppStore } from "../store/useAppStore";
+import { FloatButton } from "antd";
+import { ArrowLeft } from "lucide-react";
 
 export default function Mainpage() {
-  // const { showStepper, closeStepper } = useAppStore();
+  const { showStepper, closeStepper } = useAppStore();
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <StepProgressBar />
-      {/* {!showStepper && <Dashboard />} */}
+      {/* <StepProgressBar /> */}
+      {!showStepper && <Dashboard />}
 
-      {/* {showStepper && (
+      {showStepper && (
         <>
           <StepProgressBar />
 
@@ -25,7 +25,7 @@ export default function Mainpage() {
             style={{ left: 24, bottom: 24 }}
           />
         </>
-      )} */}
+      )}
     </div>
   );
 }

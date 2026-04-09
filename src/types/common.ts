@@ -33,7 +33,6 @@ export type RequestWithEvent<
 export interface Step {
   id: number;
   label: string;
-  description: string;
   component: React.ReactNode;
 }
 export type ExtractedItem = {

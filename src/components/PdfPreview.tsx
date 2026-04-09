@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { TIFFViewer } from "react-tiff";
-import pdfFile from "../assets/Invoice_Extraction_Rules.docx.pdf";
-import tiffFile from "../assets/file_example_TIFF_1MB.tiff";
+// import pdfFile from "../assets/Invoice_Extraction_Rules.docx.pdf";
+// import tiffFile from "../assets/file_example_TIFF_1MB.tiff";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-tiff/dist/index.css";
@@ -33,7 +33,7 @@ export default function PdfPreview() {
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   };
-  
+
   // const detectFileType = (url: string) => {
   //   try {
   //     const cleanUrl = url.split("?")[0];
@@ -57,8 +57,10 @@ export default function PdfPreview() {
     mutationFn: fetchFileUrl,
 
     onSuccess: (res) => {
+      console.log(res);
       setFileType(res.body.file_type);
       const url = res.body.presignedUrl;
+      console.log(url);
       setFileUrl(url);
       // detectFileType(url);
     },
@@ -76,6 +78,7 @@ export default function PdfPreview() {
       file_name: fileName,
     });
   }, [file_id]);
+  console.log(fileUrl, fileType);
 
   return (
     <div className="w-1/2 border rounded-xl bg-gray-100 flex flex-col overflow-hidden">
@@ -109,7 +112,7 @@ export default function PdfPreview() {
 
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (
-          <Document file={pdfFile} onLoadSuccess={onDocumentLoadSuccess}>
+          <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
             {pages.map((page) => (
               <Page
                 key={page}
@@ -121,7 +124,7 @@ export default function PdfPreview() {
           </Document>
         )}
         {/* TIFF */}
-        {fileType === "tiff" && fileUrl && <TIFFViewer tiff={tiffFile} />}
+        {fileType === "tiff" && fileUrl && <TIFFViewer tiff={fileUrl} />}
         {/* fallback */}
         {fileType === "unknown" && (
           <p className="text-red-500">Unsupported file type</p>

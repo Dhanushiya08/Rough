@@ -20,7 +20,7 @@ export default function Lookup() {
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
-
+  const lang = useAppStore((s) => s.lang);
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
@@ -55,7 +55,7 @@ export default function Lookup() {
     setLoadingRetry(true);
 
     try {
-      await retryLookupProcess(fileId, "lookup", fileName, {
+      await retryLookupProcess(fileId, "lookup", fileName, lang, {
         poNumbers: data.poNumbers,
         data: localData,
       });

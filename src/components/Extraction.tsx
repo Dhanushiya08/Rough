@@ -21,6 +21,7 @@ export default function Extraction() {
   const fileId = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
+  // const lang = useAppStore((s) => s.lang);
   const pollingActive = useAppStore((s) => s.pollingActive);
 
   const [event, setEvent] = useState<ExtractionEvent>("get-list");
@@ -38,6 +39,7 @@ export default function Extraction() {
     error,
     refetch,
   } = useExtraction(fileId, fileName, event, retryCount);
+  console.log(data);
 
   const handleRetry = async () => {
     setLoadingRetry(true);

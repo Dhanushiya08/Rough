@@ -4,6 +4,7 @@ type ApiTableItem = {
   file_name: string;
   state: string; // raw → string
   status: string; // raw → string
+  lang: string;
 };
 const validStates = ["extract", "lookup", "sap", "park"] as const;
 const validStatuses = [

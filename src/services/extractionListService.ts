@@ -6,6 +6,7 @@ import type {
   GetExtractionListRequest,
   RetryExtractionRequest,
 } from "../types/extractionList";
+// Lang
 
 export const getExtractionList = async (
   file_id: string,
@@ -26,9 +27,13 @@ export const getExtractionList = async (
   );
   console.log(data);
 
-  const body = data?.response?.body;
+  const body = data?.body;
 
-  if (!body) throw new Error("Invalid API response");
+  console.log(body);
+  if (data?.statusCode !== 200) {
+    throw new Error("API failed");
+  }
+  // if (!body) throw new Error("Invalid API response");
 
   return {
     poNumbers: body.poNumbers ?? [],
@@ -40,6 +45,7 @@ export const retryExtractionProcess = async (
   file_id: string,
   state: RetryExtractionRequest["state"],
   file_name: string,
+  lang: string,
 ): Promise<{
   poNumbers: string[];
   data: ExtractionItem[];
@@ -49,6 +55,7 @@ export const retryExtractionProcess = async (
     file_id,
     state,
     file_name,
+    lang,
   };
 
   const { data } = await apiClient.post<ApiResponse<ExtractionItem[]>>(
@@ -56,9 +63,12 @@ export const retryExtractionProcess = async (
     payload,
   );
 
-  const body = data?.response?.body;
+  const body = data?.body;
 
-  if (!body) throw new Error("Invalid API response");
+  console.log(body);
+  if (data?.statusCode !== 200) {
+    throw new Error("API failed");
+  }
 
   return {
     poNumbers: body.poNumbers ?? [],

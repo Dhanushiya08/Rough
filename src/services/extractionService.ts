@@ -28,12 +28,13 @@ export const fetchFileUrl = async (
   payload: FileUrlPayload,
 ): Promise<FileUrlResponse> => {
   const { data } = await apiClient.post<FileUrlResponse>("/posts", payload);
+  console.log(data);
 
   if (!data || !data.body) {
     throw new Error("Invalid API response");
   }
 
-  return data; 
+  return data;
 };
 //triggerExtraction  (upload page)
 export const triggerExtraction = async (

@@ -23,8 +23,11 @@ export const getLookupList = async (
     payload,
   );
   console.log(data);
-  const body = data?.response?.body;
-  if (!body) throw new Error("Invalid API response");
+  const body = data?.body;
+  console.log(body);
+  if (data?.statusCode !== 200) {
+    throw new Error("API failed");
+  }
 
   return {
     poNumbers: body.poNumbers ?? [],
@@ -36,6 +39,7 @@ export const retryLookupProcess = async (
   file_id: string,
   state: RetryLookupRequest["state"],
   file_name: string,
+  lang: string,
   payloadData: {
     poNumbers: string[];
     data: LookupItem[];
@@ -49,7 +53,8 @@ export const retryLookupProcess = async (
     file_id,
     state,
     file_name,
-    data: payloadData, 
+    lang,
+    data: payloadData,
   };
 
   const { data } = await apiClient.post<ApiResponse<LookupItem[]>>(
@@ -57,8 +62,11 @@ export const retryLookupProcess = async (
     payload,
   );
 
-  const body = data?.response?.body;
-  if (!body) throw new Error("Invalid API response");
+  const body = data?.body;
+  console.log(body);
+  if (data?.statusCode !== 200) {
+    throw new Error("API failed");
+  }
 
   return {
     poNumbers: body.poNumbers ?? [],

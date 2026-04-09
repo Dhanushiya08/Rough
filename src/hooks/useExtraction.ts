@@ -4,6 +4,7 @@ import {
   getExtractionList,
   retryExtractionProcess,
 } from "../services/extractionListService";
+import { useAppStore } from "../store/useAppStore";
 
 export function useExtraction(
   fileId: string,
@@ -12,6 +13,7 @@ export function useExtraction(
   retryCount: number = 0,
   enabled: boolean = true,
 ) {
+  const lang = useAppStore((s) => s.lang);
   return useQuery({
     queryKey: ["extraction", fileId, event, retryCount],
     queryFn: () => {
@@ -20,7 +22,7 @@ export function useExtraction(
       }
 
       if (event === "retry-process") {
-        return retryExtractionProcess(fileId, "extract", fileName);
+        return retryExtractionProcess(fileId, "extract", fileName, lang);
       }
 
       return getExtractionList(fileId, "extract");

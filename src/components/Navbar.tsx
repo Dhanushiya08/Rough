@@ -9,22 +9,24 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-white border-b border-borderer shadow-sm">
-      <div className="flex items-center justify-between px-4 md:px-8 h-16 md:h-20 lg:h-24">
+      {/* <div className="flex items-center justify-between px-4 md:px-8 h-16 md:h-20 lg:h-24"> */}
+      <div className="flex items-center justify-between px-4 md:px-8 h-14 md:h-16 lg:h-18">
         {/* Logos */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <img
             src={customerLogo}
             alt="Customer Logo"
-            className="h-10 w-10 md:h-14 md:w-14 lg:h-20 lg:w-20 object-contain"
+            className="max-h-8 md:max-h-10 lg:max-h-12 w-auto object-contain"
           />
-          <div className="h-8 md:h-10 lg:h-12 w-px bg-borderer" />
+
+          <div className="h-6 md:h-8 w-px bg-borderer" />
+
           <img
             src={companyLogo}
             alt="Company Logo"
-            className="h-8 md:h-10 lg:h-14 w-auto hidden sm:block object-contain"
+            className="max-h-8 md:max-h-10 lg:max-h-12 w-auto object-contain"
           />
         </div>
-
         {/* Desktop right */}
         <div className="hidden md:flex items-center gap-4">
           <span className="text-sm lg:text-base text-gray-700">

@@ -1,4 +1,5 @@
 // components/StepProgressBar.tsx
+import { useEffect } from "react";
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
 import { useAppStore } from "../store/useAppStore";
@@ -19,10 +20,20 @@ const stepProgressKey: Record<
   4: "sap",
   5: "park",
 };
+const stepMap: Record<string, number> = {
+  upload: 1,
+  extract: 2,
+  lookup: 3,
+  sap: 4,
+  park: 5,
+};
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
+  const currentStep = useAppStore((s) => s.currentStep);
+  const setCurrentStep = useAppStore((s) => s.setCurrentStep);
+  console.log(currentStep);
   console.log(progress);
 
   // const isStepDisabled = (stepId: number): boolean => {
@@ -56,83 +67,98 @@ function StepProgressBarInner() {
     {
       id: 1,
       label: "Upload",
-      description: "...",
       component: <Uploading />,
     },
     {
       id: 2,
       label: "Extraction",
-      description: "...",
       component: <Extraction />,
     },
-    { id: 3, label: "Lookup", description: "...", component: <Lookup /> },
+    { id: 3, label: "Lookup", component: <Lookup /> },
     {
       id: 4,
       label: "Reconciliation",
-      description: "...",
       component: <Reconciliation />,
     },
-    { id: 5, label: "Parking", description: "...", component: <Parking /> },
+    { id: 5, label: "Parking", component: <Parking /> },
   ];
 
+  useEffect(() => {
+    if (!currentStep) return;
+
+    const stepNumber = stepMap[currentStep];
+    console.log(stepNumber);
+
+    if (stepNumber && stepNumber !== current) {
+      goTo(stepNumber);
+
+      setCurrentStep("");
+    }
+  }, [currentStep]);
   return (
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
-        <div className="flex items-center justify-between relative w-full">
-          {/* Background line */}
-          <div className="absolute top-5 left-0 right-0 h-px bg-gray-200" />
+        <div className="flex justify-center w-full">
+          <div className="flex items-center justify-between relative w-full max-w-4xl">
+            {/* Background line */}
+            <div className="absolute top-4 left-0 right-0 h-px bg-gray-200" />
 
-          {/* Progress fill line */}
-          <div
-            className="absolute top-5 left-0 h-px bg-primary transition-all duration-500"
-            style={{ width: `${((current - 1) / (steps.length - 1)) * 100}%` }}
-          />
+            {/* Progress fill line */}
+            <div
+              className="absolute top-4 left-0 h-px bg-primary transition-all duration-500"
+              style={{
+                width: `${((current - 1) / (steps.length - 1)) * 100}%`,
+              }}
+            />
 
-          {steps.map((step) => {
-            const isCompleted = step.id < current;
-            const isActive = step.id === current;
-            const disabled = isStepDisabled(step.id);
+            {steps.map((step) => {
+              const isCompleted = step.id < current;
+              const isActive = step.id === current;
+              const disabled = isStepDisabled(step.id);
 
-            return (
-              <button
-                key={step.id}
-                onClick={() => !disabled && goTo(step.id)}
-                disabled={disabled}
-                title={
-                  disabled ? "This step is currently processing..." : undefined
-                }
-                className={`relative z-10 flex flex-col items-center gap-2 ${
-                  disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
-                }`}
-              >
-                <div
-                  className={[
-                    "w-9 h-9 rounded-lg flex items-center justify-center text-sm font-medium border",
-                    isCompleted
-                      ? "bg-primary border-primary text-white"
-                      : isActive
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => !disabled && goTo(step.id)}
+                  disabled={disabled}
+                  title={
+                    disabled
+                      ? "This step is currently processing..."
+                      : undefined
+                  }
+                  className={`relative z-10 flex flex-col items-center gap-2 ${
+                    disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={[
+                      "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
+                      isCompleted
                         ? "bg-primary border-primary text-white"
-                        : "bg-stepbgheader border-gray-300 text-gray-400",
-                  ].join(" ")}
-                >
-                  {isCompleted ? "✓" : step.id}
-                </div>
+                        : isActive
+                          ? "bg-primary border-primary text-white"
+                          : "bg-[#D9E4EA] border-gray-300 text-gray-400",
+                    ].join(" ")}
+                  >
+                    {isCompleted ? "✓" : step.id}
+                  </div>
 
-                <span
-                  className={[
-                    "text-xs font-semibold uppercase tracking-wide",
-                    isActive
-                      ? "text-primary"
-                      : isCompleted
-                        ? "text-gray-600"
-                        : "text-gray-400",
-                  ].join(" ")}
-                >
-                  {step.label}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className={[
+                      "text-xs font-semibold uppercase tracking-wide",
+                      isActive
+                        ? "text-primary"
+                        : isCompleted
+                          ? "text-gray-600"
+                          : "text-gray-400",
+                    ].join(" ")}
+                  >
+                    {step.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

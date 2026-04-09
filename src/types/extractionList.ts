@@ -13,6 +13,7 @@ export interface RetryExtractionRequest {
   file_id: string;
   state: "extract";
   file_name: string;
+  lang: string;
 }
 
 export type ExtractionListResponse = ExtractionItem[];
