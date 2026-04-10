@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
 import PdfPreview from "./PdfPreview";
-import ForwardButton from "./ForwardButton";
+// import ForwardButton from "./ForwardButton";
 import BackButton from "./BackButton";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import { useLookup } from "../hooks/useLookup";
 import { retryLookupProcess } from "../services/lookupListService";
 import type { LookupItem } from "../types/lookup";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { useStep } from "../hooks/useStep";
 
 const { Text } = Typography;
 
@@ -21,13 +23,15 @@ export default function Lookup() {
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
   const lang = useAppStore((s) => s.lang);
+  const { startPolling } = usePollDocumentStatus();
+  const { current, goTo } = useStep();
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
 
   const {
-    data = { poNumbers: [], data: [] },
+    data = { poNumber: [], data: [] },
     isLoading,
     error,
     refetch,
@@ -56,9 +60,11 @@ export default function Lookup() {
 
     try {
       await retryLookupProcess(fileId, "lookup", fileName, lang, {
-        poNumbers: data.poNumbers,
+        poNumber: data.poNumber,
         data: localData,
       });
+
+      startPolling(fileId, goTo, () => current);
 
       await refetch();
 
@@ -71,7 +77,7 @@ export default function Lookup() {
   };
 
   return (
-    <div className="flex gap-6 h-screen">
+    <div className="flex gap-6">
       <PdfPreview />
 
       <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
@@ -114,12 +120,12 @@ export default function Lookup() {
 
               <Row gutter={[16, 16]}>
                 {/* PO Numbers */}
-                {data.poNumbers.length > 0 && (
+                {data.poNumber.length > 0 && (
                   <Col span={24}>
                     <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
                       <Text className="text-xs text-gray-500">PO Numbers</Text>
                       <div className="mt-2 text-sm">
-                        {data.poNumbers.join(", ")}
+                        {data.poNumber.join(", ")}
                       </div>
                     </div>
                   </Col>
@@ -174,7 +180,7 @@ export default function Lookup() {
         </div>
 
         {/* FOOTER */}
-        <div className="p-4 border-t flex justify-between items-center">
+        <div className="p-4 border-t flex justify-end items-center">
           <Button
             icon={<RotateCcw size={16} />}
             loading={loadingRetry}
@@ -184,7 +190,7 @@ export default function Lookup() {
             Retry Look Up
           </Button>
 
-          <ForwardButton label="Next Step" disabled={isAnyProcessing} />
+          {/* <ForwardButton label="Next Step" disabled={isAnyProcessing} /> */}
         </div>
       </div>
     </div>

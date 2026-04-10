@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Row, Col, Typography, Input, Spin, Button } from "antd";
-import axios from "axios";
+import apiClient from "../services/apiClient"; // adjust path
 import PdfPreview from "./PdfPreview";
 import { File } from "lucide-react";
 import type {
@@ -15,11 +15,14 @@ import { LineItemsTable } from "./LineItemTable";
 import { POSelector } from "./POSelector";
 import { useAppStore } from "../store/useAppStore";
 import type { SapReconcileApiItem } from "../types/reconciliation";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { useStep } from "../hooks/useStep";
+import ProcessingOverlay from "./ProcessingOverlay";
 type GetListResponse = {
   data: ExtractedItem[];
   sapReconcile: SapReconcileApiItem[];
   items: LineItem[];
-  poNumbers: string[];
+  poNumber: string[];
 };
 const { Text } = Typography;
 
@@ -36,6 +39,7 @@ export default function Reconciliation() {
   const [poList, setPoList] = useState<string[]>([]);
   const [selectedPO, setSelectedPO] = useState<string>("");
 
+  const { startPolling } = usePollDocumentStatus();
   const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
     {},
   );
@@ -50,6 +54,8 @@ export default function Reconciliation() {
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
 
+  const { current, goTo } = useStep();
+
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
@@ -59,7 +65,7 @@ export default function Reconciliation() {
     try {
       setLoading(true);
 
-      const res = await axios.post(API_URL, {
+      const res = await apiClient.post(API_URL, {
         event: "get-list",
         file_id: fileId,
         file_name: fileName,
@@ -68,6 +74,7 @@ export default function Reconciliation() {
 
       // const body = res.data.body;
       const body: GetListResponse = res.data.body;
+      console.log(body, "sap body");
 
       // Extracted
       setData(
@@ -96,8 +103,8 @@ export default function Reconciliation() {
       setItems(body.items || []);
 
       // PO
-      setPoList(body.poNumbers || []);
-      setSelectedPO(body.poNumbers?.[0] || "");
+      setPoList(body.poNumber || []);
+      setSelectedPO(body.poNumber?.[0] || "");
     } catch (err) {
       console.error(err);
     } finally {
@@ -119,14 +126,14 @@ export default function Reconciliation() {
     try {
       setRetryLoading(true);
 
-      await axios.post(API_URL, {
+      await apiClient.post(API_URL, {
         event: "retry-process",
         file_id: fileId,
         file_name: fileName,
         lang: lang,
         state: "sap",
         data: {
-          poNumbers: poList,
+          poNumber: poList,
           data: data.map((i) => ({
             key: i.key,
             value: i.value,
@@ -134,6 +141,7 @@ export default function Reconciliation() {
         },
       });
 
+      startPolling(fileId, goTo, () => current);
       await fetchData(); // refresh
     } catch (err) {
       console.error(err);
@@ -143,6 +151,10 @@ export default function Reconciliation() {
   };
 
   const currentData = items;
+  console.log(currentData);
+  const handlePOEdit = (oldPO: string, newPO: string) => {
+    setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
+  };
 
   if (loading) {
     return (
@@ -153,11 +165,16 @@ export default function Reconciliation() {
   }
 
   return (
-    <div className="flex gap-6 h-screen">
+    <div className="flex gap-6">
       <PdfPreview />
 
       <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
-        {isAnyProcessing && <div>Processing...</div>}
+        {isAnyProcessing && (
+          <ProcessingOverlay
+            title="Processing in Progress"
+            description="Please wait..."
+          />
+        )}
 
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
@@ -200,6 +217,7 @@ export default function Reconciliation() {
               );
             })}
           </Row>
+          <br></br>
 
           {/* RECONCILIATION */}
 
@@ -207,20 +225,31 @@ export default function Reconciliation() {
             data={reconcileData}
             onChange={setReconcileData}
           />
+          <br></br>
 
-          {/* PO */}
-          <POSelector
-            selectedPO={selectedPO}
-            onSelect={setSelectedPO}
-            poList={poList}
-          />
+          {poList?.length > 0 && (
+            <>
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+                <File size={18} /> PO Data
+              </h2>
 
-          {/* LINE ITEMS */}
-          <LineItemsTable
-            data={currentData}
-            selectedPO={selectedPO}
-            onChange={setSelectionMap}
-          />
+              <POSelector
+                selectedPO={selectedPO}
+                onSelect={setSelectedPO}
+                poList={poList}
+                onEdit={handlePOEdit}
+              />
+            </>
+          )}
+          <br></br>
+
+          {currentData?.length > 0 && (
+            <LineItemsTable
+              data={currentData}
+              selectedPO={selectedPO}
+              onChange={setSelectionMap}
+            />
+          )}
         </div>
 
         {/* FOOTER */}

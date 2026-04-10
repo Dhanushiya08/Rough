@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { TIFFViewer } from "react-tiff";
+// import { TIFFViewer } from "react-tiff";
 // import pdfFile from "../assets/Invoice_Extraction_Rules.docx.pdf";
 // import tiffFile from "../assets/file_example_TIFF_1MB.tiff";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -10,6 +10,9 @@ import { useMutation } from "@tanstack/react-query";
 import { fetchFileUrl } from "../services/extractionService";
 import toast from "react-hot-toast";
 import { useAppStore } from "../store/useAppStore";
+import "../App.css";
+import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
+import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 //  Worker (only once here)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -21,7 +24,7 @@ export default function PdfPreview() {
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1);
   const [fileUrl, setFileUrl] = useState<string>("");
-  const [fileType, setFileType] = useState<string>("pdf");
+  const [fileType, setFileType] = useState<string>("");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
 
@@ -83,26 +86,38 @@ export default function PdfPreview() {
   return (
     <div className="w-1/2 border rounded-xl bg-gray-100 flex flex-col overflow-hidden">
       {/* HEADER */}
-      <div className="flex justify-between items-center p-3 border-b bg-gray-100">
-        <p className="text-sm text-gray-500">Pages: {numPages || "--"}</p>
+      <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
+        <p className="text-sm text-gray-500 font-medium">
+          Pages: {numPages || "--"}
+        </p>
 
-        <div className="flex gap-2 items-center">
+        {/* Premium Controls */}
+        <div className="flex items-center gap-2 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-inner border">
           <button
             disabled={!canZoomOut}
             onClick={() => setScale((prev) => Math.max(prev - 0.2, 0.5))}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90 disabled:opacity-40"
           >
-            ➖
+            <ZoomOut size={16} />
           </button>
 
-          <span className="text-sm">{Math.round(scale * 100)}%</span>
+          <span className="text-xs font-semibold text-gray-700 w-12 text-center">
+            {Math.round(scale * 100)}%
+          </span>
 
           <button
             disabled={!canZoomIn}
             onClick={() => setScale((prev) => Math.min(prev + 0.2, 3))}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90 disabled:opacity-40"
           >
-            ➕
+            <ZoomIn size={16} />
+          </button>
+
+          <button
+            onClick={() => setScale(1)}
+            className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
+          >
+            <RotateCcw size={16} />
           </button>
         </div>
       </div>
@@ -124,7 +139,12 @@ export default function PdfPreview() {
           </Document>
         )}
         {/* TIFF */}
-        {fileType === "tiff" && fileUrl && <TIFFViewer tiff={fileUrl} />}
+        {
+          fileType === "tiff" && fileUrl && (
+            <ZoomableTIFFViewer tiff={fileUrl} />
+          )
+          // <TIFFViewer tiff={fileUrl} />
+        }
         {/* fallback */}
         {fileType === "unknown" && (
           <p className="text-red-500">Unsupported file type</p>

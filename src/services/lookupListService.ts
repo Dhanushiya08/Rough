@@ -9,7 +9,7 @@ export const getLookupList = async (
   file_id: string,
   state: GetLookupListRequest["state"],
 ): Promise<{
-  poNumbers: string[];
+  poNumber: string[];
   data: LookupItem[];
 }> => {
   const payload: GetLookupListRequest = {
@@ -30,7 +30,7 @@ export const getLookupList = async (
   }
 
   return {
-    poNumbers: body.poNumbers ?? [],
+    poNumber: body.poNumber ?? [],
     data: body.data ?? [],
   };
 };
@@ -41,11 +41,11 @@ export const retryLookupProcess = async (
   file_name: string,
   lang: string,
   payloadData: {
-    poNumbers: string[];
+    poNumber: string[];
     data: LookupItem[];
   },
 ): Promise<{
-  poNumbers: string[];
+  poNumber: string[];
   data: LookupItem[];
 }> => {
   const payload: RetryLookupRequest = {
@@ -69,7 +69,7 @@ export const retryLookupProcess = async (
   }
 
   return {
-    poNumbers: body.poNumbers ?? [],
+    poNumber: body.poNumber ?? [],
     data: body.data ?? [],
   };
 };

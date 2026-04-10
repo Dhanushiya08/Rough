@@ -1,8 +1,6 @@
-// hooks/usePollDocumentStatus.ts
 import { useRef } from "react";
 import { useAppStore } from "../store/useAppStore";
 import apiClient from "../services/apiClient";
-// import axios from "axios";
 import toast from "react-hot-toast";
 
 type StepStatus = "pending" | "processing" | "waiting" | "completed" | "failed";
@@ -13,18 +11,52 @@ interface Progress {
   sap: StepStatus;
   park: StepStatus;
 }
+
+const getTargetStep = (progress: Progress): number => {
+  if (progress.park === "processing" || progress.park === "completed") return 5;
+  if (progress.sap === "processing" || progress.sap === "completed") return 4;
+  if (progress.lookup === "processing" || progress.lookup === "completed")
+    return 3;
+  if (progress.extract === "processing" || progress.extract === "completed")
+    return 2;
+  return 1;
+};
+
+const isAnyProcessing = (progress: Progress): boolean => {
+  return Object.values(progress).some((status) => status === "processing");
+};
+
+const isAllCompleted = (progress: Progress): boolean => {
+  return Object.values(progress).every((status) => status === "completed");
+};
+
+const isAnyFailed = (progress: Progress): boolean => {
+  return Object.values(progress).some((status) => status === "failed");
+};
+
 export function usePollDocumentStatus() {
   const setProgress = useAppStore((s) => s.setProgress);
   const setPollingActive = useAppStore((s) => s.setPollingActive);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastAutoStepRef = useRef<number>(0);
+
+  const stopPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setPollingActive(false);
+    }
+  };
 
   const startPolling = (
     file_id: string,
     goTo: (step: number) => void,
     getCurrent: () => number,
   ) => {
-    if (intervalRef.current) return;
+    stopPolling();
+
     setPollingActive(true);
+    lastAutoStepRef.current = 0;
 
     intervalRef.current = setInterval(async () => {
       try {
@@ -40,74 +72,43 @@ export function usePollDocumentStatus() {
         if (!progress) return;
 
         setProgress(progress);
+        console.log(progress, "startpoll");
 
-        //  1. Handle failed state FIRST — stop polling immediately
-        if (
-          progress.extract === "failed" ||
-          progress.lookup === "failed" ||
-          progress.sap === "failed" ||
-          progress.park === "failed"
-        ) {
-          clearInterval(intervalRef.current!);
-          intervalRef.current = null;
-          setPollingActive(false);
+        if (isAnyFailed(progress)) {
+          stopPolling();
           toast.error("Processing failed at one of the steps");
           return;
         }
 
-        //  2. Navigate only if not already on correct step
-        const current = getCurrent();
+        if (!isAnyProcessing(progress)) {
+          stopPolling();
 
-        if (
-          (progress.park === "processing" || progress.park === "completed") &&
-          current !== 5
-        ) {
-          goTo(5);
-        } else if (
-          (progress.sap === "processing" || progress.sap === "completed") &&
-          current !== 4
-        ) {
-          goTo(4);
-        } else if (
-          (progress.lookup === "processing" ||
-            progress.lookup === "completed") &&
-          current !== 3
-        ) {
-          goTo(3);
-        } else if (
-          (progress.extract === "processing" ||
-            progress.extract === "completed") &&
-          current !== 2
-        ) {
-          goTo(2);
+          if (isAllCompleted(progress)) {
+            toast.success("Processing completed");
+          }
+          return;
         }
 
-        //  3. Stop polling when all completed
-        if (
-          progress.extract === "completed" &&
-          progress.lookup === "completed" &&
-          progress.sap === "completed" &&
-          progress.park === "completed"
-        ) {
-          clearInterval(intervalRef.current!);
-          intervalRef.current = null;
-          setPollingActive(false);
-          toast.success("Processing completed");
+        const targetStep = getTargetStep(progress);
+        const current = getCurrent();
+        const userManualStep = useAppStore.getState().userManualStep;
+
+        if (targetStep !== lastAutoStepRef.current) {
+          lastAutoStepRef.current = targetStep;
+          useAppStore.getState().setUserManualStep(false);
+          if (current !== targetStep) {
+            goTo(targetStep);
+          }
+        } else if (!userManualStep) {
+          if (current !== targetStep) {
+            goTo(targetStep);
+          }
         }
       } catch {
-        clearInterval(intervalRef.current!);
-        intervalRef.current = null;
-        setPollingActive(false);
+        stopPolling();
         toast.error("Polling failed");
       }
     }, 5000);
-  };
-
-  const stopPolling = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      setPollingActive(false);
-    }
   };
 
   return { startPolling, stopPolling };

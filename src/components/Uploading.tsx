@@ -42,10 +42,11 @@ type FormData = z.infer<typeof schema>;
 export default function Uploading() {
   // export default function Uploading({ goNext }: { goNext?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
+  // const [progress, setProgress] = useState(0);
   const [confirm, setConfirm] = useState(false);
   // const [lang, setLangname] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [processingStarted, setProcessingStarted] = useState(false);
   const { startPolling } = usePollDocumentStatus();
   const fileId = useAppStore((s) => s.fileId);
   const setFileId = useAppStore((s) => s.setFileId);
@@ -100,12 +101,12 @@ export default function Uploading() {
         headers: {
           "Content-Type": file.type,
         },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total || 1),
-          );
-          setProgress(percent);
-        },
+        // onUploadProgress: (progressEvent) => {
+        //   const percent = Math.round(
+        //     (progressEvent.loaded * 100) / (progressEvent.total || 1),
+        //   );
+        //   setProgress(percent);
+        // },
       });
 
       return {
@@ -203,6 +204,7 @@ export default function Uploading() {
 
     onSuccess: () => {
       toast.success("Processing started");
+      setProcessingStarted(true);
 
       if (fileId) {
         startPolling(fileId, goTo, () => current);
@@ -230,7 +232,11 @@ export default function Uploading() {
     },
   });
 
-  const isProcessing = processingMutation.isPending || uploadMutation.isPending;
+  // const isProcessing = processingMutation.isPending || uploadMutation.isPending;
+  const isProcessing =
+    processingMutation.isPending ||
+    uploadMutation.isPending ||
+    processingStarted;
 
   const handleProcess = () => {
     if (!fileId || !isUploaded) {
@@ -254,7 +260,7 @@ export default function Uploading() {
     setFileId("");
     setLang("");
     setConfirm(false);
-    setProgress(0);
+    // setProgress(0);
     setIsUploaded(false);
   };
   // const pollDocumentStatus = (file_id: string) => {
@@ -445,7 +451,7 @@ export default function Uploading() {
                 onClick={() => {
                   if (!file) return;
 
-                  setProgress(0);
+                  // setProgress(0);
                   setIsUploaded(false);
 
                   const id = generateUniqueID();
@@ -492,7 +498,7 @@ export default function Uploading() {
         )}
 
         {/* PROGRESS */}
-        {progress > 0 && (
+        {/* {progress > 0 && (
           <div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
@@ -504,7 +510,7 @@ export default function Uploading() {
               {progress}%
             </p>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -3,11 +3,13 @@ import { Row, Col, Typography, Button, Spin, Alert } from "antd";
 import { RotateCcw, File } from "lucide-react";
 import PdfPreview from "./PdfPreview";
 import BackButton from "./BackButton";
-import ForwardButton from "./ForwardButton";
+// import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
 import type { ExtractionEvent } from "../types/common";
 import ProcessingOverlay from "./ProcessingOverlay";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { useStep } from "../hooks/useStep";
 
 const { Text } = Typography;
 
@@ -27,14 +29,18 @@ export default function Extraction() {
   const [event, setEvent] = useState<ExtractionEvent>("get-list");
   const [retryCount, setRetryCount] = useState(0);
   const [loadingRetry, setLoadingRetry] = useState(false);
+  const { startPolling } = usePollDocumentStatus();
+  const { current, goTo } = useStep();
 
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
 
+  console.log(progress, pollingActive, "isAnyProcessing");
+
   const {
-    data = { poNumbers: [], data: [] },
+    data = { poNumber: [], data: [] },
     isLoading,
     error,
     refetch,
@@ -46,13 +52,14 @@ export default function Extraction() {
     setRetryCount((prev) => prev + 1);
     setEvent("retry-process");
     await refetch();
+    startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
   };
 
-  const handleLookUp = async () => {
-    // setEvent("look-up");
-    // await refetch();
-  };
+  // const handleLookUp = async () => {
+  //   // setEvent("look-up");
+  //   // await refetch();
+  // };
 
   return (
     <div className="flex gap-6 h-screen overflow-hidden">
@@ -62,12 +69,12 @@ export default function Extraction() {
       {/* RIGHT SIDE (EXTRACTION PANEL) */}
       <div className="relative w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
         {/*  OVERLAY ONLY INSIDE RIGHT PANEL */}
-        {isAnyProcessing && (
+        {/* {isAnyProcessing && (
           <ProcessingOverlay
             title="Processing in Progress"
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
           />
-        )}
+        )} */}
 
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
@@ -80,7 +87,12 @@ export default function Extraction() {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-auto p-6">
-          {isLoading ? (
+          {isAnyProcessing ? (
+            <ProcessingOverlay
+              title="Processing in Progress"
+              description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+            />
+          ) : isLoading ? (
             <div className="flex justify-center items-center h-full">
               <Spin />
             </div>
@@ -94,13 +106,13 @@ export default function Extraction() {
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {data?.poNumbers?.length > 0 && (
+              {data?.poNumber?.length > 0 && (
                 <Col span={24}>
                   <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
                     <Text className="text-xs text-gray-500">PO Numbers</Text>
 
                     <div className="mt-2 text-sm text-gray-800 break-words">
-                      {data.poNumbers.filter(Boolean).join(", ") || "--"}
+                      {data.poNumber.filter(Boolean).join(", ") || "--"}
                     </div>
                   </div>
                 </Col>
@@ -129,7 +141,7 @@ export default function Extraction() {
         </div>
 
         {/* FOOTER */}
-        <div className="p-4 border-t bg-stepbgbody flex justify-between items-center">
+        <div className="p-4 border-t bg-stepbgbody flex justify-end items-center">
           <Button
             icon={<RotateCcw size={16} />}
             loading={loadingRetry}
@@ -140,11 +152,11 @@ export default function Extraction() {
             Retry Extraction
           </Button>
 
-          <ForwardButton
+          {/* <ForwardButton
             label="Look Up"
             onClick={handleLookUp}
             disabled={isAnyProcessing}
-          />
+          /> */}
         </div>
       </div>
     </div>

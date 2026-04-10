@@ -10,7 +10,7 @@ import type { RequestWithEvent } from "./common";
 //   response: {
 //     statusCode: number;
 //     body: {
-//       poNumbers: string[];
+//       poNumber: string[];
 //       data: T;
 //     };
 //   };
@@ -18,7 +18,7 @@ import type { RequestWithEvent } from "./common";
 export interface ApiResponse<T> {
   statusCode: number;
   body: {
-    poNumbers: string[];
+    poNumber: string[];
     data: T;
   };
 }

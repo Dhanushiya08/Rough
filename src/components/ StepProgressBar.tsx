@@ -33,6 +33,7 @@ function StepProgressBarInner() {
   const progress = useAppStore((s) => s.progress);
   const currentStep = useAppStore((s) => s.currentStep);
   const setCurrentStep = useAppStore((s) => s.setCurrentStep);
+  const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   console.log(currentStep);
   console.log(progress);
 
@@ -119,7 +120,15 @@ function StepProgressBarInner() {
               return (
                 <button
                   key={step.id}
-                  onClick={() => !disabled && goTo(step.id)}
+                  // onClick={() => !disabled && goTo(step.id)}
+                  onClick={() => {
+                    if (!disabled) {
+                      if (step.id < current) {
+                        setUserManualStep(true);
+                      }
+                      goTo(step.id);
+                    }
+                  }}
                   disabled={disabled}
                   title={
                     disabled

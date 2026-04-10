@@ -23,3 +23,19 @@
 .ant-checkbox-checked {
   background-color: theme("colors.primary");
 }
+._MBibI {
+  background-color: #f0f4f7 !important;
+}
+
+.tiff-container button:hover {
+  background-color: #f0f4f7 !important;
+  opacity: 1 !important;
+}
+.tiff-container div:hover {
+  background-color: #f0f4f7 !important;
+  opacity: 1 !important;
+}
+._1mIwz button:not(:disabled):hover {
+  background-color: #f0f4f7 !important;
+  opacity: 0.8 !important;
+}

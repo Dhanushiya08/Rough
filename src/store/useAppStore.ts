@@ -24,6 +24,9 @@ interface AppStore {
   pollingActive: boolean;
   setPollingActive: (v: boolean) => void;
 
+  userManualStep: boolean;
+  setUserManualStep: (val: boolean) => void;
+
   currentStep: string;
   setCurrentStep: (step: string) => void;
 
@@ -48,8 +51,12 @@ export const useAppStore = create<AppStore>((set) => ({
   pollingActive: false,
   setPollingActive: (v) => set({ pollingActive: v }),
 
+  userManualStep: false,
+  // setUserManualStep: (v) => set({ pollingActive: v }),
+  setUserManualStep: (v) => set({ userManualStep: v }),
+
   currentStep: "",
-  setCurrentStep: (step) => set({ currentStep: step }), 
+  setCurrentStep: (step) => set({ currentStep: step }),
 
   showStepper: false,
 

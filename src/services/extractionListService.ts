@@ -12,7 +12,7 @@ export const getExtractionList = async (
   file_id: string,
   state: GetExtractionListRequest["state"],
 ): Promise<{
-  poNumbers: string[];
+  poNumber: string[];
   data: ExtractionItem[];
 }> => {
   const payload: GetExtractionListRequest = {
@@ -36,7 +36,7 @@ export const getExtractionList = async (
   // if (!body) throw new Error("Invalid API response");
 
   return {
-    poNumbers: body.poNumbers ?? [],
+    poNumber: body.poNumber ?? [],
     data: body.data ?? [],
   };
 };
@@ -47,7 +47,7 @@ export const retryExtractionProcess = async (
   file_name: string,
   lang: string,
 ): Promise<{
-  poNumbers: string[];
+  poNumber: string[];
   data: ExtractionItem[];
 }> => {
   const payload: RetryExtractionRequest = {
@@ -71,7 +71,7 @@ export const retryExtractionProcess = async (
   }
 
   return {
-    poNumbers: body.poNumbers ?? [],
+    poNumber: body.poNumber ?? [],
     data: body.data ?? [],
   };
 };

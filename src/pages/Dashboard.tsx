@@ -1,12 +1,8 @@
 import { Table, Tag, Input, Select } from "antd";
-import {
-  useState,
-  useMemo,
-  // useEffect
-} from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Eye, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-// import { getTableData } from "../services/dashboardService";
+import { getTableData } from "../services/dashboardService";
 
 const { Option } = Select;
 
@@ -72,7 +68,7 @@ export default function Dashboard() {
     undefined,
   );
   const openStepper = useAppStore((s) => s.openStepper);
-  //   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const handleView = (record: DataType) => {
     openStepper(record.file_id, record.file_name, record.state);
   };
@@ -81,21 +77,29 @@ export default function Dashboard() {
   //     setData(mockResponse.body.data);
   //   }, []);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const res = await getTableData();
-  //       setData(res);
-  //     } catch (error) {
-  //       console.error(error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await getTableData();
+        console.log(res);
 
-  //   fetchData();
-  // }, []);
+        const normalized = res.map((item) => ({
+          ...item,
+          state: item.state.toLowerCase() as DataType["state"],
+        }));
+
+        setData(normalized);
+        // setData(res);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   //  Filtering logic
   const filteredData = useMemo(() => {
     return data.filter((item) => {
@@ -265,7 +269,7 @@ export default function Dashboard() {
         <Table
           columns={columns}
           dataSource={filteredData}
-          //   loading={loading}
+          loading={loading}
           rowKey="file_id"
           pagination={{ pageSize: 6 }}
           className="custom-ant-table rounded-lg"

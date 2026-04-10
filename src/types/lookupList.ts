@@ -13,7 +13,7 @@ export interface RetryLookupRequest {
   file_name: string;
   lang: string;
   data: {
-    poNumbers: string[];
+    poNumber: string[];
     data: LookupItem[];
   };
 }

@@ -36,6 +36,7 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
     { title: "Field", dataIndex: "label" },
     { title: "Extracted", dataIndex: "extractedValue" },
     { title: "SAP", dataIndex: "sapValue" },
+
     {
       title: "Action",
       render: (_, record) => {
@@ -51,29 +52,25 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
 
         return (
           <div className="flex gap-2">
-            <Button
-              size="small"
-              onClick={() => updateRow(record.key, "sap")}
-              className={
-                record.source === "sap"
-                  ? "!bg-primary !text-white"
-                  : "!bg-white"
-              }
-            >
-              Use SAP
-            </Button>
+            {record.source === "extracted" && (
+              <Button
+                size="small"
+                onClick={() => updateRow(record.key, "sap")}
+                className="!bg-white"
+              >
+                Use SAP
+              </Button>
+            )}
 
-            <Button
-              size="small"
-              onClick={() => updateRow(record.key, "extracted")}
-              className={
-                record.source === "extracted"
-                  ? "!bg-primary !text-white"
-                  : "!bg-white"
-              }
-            >
-              Use Extracted
-            </Button>
+            {record.source === "sap" && (
+              <Button
+                size="small"
+                onClick={() => updateRow(record.key, "extracted")}
+                className="!bg-white"
+              >
+                Use Extracted
+              </Button>
+            )}
           </div>
         );
       },

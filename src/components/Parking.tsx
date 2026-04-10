@@ -26,7 +26,7 @@ export default function Parking() {
   const lang = useAppStore((s) => s.lang);
 
   const [data, setData] = useState<ParkItem[]>([]);
-  const [poNumbers, setPoNumbers] = useState<string[]>([]);
+  const [poNumber, setpoNumber] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPark, setLoadingPark] = useState(false);
 
@@ -50,7 +50,7 @@ export default function Parking() {
       const body = res.data?.body;
 
       setData(body?.data || []);
-      setPoNumbers(body?.poNumbers || []);
+      setpoNumber(body?.poNumber || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -83,7 +83,7 @@ export default function Parking() {
         file_id: fileId,
         lang: lang,
         data: {
-          poNumbers,
+          poNumber,
           data,
         },
       });
@@ -97,7 +97,7 @@ export default function Parking() {
   };
 
   return (
-    <div className="flex gap-6 h-screen">
+    <div className="flex gap-6">
       {/* LEFT PDF */}
       <PdfPreview />
 

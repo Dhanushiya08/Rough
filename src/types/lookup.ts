@@ -18,7 +18,7 @@ export type LookupEvent = "lookup-trigger" | "lookup-change" | "sap-trigger";
 export interface ApiResponse<T> {
   statusCode: number;
   body: {
-    poNumbers: string[];
+    poNumber: string[];
     data: T;
   };
 }
@@ -41,7 +41,7 @@ export interface RetryLookupRequest {
   state: "lookup";
   file_name: string;
   data: {
-    poNumbers: string[];
+    poNumber: string[];
     data: LookupItem[];
   };
 }
