@@ -35,12 +35,39 @@ export const LineItemsTable = ({
     },
   };
 
-  const columns = Object.keys(data[0] || {}).map((key) => ({
-    title: key.toUpperCase(),
-    dataIndex: key,
-    key,
-  }));
+  // const columns = Object.keys(data[0] || {}).map((key) => ({
+  //   title: key.toUpperCase(),
+  //   dataIndex: key,
+  //   key,
+  // }));
 
+  const columns = [
+    {
+      title: "Short Text",
+      dataIndex: "shortText",
+      key: "shortText",
+    },
+    {
+      title: "Linked PO",
+      dataIndex: "linkedPo",
+      key: "linkedPo",
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Unit Price",
+      dataIndex: "unitPrice",
+      key: "unitPrice",
+    },
+  ];
   return (
     <Table
       rowKey={(_, index) => `${selectedPO}-${index}`}

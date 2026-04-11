@@ -57,8 +57,7 @@ export const POSelector: React.FC<Props> = ({
                 : "bg-white hover:bg-gray-50"
             }`}
           >
-            <p className="text-xs text-gray-400">PO NUMBER</p>
-
+            {/* <p className="text-xs text-gray-400">PO NUMBER</p> */}
             {isEditing ? (
               <div className="flex items-center gap-1 mt-1">
                 <input

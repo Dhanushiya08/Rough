@@ -11,7 +11,7 @@ export function StepProvider({
   const [current, setCurrent] = useState<number>(1);
 
   const goNext = () => setCurrent((c) => Math.min(c + 1, totalSteps));
-  const goPrev = () => setCurrent((c) => Math.max(c - 1, 1));
+  const goPrev = () => setCurrent((c) => Math.max(c - 1, 2));
   const goTo = (step: number) => setCurrent(step);
 
   return (

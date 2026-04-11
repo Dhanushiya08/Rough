@@ -2,6 +2,10 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import { TIFFViewer } from "react-tiff";
 import "react-tiff/dist/index.css";
 
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 5;
+const ZOOM_STEP = 0.25;
+
 type TiffControls = {
   zoomIn: () => void;
   zoomOut: () => void;
@@ -14,15 +18,32 @@ interface Props {
   onZoomChange?: (controls: TiffControls) => void;
 }
 
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 10;
-const ZOOM_STEP = 0.25;
-
 export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+
+  const clampPan = (x: number, y: number, currentScale = scale) => {
+    if (!containerRef.current || !contentRef.current) return { x, y };
+
+    const container = containerRef.current;
+    const content = contentRef.current;
+
+    const scaledWidth = content.offsetWidth * currentScale;
+    const scaledHeight = content.offsetHeight * currentScale;
+
+    const maxX = Math.max(0, (scaledWidth - container.clientWidth) / 2);
+    const maxY = Math.max(0, (scaledHeight - container.clientHeight) / 2);
+
+    return {
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y)),
+    };
+  };
 
   const zoomIn = () => setScale((s) => Math.min(MAX_SCALE, s + ZOOM_STEP));
   const zoomOut = () => setScale((s) => Math.max(MIN_SCALE, s - ZOOM_STEP));
@@ -32,6 +53,7 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
   };
 
   useEffect(() => {
+    setPan((prev) => clampPan(prev.x, prev.y, scale));
     onZoomChange?.({ zoomIn, zoomOut, reset, scale });
   }, [scale]);
 
@@ -48,16 +70,20 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    setPan({
+
+    const newPan = {
       x: e.clientX - dragStart.current.x,
       y: e.clientY - dragStart.current.y,
-    });
+    };
+
+    setPan(clampPan(newPan.x, newPan.y));
   };
 
   const stopDrag = () => setIsDragging(false);
 
   return (
     <div
+      ref={containerRef}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -67,6 +93,7 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
       style={{ cursor: isDragging ? "grabbing" : "grab" }}
     >
       <div
+        ref={contentRef}
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
           transformOrigin: "center",

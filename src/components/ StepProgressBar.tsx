@@ -182,7 +182,7 @@ function StepProgressBarInner() {
         </div>
       </div>
       <div className="h-[90%] flex flex-col justify-between px-10 py-6">
-        <div className="flex-1 overflow-auto w-full">
+        <div className="flex-1 overflow-auto w-full h-full">
           {steps[current - 1].component}
         </div>
       </div>

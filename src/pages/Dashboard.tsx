@@ -14,8 +14,6 @@ interface DataType {
   lang: "english" | "bahasa" | "mandarin";
 }
 
-
-
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -31,8 +29,6 @@ export default function Dashboard() {
   const handleView = (record: DataType) => {
     openStepper(record.file_id, record.file_name, record.state);
   };
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,9 +86,18 @@ export default function Dashboard() {
 
   const columns = [
     {
-      title: "File ID",
-      dataIndex: "file_id",
+      title: "Created At",
+      dataIndex: "created_at",
       width: 120,
+      render: (created_at: string) => {
+        if (!created_at) return "-";
+        const date = new Date(created_at.replace(" ", "T"));
+        if (isNaN(date.getTime())) return "-";
+        return new Intl.DateTimeFormat("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(date);
+      },
     },
     {
       title: "File Name",
@@ -108,6 +113,7 @@ export default function Dashboard() {
         <Tag
           color={langColorMap[lang]}
           className="capitalize px-3 py-1 rounded-full"
+          variant={"outlined"}
         >
           {lang}
         </Tag>
@@ -120,6 +126,7 @@ export default function Dashboard() {
         <Tag
           color={stateColorMap[state]}
           className="capitalize px-3 py-1 rounded-full"
+          variant={"outlined"}
         >
           {state}
         </Tag>
@@ -222,7 +229,7 @@ export default function Dashboard() {
       </div>
 
       {/*  TABLE */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
+      <div className="bg-white rounded-xl shadow-sm p-4 overflow-x-scroll">
         <Table
           columns={columns}
           dataSource={filteredData}

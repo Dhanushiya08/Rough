@@ -8,6 +8,11 @@
   font-weight: 600;
 }
 
+.custom-ant-table {
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
 .custom-ant-table .ant-table-tbody > tr > td {
   background-color: #ffffff;
 }
@@ -24,7 +29,7 @@
   background-color: theme("colors.primary");
 }
 ._MBibI {
-  background-color: #f0f4f7 !important;
+  background-color: #e5e7eb !important;
 }
 
 .tiff-container button:hover {
@@ -36,13 +41,17 @@
   opacity: 1 !important;
 }
 ._1mIwz button:not(:disabled):hover {
-  background-color: #f0f4f7 !important;
+  background-color: #e5e7eb !important;
   opacity: 0.8 !important;
 }
 
 ._1mIwz ._MBibI button {
   background-color: #f0f4f7 !important;
   color: theme("colors.primary") !important;
+}
+
+._1mIwz ._MiYlF {
+  color: #000 !important;
 }
 
 ._1mIwz ._2Is-l button {
@@ -59,7 +68,8 @@
   background-color: theme("colors.primary");
   border-color: theme("colors.primary");
 }
-.ant-radio-checked .ant-radio-inner {
+.ant-radio-checked .ant-radio-inner,
+.ant-radio-wrapper .ant-radio-checked {
   border-color: theme("colors.primary") !important ;
   background-color: theme("colors.primary") !important;
 }

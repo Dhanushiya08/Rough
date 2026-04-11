@@ -44,14 +44,13 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
 
         return (
           <div className="flex items-center gap-2">
-            {record.extractedValue || "--"}
-
             {!isSame && (
               <Radio
                 checked={record.source === "extracted"}
                 onChange={() => updateRow(record.key, "extracted")}
               />
             )}
+            {record.extractedValue || "--"}
           </div>
         );
       },

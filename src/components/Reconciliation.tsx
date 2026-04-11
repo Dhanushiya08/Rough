@@ -209,7 +209,7 @@ export default function Reconciliation() {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 h-full">
       <PdfPreview />
 
       <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
@@ -274,7 +274,7 @@ export default function Reconciliation() {
           {poList?.length > 0 && (
             <>
               <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-                <File size={18} /> PO Data
+                <File size={18} /> PO Number(s)
               </h2>
 
               <POSelector
