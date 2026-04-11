@@ -10,10 +10,12 @@ import Reconciliation from "./Reconciliation";
 import Parking from "./Parking";
 import type { Step } from "../types/common";
 
-const stepProgressKey: Record<
+type StepProgressKeyMap = Record<
   number,
   keyof NonNullable<ReturnType<typeof useAppStore.getState>["progress"]> | null
-> = {
+>;
+
+const stepProgressKey: StepProgressKeyMap = {
   1: null,
   2: "extract",
   3: "lookup",
@@ -34,77 +36,74 @@ function StepProgressBarInner() {
   const currentStep = useAppStore((s) => s.currentStep);
   const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
-  console.log(currentStep);
-  console.log(progress);
 
-  // const isStepDisabled = (stepId: number): boolean => {
-  //   const key = stepProgressKey[stepId];
-  //   if (!key) return false; // Upload always enabled
-  //   if (!progress) return stepId !== 1; // Before polling starts, lock all except upload
-
-  //   const status = progress[key];
-  //   // Disable if currently "processing" — user must wait
-  //   return status === "processing";
-  // };
   const isStepDisabled = (stepId: number): boolean => {
     const key = stepProgressKey[stepId];
-
-    // Step 1 (Upload) always allowed
     if (!key) return false;
-
-    // Before progress → only upload allowed
     if (!progress) return stepId !== 1;
-
     const status = progress[key];
-
-    //  Block pending (cannot open page)
     if (status === "pending") return true;
-
-    //  Allow everything else (processing, waiting, completed, failed)
     return false;
   };
 
   const steps: Step[] = [
-    {
-      id: 1,
-      label: "Upload",
-      component: <Uploading />,
-    },
-    {
-      id: 2,
-      label: "Extraction",
-      component: <Extraction />,
-    },
+    { id: 1, label: "Upload", component: <Uploading /> },
+    { id: 2, label: "Extraction", component: <Extraction /> },
     { id: 3, label: "Lookup", component: <Lookup /> },
-    {
-      id: 4,
-      label: "Reconciliation",
-      component: <Reconciliation />,
-    },
+    { id: 4, label: "Reconciliation", component: <Reconciliation /> },
     { id: 5, label: "Parking", component: <Parking /> },
   ];
 
+  const totalSteps = steps.length;
+
+  const canGoPrev = current > 1 && !isStepDisabled(current - 1);
+  const canGoNext = current < totalSteps && !isStepDisabled(current + 1);
+
+  const handlePrev = () => {
+    if (canGoPrev) {
+      setUserManualStep(true);
+      goTo(current - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (canGoNext) {
+      goTo(current + 1);
+    }
+  };
+
   useEffect(() => {
     if (!currentStep) return;
-
     const stepNumber = stepMap[currentStep];
-    console.log(stepNumber);
-
     if (stepNumber && stepNumber !== current) {
       goTo(stepNumber);
-
       setCurrentStep("");
     }
   }, [currentStep]);
+
   return (
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
-        <div className="flex justify-center w-full">
-          <div className="flex items-center justify-between relative w-full max-w-4xl">
+        <div className="flex items-center justify-between w-full">
+          <button
+            onClick={handlePrev}
+            disabled={!canGoPrev}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              canGoPrev
+                ? "text-primary border border-primary hover:bg-primary hover:text-white"
+                : "text-gray-300 border border-gray-200 cursor-not-allowed"
+            }`}
+          >
+            <span className="text-base leading-none">&lt;</span>
+            Prev
+          </button>
+
+          {/*  CENTER: Step Bar */}
+          <div className="flex items-center justify-between relative w-full max-w-4xl mx-6">
             {/* Background line */}
             <div className="absolute top-4 left-0 right-0 h-px bg-gray-200" />
 
-            {/* Progress fill line */}
+            {/* Progress line */}
             <div
               className="absolute top-4 left-0 h-px bg-primary transition-all duration-500"
               style={{
@@ -120,21 +119,13 @@ function StepProgressBarInner() {
               return (
                 <button
                   key={step.id}
-                  // onClick={() => !disabled && goTo(step.id)}
                   onClick={() => {
                     if (!disabled) {
-                      if (step.id < current) {
-                        setUserManualStep(true);
-                      }
+                      if (step.id < current) setUserManualStep(true);
                       goTo(step.id);
                     }
                   }}
                   disabled={disabled}
-                  title={
-                    disabled
-                      ? "This step is currently processing..."
-                      : undefined
-                  }
                   className={`relative z-10 flex flex-col items-center gap-2 ${
                     disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
                   }`}
@@ -142,11 +133,9 @@ function StepProgressBarInner() {
                   <div
                     className={[
                       "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
-                      isCompleted
+                      isCompleted || isActive
                         ? "bg-primary border-primary text-white"
-                        : isActive
-                          ? "bg-primary border-primary text-white"
-                          : "bg-[#D9E4EA] border-gray-300 text-gray-400",
+                        : "bg-[#D9E4EA] border-gray-300 text-gray-400",
                     ].join(" ")}
                   >
                     {isCompleted ? "✓" : step.id}
@@ -168,9 +157,21 @@ function StepProgressBarInner() {
               );
             })}
           </div>
+
+          <button
+            onClick={handleNext}
+            disabled={!canGoNext}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              canGoNext
+                ? "text-primary border border-primary hover:bg-primary hover:text-white"
+                : "text-gray-300 border border-gray-200 cursor-not-allowed"
+            }`}
+          >
+            Next
+            <span className="text-base leading-none">&gt;</span>
+          </button>
         </div>
       </div>
-
       <div className="h-[90%] flex flex-col justify-between px-10 py-6">
         <div className="flex-1 overflow-auto w-full">
           {steps[current - 1].component}

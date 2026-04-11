@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button } from "antd";
+import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CircleCheck } from "lucide-react";
+import { Radio } from "antd";
 
 import type { ReconciliationItem } from "../types/reconciliation";
 
@@ -36,7 +37,6 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
     { title: "Field", dataIndex: "label" },
     { title: "Extracted", dataIndex: "extractedValue" },
     { title: "SAP", dataIndex: "sapValue" },
-
     {
       title: "Action",
       render: (_, record) => {
@@ -51,27 +51,16 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
         }
 
         return (
-          <div className="flex gap-2">
-            {record.source === "extracted" && (
-              <Button
-                size="small"
-                onClick={() => updateRow(record.key, "sap")}
-                className="!bg-white"
-              >
-                Use SAP
-              </Button>
-            )}
-
-            {record.source === "sap" && (
-              <Button
-                size="small"
-                onClick={() => updateRow(record.key, "extracted")}
-                className="!bg-white"
-              >
-                Use Extracted
-              </Button>
-            )}
-          </div>
+          <Radio.Group
+            value={record.source}
+            onChange={(e) => updateRow(record.key, e.target.value)}
+            optionType="button"
+            buttonStyle="solid"
+            size="small"
+          >
+            <Radio.Button value="extracted">Extracted</Radio.Button>
+            <Radio.Button value="sap">SAP</Radio.Button>
+          </Radio.Group>
         );
       },
     },
