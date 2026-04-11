@@ -3,7 +3,7 @@ import { Row, Col, Typography, Input, Spin, Button } from "antd";
 import { File, RotateCcw } from "lucide-react";
 import PdfPreview from "./PdfPreview";
 import ForwardButton from "./ForwardButton";
-import BackButton from "./BackButton";
+// import BackButton from "./BackButton";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import apiClient from "../services/apiClient";
@@ -112,12 +112,12 @@ export default function Parking() {
         )}
 
         {/* HEADER */}
-        <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
+        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
             <File size={18} />
-            Park Data
+            Parking Data in SAP
           </h2>
-          <BackButton />
+          {/* <BackButton /> */}
         </div>
 
         {/* CONTENT */}

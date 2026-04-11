@@ -14,48 +14,7 @@ interface DataType {
   lang: "english" | "bahasa" | "mandarin";
 }
 
-// const mockResponse = {
-//   statusCode: 200,
-//   body: {
-//     data: [
-//       {
-//         file_id: "001",
-//         file_name: "190000058.pdf",
-//         state: "extract",
-//         status: "processing",
-//         lang: "english",
-//       },
-//       {
-//         file_id: "002",
-//         file_name: "190000084.pdf",
-//         state: "sap",
-//         status: "completed",
-//         lang: "bahasa",
-//       },
-//       {
-//         file_id: "003",
-//         file_name: "190000099.pdf",
-//         state: "lookup",
-//         status: "waiting",
-//         lang: "mandarin",
-//       },
-//       {
-//         file_id: "004",
-//         file_name: "190000120.pdf",
-//         state: "park",
-//         status: "failed",
-//         lang: "english",
-//       },
-//       {
-//         file_id: "005",
-//         file_name: "190000130.pdf",
-//         state: "extract",
-//         status: "pending",
-//         lang: "bahasa",
-//       },
-//     ],
-//   },
-// };
+
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
@@ -73,9 +32,7 @@ export default function Dashboard() {
     openStepper(record.file_id, record.file_name, record.state);
   };
 
-  //   useEffect(() => {
-  //     setData(mockResponse.body.data);
-  //   }, []);
+
 
   useEffect(() => {
     const fetchData = async () => {

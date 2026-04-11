@@ -3,7 +3,7 @@ import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
 import PdfPreview from "./PdfPreview";
 // import ForwardButton from "./ForwardButton";
-import BackButton from "./BackButton";
+// import BackButton from "./BackButton";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import { useLookup } from "../hooks/useLookup";
@@ -90,12 +90,12 @@ export default function Lookup() {
         )}
 
         {/* HEADER */}
-        <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
+        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
             <File size={18} />
             Lookup Data
           </h2>
-          <BackButton />
+          {/* <BackButton /> */}
         </div>
 
         {/* CONTENT */}

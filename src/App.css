@@ -42,5 +42,24 @@
 
 ._1mIwz ._MBibI button {
   background-color: #f0f4f7 !important;
-  color: #002d62 !important;
+  color: theme("colors.primary") !important;
+}
+
+._1mIwz ._2Is-l button {
+  background-color: #f0f4f7 !important;
+  color: theme("colors.primary") !important;
+}
+.ant-spin .ant-spin-dot-holder {
+  color: theme("colors.primary") !important;
+}
+.ant-spin {
+  color: theme("colors.primary") !important;
+}
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: theme("colors.primary");
+  border-color: theme("colors.primary");
+}
+.ant-radio-checked .ant-radio-inner {
+  border-color: theme("colors.primary") !important ;
+  background-color: theme("colors.primary") !important;
 }

@@ -1,11 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-// import { TIFFViewer } from "react-tiff";
-// import pdfFile from "../assets/Invoice_Extraction_Rules.docx.pdf";
-// import tiffFile from "../assets/file_example_TIFF_1MB.tiff";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import "react-tiff/dist/index.css";
 import { useMutation } from "@tanstack/react-query";
 import { fetchFileUrl } from "../services/extractionService";
 import toast from "react-hot-toast";
@@ -19,7 +15,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
 ).toString();
-
+type TiffControls = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  reset: () => void;
+  scale: number;
+};
 export default function PdfPreview() {
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1);
@@ -27,7 +28,7 @@ export default function PdfPreview() {
   const [fileType, setFileType] = useState<string>("");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
-
+  const [tiffControls, setTiffControls] = useState<TiffControls | null>(null);
   const pages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => i + 1),
     [numPages],
@@ -56,6 +57,7 @@ export default function PdfPreview() {
 
   const canZoomOut = scale > 0.5;
   const canZoomIn = scale < 3;
+  const tiffScale = tiffControls?.scale ?? 1;
   const fileMutation = useMutation({
     mutationFn: fetchFileUrl,
 
@@ -94,27 +96,48 @@ export default function PdfPreview() {
         {/* Premium Controls */}
         <div className="flex items-center gap-2 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-inner border">
           <button
-            disabled={!canZoomOut}
-            onClick={() => setScale((prev) => Math.max(prev - 0.2, 0.5))}
+            disabled={fileType === "pdf" ? !canZoomOut : tiffScale <= 0.1}
+            onClick={() => {
+              if (fileType === "pdf") {
+                setScale((prev) => Math.max(prev - 0.2, 0.5));
+              } else {
+                tiffControls?.zoomOut();
+              }
+            }}
             className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90 disabled:opacity-40"
           >
             <ZoomOut size={16} />
           </button>
-
+          {/* SCALE */}
           <span className="text-xs font-semibold text-gray-700 w-12 text-center">
-            {Math.round(scale * 100)}%
+            {fileType === "pdf"
+              ? Math.round(scale * 100)
+              : Math.round((tiffControls?.scale || 1) * 100)}
+            %
           </span>
-
+          {/* ZOOM IN */}
           <button
-            disabled={!canZoomIn}
-            onClick={() => setScale((prev) => Math.min(prev + 0.2, 3))}
+            disabled={fileType === "pdf" ? !canZoomIn : tiffScale >= 10}
+            onClick={() => {
+              if (fileType === "pdf") {
+                setScale((prev) => Math.min(prev + 0.2, 3));
+              } else {
+                tiffControls?.zoomIn();
+              }
+            }}
             className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90 disabled:opacity-40"
           >
             <ZoomIn size={16} />
           </button>
-
+          {/* RESET */}
           <button
-            onClick={() => setScale(1)}
+            onClick={() => {
+              if (fileType === "pdf") {
+                setScale(1);
+              } else {
+                tiffControls?.reset();
+              }
+            }}
             className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
           >
             <RotateCcw size={16} />
@@ -141,7 +164,7 @@ export default function PdfPreview() {
         {/* TIFF */}
         {
           fileType === "tiff" && fileUrl && (
-            <ZoomableTIFFViewer tiff={fileUrl} />
+            <ZoomableTIFFViewer tiff={fileUrl} onZoomChange={setTiffControls} />
           )
           // <TIFFViewer tiff={fileUrl} />
         }

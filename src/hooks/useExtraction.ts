@@ -10,12 +10,11 @@ export function useExtraction(
   fileId: string,
   fileName: string,
   event: ExtractionEvent,
-  retryCount: number = 0,
   enabled: boolean = true,
 ) {
   const lang = useAppStore((s) => s.lang);
   return useQuery({
-    queryKey: ["extraction", fileId, event, retryCount],
+    queryKey: ["extraction", fileId, event],
     queryFn: () => {
       if (event === "get-list") {
         return getExtractionList(fileId, "extract");

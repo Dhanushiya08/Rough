@@ -34,16 +34,25 @@ function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
   const currentStep = useAppStore((s) => s.currentStep);
-  const setCurrentStep = useAppStore((s) => s.setCurrentStep);
+  // const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
 
+  // const isStepDisabled = (stepId: number): boolean => {
+  //   const key = stepProgressKey[stepId];
+  //   if (!key) return false;
+  //   if (!progress) return stepId !== 1;
+  //   const status = progress[key];
+  //   if (status === "pending") return true;
+  //   return false;
+  // };
+  const maxAllowedStep = stepMap[currentStep] ?? 5;
+
   const isStepDisabled = (stepId: number): boolean => {
+    if (stepId > maxAllowedStep) return true;
     const key = stepProgressKey[stepId];
     if (!key) return false;
     if (!progress) return stepId !== 1;
-    const status = progress[key];
-    if (status === "pending") return true;
-    return false;
+    return progress[key] === "pending";
   };
 
   const steps: Step[] = [
@@ -77,7 +86,7 @@ function StepProgressBarInner() {
     const stepNumber = stepMap[currentStep];
     if (stepNumber && stepNumber !== current) {
       goTo(stepNumber);
-      setCurrentStep("");
+      // setCurrentStep("");
     }
   }, [currentStep]);
 

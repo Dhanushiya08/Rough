@@ -21,7 +21,7 @@ export default function Mainpage() {
           <FloatButton
             icon={<ArrowLeft className="text-primary" size={18} />}
             onClick={closeStepper}
-            tooltip="Back"
+            tooltip="Back to Dashboard"
             style={{ left: 24, bottom: 24 }}
           />
         </>

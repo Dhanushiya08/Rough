@@ -9,7 +9,7 @@ import type {
   ReconciliationItem,
 } from "../types/common";
 import ForwardButton from "./ForwardButton";
-import BackButton from "./BackButton";
+// import BackButton from "./BackButton";
 import ReconciliationTable from "./Reconciliationtable";
 import { LineItemsTable } from "./LineItemTable";
 import { POSelector } from "./POSelector";
@@ -149,7 +149,51 @@ export default function Reconciliation() {
       setRetryLoading(false);
     }
   };
+  const handleParking = async () => {
+    try {
+      setRetryLoading(true);
 
+      const payload = {
+        event: "update-data",
+        file_id: fileId,
+        file_name: fileName,
+        state: "sap",
+        data: {
+          poNumbers: poList,
+
+          data: data.map((item) => ({
+            key: item.key,
+            value: item.value,
+          })),
+
+          reconcileData: reconcileData.map((item) => ({
+            key: item.key,
+            value: item.value,
+            source: item.source,
+          })),
+
+          lineItems: items.map((item, index) => {
+            const rowKey = `${selectedPO}-${index}`;
+
+            return {
+              ...item,
+              selected: (selectionMap[selectedPO] || []).includes(rowKey),
+            };
+          }),
+        },
+      };
+
+      console.log(" Parking Payload:", payload);
+
+      await apiClient.post(API_URL, payload);
+
+      startPolling(fileId, goTo, () => current);
+    } catch (err) {
+      console.error(" Parking API failed:", err);
+    } finally {
+      setRetryLoading(false);
+    }
+  };
   const currentData = items;
   console.log(currentData);
   const handlePOEdit = (oldPO: string, newPO: string) => {
@@ -177,12 +221,12 @@ export default function Reconciliation() {
         )}
 
         {/* HEADER */}
-        <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
+        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-            <File size={18} /> Extracted Data
+            <File size={18} /> SAP Reconciliation Data
           </h2>
 
-          <BackButton />
+          {/* <BackButton /> */}
         </div>
 
         {/* CONTENT */}
@@ -258,7 +302,7 @@ export default function Reconciliation() {
             Retry Fetch SAP Data
           </Button>
 
-          <ForwardButton label=" Parking" />
+          <ForwardButton label="Parking" onClick={handleParking} />
         </div>
       </div>
     </div>

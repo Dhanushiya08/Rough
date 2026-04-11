@@ -13,12 +13,14 @@ interface Progress {
 }
 
 const getTargetStep = (progress: Progress): number => {
-  if (progress.park === "processing" || progress.park === "completed") return 5;
-  if (progress.sap === "processing" || progress.sap === "completed") return 4;
-  if (progress.lookup === "processing" || progress.lookup === "completed")
-    return 3;
-  if (progress.extract === "processing" || progress.extract === "completed")
-    return 2;
+  if (progress.park === "processing") return 5;
+  if (progress.sap === "processing") return 4;
+  if (progress.lookup === "processing") return 3;
+  if (progress.extract === "processing") return 2;
+  if (progress.park === "completed") return 5;
+  if (progress.sap === "completed") return 4;
+  if (progress.lookup === "completed") return 3;
+  if (progress.extract === "completed") return 2;
   return 1;
 };
 
@@ -54,7 +56,6 @@ export function usePollDocumentStatus() {
     getCurrent: () => number,
   ) => {
     stopPolling();
-
     setPollingActive(true);
     lastAutoStepRef.current = 0;
 
@@ -80,29 +81,33 @@ export function usePollDocumentStatus() {
           return;
         }
 
+        const targetStep = getTargetStep(progress);
+        const current = getCurrent();
+        const userManualStep = useAppStore.getState().userManualStep;
+
+        // Always auto-navigate unless user manually went back
+        if (!userManualStep && current !== targetStep) {
+          lastAutoStepRef.current = targetStep;
+          goTo(targetStep);
+        }
+
         if (!isAnyProcessing(progress)) {
           stopPolling();
 
           if (isAllCompleted(progress)) {
             toast.success("Processing completed");
+            // Move to last completed step only if user is not manually browsing
+            if (!userManualStep) {
+              goTo(targetStep);
+            }
           }
           return;
         }
 
-        const targetStep = getTargetStep(progress);
-        const current = getCurrent();
-        const userManualStep = useAppStore.getState().userManualStep;
-
-        if (targetStep !== lastAutoStepRef.current) {
+        // Track last auto step to avoid redundant navigation
+        if (targetStep !== lastAutoStepRef.current && !userManualStep) {
           lastAutoStepRef.current = targetStep;
-          useAppStore.getState().setUserManualStep(false);
-          if (current !== targetStep) {
-            goTo(targetStep);
-          }
-        } else if (!userManualStep) {
-          if (current !== targetStep) {
-            goTo(targetStep);
-          }
+          goTo(targetStep);
         }
       } catch {
         stopPolling();

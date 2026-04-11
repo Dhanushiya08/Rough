@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Row, Col, Typography, Button, Spin, Alert } from "antd";
 import { RotateCcw, File } from "lucide-react";
 import PdfPreview from "./PdfPreview";
-import BackButton from "./BackButton";
+// import BackButton from "./BackButton";
 // import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
@@ -27,7 +27,7 @@ export default function Extraction() {
   const pollingActive = useAppStore((s) => s.pollingActive);
 
   const [event, setEvent] = useState<ExtractionEvent>("get-list");
-  const [retryCount, setRetryCount] = useState(0);
+  // const [retryCount, setRetryCount] = useState(0);
   const [loadingRetry, setLoadingRetry] = useState(false);
   const { startPolling } = usePollDocumentStatus();
   const { current, goTo } = useStep();
@@ -44,22 +44,21 @@ export default function Extraction() {
     isLoading,
     error,
     refetch,
-  } = useExtraction(fileId, fileName, event, retryCount);
+  } = useExtraction(fileId, fileName, event);
   console.log(data);
 
   const handleRetry = async () => {
     setLoadingRetry(true);
-    setRetryCount((prev) => prev + 1);
     setEvent("retry-process");
     await refetch();
     startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
   };
-
-  // const handleLookUp = async () => {
-  //   // setEvent("look-up");
-  //   // await refetch();
-  // };
+  useEffect(() => {
+    if (progress?.extract === "completed") {
+      refetch();
+    }
+  }, [progress?.extract]);
 
   return (
     <div className="flex gap-6 h-screen overflow-hidden">
@@ -77,12 +76,12 @@ export default function Extraction() {
         )} */}
 
         {/* HEADER */}
-        <div className="flex justify-between items-center p-6 border-b bg-stepbgheader">
+        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
             <File size={18} className="text-primary" />
             Extracted Data
           </h2>
-          <BackButton />
+          {/* <BackButton /> */}
         </div>
 
         {/* CONTENT */}

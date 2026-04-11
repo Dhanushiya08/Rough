@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Table } from "antd";
+import { Table, Radio } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CircleCheck } from "lucide-react";
-import { Radio } from "antd";
 
 import type { ReconciliationItem } from "../types/reconciliation";
 
@@ -34,33 +33,52 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
   };
 
   const columns: ColumnsType<ReconciliationItem> = [
-    { title: "Field", dataIndex: "label" },
-    { title: "Extracted", dataIndex: "extractedValue" },
-    { title: "SAP", dataIndex: "sapValue" },
     {
-      title: "Action",
+      title: "Field",
+      dataIndex: "label",
+    },
+    {
+      title: "Extracted",
+      render: (_, record) => {
+        const isSame = record.extractedValue === record.sapValue;
+
+        return (
+          <div className="flex items-center gap-2">
+            {record.extractedValue || "--"}
+
+            {!isSame && (
+              <Radio
+                checked={record.source === "extracted"}
+                onChange={() => updateRow(record.key, "extracted")}
+              />
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: "SAP",
       render: (_, record) => {
         const isSame = record.extractedValue === record.sapValue;
 
         if (isSame) {
           return (
             <div className="flex items-center gap-2 text-primary">
-              <CircleCheck size={16} /> Matched
+              {record.sapValue || "--"}
+              <CircleCheck size={16} />
             </div>
           );
         }
 
         return (
-          <Radio.Group
-            value={record.source}
-            onChange={(e) => updateRow(record.key, e.target.value)}
-            optionType="button"
-            buttonStyle="solid"
-            size="small"
-          >
-            <Radio.Button value="extracted">Extracted</Radio.Button>
-            <Radio.Button value="sap">SAP</Radio.Button>
-          </Radio.Group>
+          <div className="flex items-center gap-2">
+            {record.sapValue || "--"}
+
+            <Radio
+              checked={record.source === "sap"}
+              onChange={() => updateRow(record.key, "sap")}
+            />
+          </div>
         );
       },
     },
