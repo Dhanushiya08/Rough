@@ -213,7 +213,7 @@ function StepProgressBarInner() {
             </div>
           ) : (
             <div className="flex h-full gap-4 overflow-hidden">
-              <div className="w-1/2 min-w-0 h-full shrink-0">
+              <div className="w-1/2 min-w-0 h-full h-screen shrink-0">
                 <PdfPreview />
               </div>
               <div className="w-1/2 min-w-0 h-full overflow-auto shrink-0">

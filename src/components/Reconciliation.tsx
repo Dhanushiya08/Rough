@@ -226,14 +226,38 @@ export default function Reconciliation() {
   };
   const currentData = items;
   console.log(currentData);
+  // const handlePOEdit = (oldPO: string, newPO: string) => {
+  //   setIsDirty(true);
+  //   setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
+  // };
   const handlePOEdit = (oldPO: string, newPO: string) => {
     setIsDirty(true);
+
     setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
+
+    setItemsByPO((prev) => {
+      const updated = { ...prev };
+      if (updated[oldPO]) {
+        updated[newPO] = updated[oldPO];
+        delete updated[oldPO];
+      }
+      return updated;
+    });
+    setSelectionMap((prev) => {
+      const updated = { ...prev };
+      if (updated[oldPO]) {
+        updated[newPO] = updated[oldPO].map((key) =>
+          key.replace(`${oldPO}-`, `${newPO}-`),
+        );
+        delete updated[oldPO];
+      }
+      return updated;
+    });
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="w-full flex justify-center items-center h-full">
         <Spin />
       </div>
     );
@@ -332,10 +356,12 @@ export default function Reconciliation() {
             onChange={setSelectionMap}
           />
         )} */}
+
         {currentData?.length > 0 && (
           <LineItemsTable
             data={(selectedPO && itemsByPO[selectedPO]) || currentData}
             selectedPO={selectedPO}
+            selectionMap={selectionMap} // 👈 pass parent state
             onChange={setSelectionMap}
           />
         )}

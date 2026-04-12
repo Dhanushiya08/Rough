@@ -104,7 +104,7 @@ export default function Lookup() {
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
           />
         ) : isLoading ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex justify-center items-center h-full w-full">
             <Spin />
           </div>
         ) : error ? (

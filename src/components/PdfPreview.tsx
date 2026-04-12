@@ -70,7 +70,10 @@ export default function PdfPreview() {
   console.log(fileUrl, fileType);
 
   return (
-    <div className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden">
+    <div
+      className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
+      style={{ minHeight: 0 }}
+    >
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
@@ -136,6 +139,7 @@ export default function PdfPreview() {
       <div
         ref={containerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-3 min-h-0"
+        style={{ height: 0 }}
       >
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (
