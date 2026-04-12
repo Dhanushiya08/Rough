@@ -65,14 +65,15 @@ export default function Extraction() {
     setLoadingRetry(false);
   };
 
+  
   useEffect(() => {
-    if (!pollingActive) return;
+    // if (!pollingActive) return;
 
     if (progress?.extract === "completed" && !hasRefetchedRef.current) {
       hasRefetchedRef.current = true;
       refetch();
     }
-  }, [progress?.extract, pollingActive]);
+  }, [progress?.extract]);
 
   return (
     <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
