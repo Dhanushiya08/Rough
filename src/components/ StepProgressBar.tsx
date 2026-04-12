@@ -1,5 +1,5 @@
 // components/StepProgressBar.tsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
 import { useAppStore } from "../store/useAppStore";
@@ -24,23 +24,26 @@ const stepProgressKey: StepProgressKeyMap = {
   4: "sap",
   5: "park",
 };
-const stepMap: Record<string, number> = {
-  upload: 1,
-  extract: 2,
-  lookup: 3,
-  sap: 4,
-  park: 5,
-};
+// const stepMap: Record<string, number> = {
+//   upload: 1,
+//   extract: 2,
+//   lookup: 3,
+//   sap: 4,
+//   park: 5,
+// };
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
-  const currentStep = useAppStore((s) => s.currentStep);
+  // const currentStep = useAppStore((s) => s.currentStep);
   const fileId = useAppStore((s) => s.fileId);
   const { startPolling } = usePollDocumentStatus();
   // const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
-
+  const currentRef = useRef(current);
+  useEffect(() => {
+    currentRef.current = current;
+  }, [current]);
   // const isStepDisabled = (stepId: number): boolean => {
   //   const key = stepProgressKey[stepId];
   //   if (!key) return false;
@@ -49,7 +52,27 @@ function StepProgressBarInner() {
   //   if (status === "pending") return true;
   //   return false;
   // };
-  const maxAllowedStep = stepMap[currentStep] ?? 5;
+  // const maxAllowedStep = stepMap[currentStep] ?? 5;
+  const maxAllowedStep = (() => {
+    if (!progress) return 1;
+    if (
+      progress.park === "completed" ||
+      progress.park === "processing" ||
+      progress.park === "waiting"
+    )
+      return 5;
+    if (
+      progress.sap === "completed" ||
+      progress.sap === "processing" ||
+      progress.sap === "waiting"
+    )
+      return 4;
+    if (progress.lookup === "completed" || progress.lookup === "processing")
+      return 3;
+    if (progress.extract === "completed" || progress.extract === "processing")
+      return 2;
+    return 1;
+  })();
 
   const isStepDisabled = (stepId: number): boolean => {
     if (!fileId) {
@@ -103,12 +126,15 @@ function StepProgressBarInner() {
   //   startPolling(fileId, goTo, () => stepNumber);
   // }, [currentStep, fileId]);
 
+  // useEffect(() => {
+  //   if (!fileId) return;
 
-useEffect(() => {
-  if (!fileId) return;
-
-  startPolling(fileId, goTo, () => current); 
-}, [fileId, current]);
+  //   startPolling(fileId, goTo, () => current);
+  // }, [fileId, current]);
+  useEffect(() => {
+    if (!fileId) return;
+    startPolling(fileId, goTo, () => currentRef.current);
+  }, [fileId]);
   return (
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
