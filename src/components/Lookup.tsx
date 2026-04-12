@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
-import PdfPreview from "./PdfPreview";
+// import PdfPreview from "./PdfPreview";
 // import ForwardButton from "./ForwardButton";
 // import BackButton from "./BackButton";
 import { useAppStore } from "../store/useAppStore";
@@ -77,121 +77,121 @@ export default function Lookup() {
   };
 
   return (
-    <div className="flex gap-6">
-      <PdfPreview />
-
-      <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
-        {/* Overlay */}
-        {isAnyProcessing && (
+    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+      {/* <div className="flex gap-6"> */}
+      {/* // <PdfPreview /> */}
+      {/* <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden"> */}
+      {/* Overlay */}
+      {/* {isAnyProcessing && (
           <ProcessingOverlay
             title="Processing in Progress"
             description="Please wait..."
           />
-        )}
+        )} */}
+      {/* HEADER */}
+      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
+        <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+          <File size={18} />
+          Lookup Data
+        </h2>
+        {/* <BackButton /> */}
+      </div>
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-6">
+        {isAnyProcessing ? (
+          <ProcessingOverlay
+            title="Processing in Progress"
+            description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+          />
+        ) : isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <Spin />
+          </div>
+        ) : error ? (
+          <Alert message="Failed to load data" type="error" />
+        ) : (
+          <>
+            {isDirty && (
+              <div className="mb-4">
+                <Alert
+                  message="You have unsaved changes. Click 'Retry Look Up' to save them, or they will be lost."
+                  type="warning"
+                  showIcon
+                />
+              </div>
+            )}
 
-        {/* HEADER */}
-        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
-          <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-            <File size={18} />
-            Lookup Data
-          </h2>
-          {/* <BackButton /> */}
-        </div>
-
-        {/* CONTENT */}
-        <div className="flex-1 overflow-auto p-6">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-full">
-              <Spin />
-            </div>
-          ) : error ? (
-            <Alert message="Failed to load data" type="error" />
-          ) : (
-            <>
-              {isDirty && (
-                <div className="mb-4">
-                  <Alert
-                    message="You have unsaved changes. Click 'Retry Look Up' to save them, or they will be lost."
-                    type="warning"
-                    showIcon
-                  />
-                </div>
+            <Row gutter={[16, 16]}>
+              {/* PO Numbers */}
+              {data.poNumber.length > 0 && (
+                <Col span={24}>
+                  <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+                    <Text className="text-xs text-gray-500">PO Numbers</Text>
+                    <div className="mt-2 text-sm">
+                      {data.poNumber.join(", ")}
+                    </div>
+                  </div>
+                </Col>
               )}
 
-              <Row gutter={[16, 16]}>
-                {/* PO Numbers */}
-                {data.poNumber.length > 0 && (
-                  <Col span={24}>
-                    <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
-                      <Text className="text-xs text-gray-500">PO Numbers</Text>
-                      <div className="mt-2 text-sm">
-                        {data.poNumber.join(", ")}
-                      </div>
+              {/* Fields */}
+              {localData.map((item: LookupItem) => {
+                const isFullWidth =
+                  item.key === "text" || item.key === "headerText";
+
+                const isEdited =
+                  item.originalValue && item.value !== item.originalValue;
+
+                const isDisabled = item.dependsOn
+                  ? !localData.find((i) => i.key === item.dependsOn)?.value
+                  : false;
+
+                return (
+                  <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                    <div
+                      className={`rounded-xl p-4 shadow-sm ${
+                        isEdited
+                          ? "border border-blue-400 bg-blue-50"
+                          : "bg-[#E9EEF3]"
+                      }`}
+                    >
+                      <Text className="text-xs text-gray-500">
+                        {formatLabel(item.key)}
+                      </Text>
+
+                      {item.editable ? (
+                        <Input
+                          value={item.value}
+                          disabled={isDisabled}
+                          onChange={(e) =>
+                            handleChange(item.key, e.target.value)
+                          }
+                          className="mt-2"
+                        />
+                      ) : (
+                        <div className="mt-2 text-sm">{item.value || "--"}</div>
+                      )}
                     </div>
                   </Col>
-                )}
+                );
+              })}
+            </Row>
+          </>
+        )}
+      </div>
+      {/* FOOTER */}
+      <div className="p-4 border-t flex justify-end items-center">
+        <Button
+          icon={<RotateCcw size={16} />}
+          loading={loadingRetry}
+          disabled={isAnyProcessing}
+          onClick={handleRetry}
+        >
+          Retry Look Up
+        </Button>
 
-                {/* Fields */}
-                {localData.map((item: LookupItem) => {
-                  const isFullWidth =
-                    item.key === "text" || item.key === "headerText";
-
-                  const isEdited =
-                    item.originalValue && item.value !== item.originalValue;
-
-                  const isDisabled = item.dependsOn
-                    ? !localData.find((i) => i.key === item.dependsOn)?.value
-                    : false;
-
-                  return (
-                    <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                      <div
-                        className={`rounded-xl p-4 shadow-sm ${
-                          isEdited
-                            ? "border border-blue-400 bg-blue-50"
-                            : "bg-[#E9EEF3]"
-                        }`}
-                      >
-                        <Text className="text-xs text-gray-500">
-                          {formatLabel(item.key)}
-                        </Text>
-
-                        {item.editable ? (
-                          <Input
-                            value={item.value}
-                            disabled={isDisabled}
-                            onChange={(e) =>
-                              handleChange(item.key, e.target.value)
-                            }
-                            className="mt-2"
-                          />
-                        ) : (
-                          <div className="mt-2 text-sm">
-                            {item.value || "--"}
-                          </div>
-                        )}
-                      </div>
-                    </Col>
-                  );
-                })}
-              </Row>
-            </>
-          )}
-        </div>
-
-        {/* FOOTER */}
-        <div className="p-4 border-t flex justify-end items-center">
-          <Button
-            icon={<RotateCcw size={16} />}
-            loading={loadingRetry}
-            disabled={isAnyProcessing}
-            onClick={handleRetry}
-          >
-            Retry Look Up
-          </Button>
-
-          {/* <ForwardButton label="Next Step" disabled={isAnyProcessing} /> */}
-        </div>
+        {/* <ForwardButton label="Next Step" disabled={isAnyProcessing} /> */}
+        {/* </div> */}
       </div>
     </div>
   );

@@ -73,3 +73,14 @@
   border-color: theme("colors.primary") !important ;
   background-color: theme("colors.primary") !important;
 }
+/* Remove Ant yellow/blue focus */
+.ant-input:focus,
+.ant-input-focused {
+  border-color: #002d62 !important; /* primary */
+  box-shadow: none !important;
+}
+
+/* Remove warning style completely */
+.ant-input-status-warning {
+  border-color: #a5a5a5 !important;
+}

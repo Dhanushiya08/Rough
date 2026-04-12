@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
-import { Row, Col, Typography, Input, Spin, Button } from "antd";
-import { File, RotateCcw } from "lucide-react";
-import PdfPreview from "./PdfPreview";
-import ForwardButton from "./ForwardButton";
-// import BackButton from "./BackButton";
+import { Row, Col, Typography, Input, Spin, Button, Table } from "antd";
+import { File } from "lucide-react";
+import { Modal } from "antd";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import apiClient from "../services/apiClient";
+
+import type { LineItem, ParkApiItem } from "../types/parking";
+import type { ExtractedItem, ReconciliationItem } from "../types/common";
+
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { useStep } from "../hooks/useStep";
+import type { ColumnsType } from "antd/es/table";
 
 const { Text } = Typography;
 
@@ -14,43 +19,93 @@ type ParkItem = {
   key: string;
   value: string;
   originalValue: string;
+  editable?: boolean;
 };
+
+type GetListResponse = {
+  data: ExtractedItem[];
+  sapReconcile: ParkApiItem[];
+  items: LineItem[];
+  poNumber: string[];
+};
+
+const API_URL = "/posts";
 
 const formatLabel = (key: string) =>
   key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 
 export default function Parking() {
   const fileId = useAppStore((s) => s.fileId);
+  const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
-  const lang = useAppStore((s) => s.lang);
 
   const [data, setData] = useState<ParkItem[]>([]);
-  const [poNumber, setpoNumber] = useState<string[]>([]);
+  const [reconcileData, setReconcileData] = useState<ReconciliationItem[]>([]);
+  const [poList, setPoList] = useState<string[]>([]);
+  const [items, setItems] = useState<LineItem[]>([]);
+
+  const [selectedPO, setSelectedPO] = useState<string>("");
+  const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
+    {},
+  );
+
   const [loading, setLoading] = useState(false);
   const [loadingPark, setLoadingPark] = useState(false);
+
+  const { current, goTo } = useStep();
+  const { startPolling } = usePollDocumentStatus();
 
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
 
-  //  Fetch Data
+  // =========================
+  // FETCH DATA
+  // =========================
   const fetchParkData = async () => {
-    if (!fileId) return;
-
-    setLoading(true);
     try {
-      const res = await apiClient.post("/posts", {
+      setLoading(true);
+
+      const res = await apiClient.post(API_URL, {
         event: "get-list",
         file_id: fileId,
+        file_name: fileName,
         state: "park",
       });
 
-      const body = res.data?.body;
+      const body: GetListResponse = res.data.body;
 
-      setData(body?.data || []);
-      setpoNumber(body?.poNumber || []);
+      // FORM DATA
+      setData(
+        body.data.map((i) => ({
+          key: i.key,
+          value: i.value,
+          originalValue: i.value,
+          editable: i.editable ?? true,
+        })),
+      );
+
+      // RECONCILE (optional)
+      setReconcileData(
+        body.sapReconcile?.map((i) => ({
+          key: i.field,
+          label: formatLabel(i.field),
+          extractedValue: i.extracted || "",
+          sapValue: i.sap || "",
+          value: i.selected === "sap" ? (i.sap ?? "") : (i.extracted ?? ""),
+          source: i.selected ?? null,
+          originalValue: i.extracted || "",
+        })) || [],
+      );
+
+      // ITEMS
+      setItems(body.items || []);
+
+      // PO LIST
+      setPoList(body.poNumber || []);
+      setSelectedPO(body.poNumber?.[0] || "");
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -59,10 +114,12 @@ export default function Parking() {
   };
 
   useEffect(() => {
-    fetchParkData();
+    if (fileId) fetchParkData();
   }, [fileId]);
 
-  //  Handle Edit
+  // =========================
+  // FORM CHANGE
+  // =========================
   const handleChange = (index: number, newValue: string) => {
     setData((prev) =>
       prev.map((item, i) =>
@@ -71,101 +128,285 @@ export default function Parking() {
     );
   };
 
-  //  PARK API
-  const handlePark = async () => {
-    if (!fileId) return;
+  // =========================
+  //  DYNAMIC TABLE LOGIC
+  // =========================
 
-    try {
-      setLoadingPark(true);
+  const getAllKeys = (data: LineItem[]): string[] => {
+    const keySet = new Set<string>();
 
-      await apiClient.post("/posts", {
-        event: "park_data",
-        file_id: fileId,
-        lang: lang,
-        data: {
-          poNumber,
-          data,
+    data.forEach((row) => {
+      Object.keys(row).forEach((key) => keySet.add(key));
+    });
+
+    return Array.from(keySet);
+  };
+  const handleParkConfirm = () => {
+    Modal.confirm({
+      title: "Confirm Parking",
+      content: "Are you sure you want to park this data into SAP?",
+      okText: "Yes, Park",
+      cancelText: "Cancel",
+      okButtonProps: {
+        style: { backgroundColor: "#002D62", borderColor: "#002D62" },
+      },
+
+      onOk: async () => {
+        try {
+          setLoadingPark(true);
+
+          const payload = {
+            event: "update-data",
+            file_id: fileId,
+            file_name: fileName,
+            state: "park",
+            data: {
+              poNumber: poList,
+
+              data: data.map((item) => ({
+                key: item.key,
+                value: item.value,
+              })),
+
+              sapReconcile: reconcileData.map((item) => ({
+                field: item.key,
+                extracted: item.extractedValue,
+                sap: item.sapValue,
+                selected: item.source,
+              })),
+
+              items: items.map((item, index) => {
+                const rowKey = `${selectedPO}-${index}`;
+
+                return {
+                  ...item,
+                  genaiSelected: (selectionMap[selectedPO] || []).includes(
+                    rowKey,
+                  ),
+                };
+              }),
+            },
+          };
+
+          console.log("Parking Payload:", payload);
+
+          await apiClient.post(API_URL, payload);
+
+          startPolling(fileId, goTo, () => current);
+        } catch (err) {
+          console.error("Parking API failed:", err);
+        } finally {
+          setLoadingPark(false);
+        }
+      },
+    });
+  };
+  const getDynamicColumns = (): ColumnsType<LineItem> => {
+    if (!items.length) return [];
+
+    const excludedKeys = ["genaiSelected"];
+    const nonEditableFields = ["item_no"];
+
+    const allKeys = getAllKeys(items);
+
+    return allKeys
+      .filter((key) => !excludedKeys.includes(key))
+      .map((key) => ({
+        title: formatLabel(key),
+        dataIndex: key,
+        key,
+
+        render: (_: unknown, record: LineItem, rowIndex: number) => {
+          const value = record[key];
+
+          // Convert unknown safely to string
+          const displayValue =
+            typeof value === "string" || typeof value === "number"
+              ? String(value)
+              : "";
+
+          if (nonEditableFields.includes(key)) {
+            return <span>{displayValue}</span>;
+          }
+
+          return (
+            <Input
+              value={displayValue}
+              onChange={(e) => {
+                const newItems = [...items];
+
+                newItems[rowIndex] = {
+                  ...newItems[rowIndex],
+                  [key]: e.target.value,
+                };
+
+                setItems(newItems);
+              }}
+            />
+          );
         },
-      });
-
-      console.log(" Park successful");
-    } catch (err) {
-      console.error("Park error:", err);
-    } finally {
-      setLoadingPark(false);
-    }
+      }));
   };
 
+  // =========================
+  // ROW SELECTION
+  // =========================
+  const rowSelection = {
+    selectedRowKeys: selectionMap[selectedPO] || [],
+    onChange: (selectedRowKeys: React.Key[]) => {
+      setSelectionMap((prev) => ({
+        ...prev,
+        [selectedPO]: selectedRowKeys as string[],
+      }));
+    },
+  };
+
+  // =========================
+  // SUBMIT
+  // =========================
+  // const handlePark = async () => {
+  //   try {
+  //     setLoadingPark(true);
+
+  //     const payload = {
+  //       event: "update-data",
+  //       file_id: fileId,
+  //       file_name: fileName,
+  //       state: "park",
+  //       data: {
+  //         poNumber: poList,
+
+  //         data: data.map((item) => ({
+  //           key: item.key,
+  //           value: item.value,
+  //         })),
+
+  //         sapReconcile: reconcileData.map((item) => ({
+  //           field: item.key,
+  //           extracted: item.extractedValue,
+  //           sap: item.sapValue,
+  //           selected: item.source,
+  //         })),
+
+  //         items: items.map((item, index) => {
+  //           const rowKey = `${selectedPO}-${index}`;
+
+  //           return {
+  //             ...item,
+  //             genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
+  //           };
+  //         }),
+  //       },
+  //     };
+
+  //     console.log("Parking Payload:", payload);
+
+  //     await apiClient.post(API_URL, payload);
+
+  //     startPolling(fileId, goTo, () => current);
+  //   } catch (err) {
+  //     console.error("Parking API failed:", err);
+  //   } finally {
+  //     setLoadingPark(false);
+  //   }
+  // };
+
+  // =========================
+  // UI
+  // =========================
   return (
-    <div className="flex gap-6">
-      {/* LEFT PDF */}
-      <PdfPreview />
+    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+      {isAnyProcessing && (
+        <ProcessingOverlay title="Processing..." description="Please wait..." />
+      )}
 
-      {/* RIGHT PANEL */}
-      <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden relative">
-        {/* Overlay */}
-        {isAnyProcessing && (
-          <ProcessingOverlay
-            title="Processing in Progress"
-            description="Please wait..."
-          />
-        )}
+      {/* HEADER */}
+      <div className="flex p-6 border-b bg-stepbgheader">
+        <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+          <File size={18} />
+          Parking Data in SAP
+        </h2>
+      </div>
 
-        {/* HEADER */}
-        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
-          <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-            <File size={18} />
-            Parking Data in SAP
-          </h2>
-          {/* <BackButton /> */}
-        </div>
-
-        {/* CONTENT */}
-        <div className="flex-1 overflow-auto p-6">
-          {loading ? (
-            <Spin />
-          ) : (
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-6">
+        {loading ? (
+          <Spin />
+        ) : (
+          <>
+            {/* FORM */}
             <Row gutter={[16, 16]}>
               {data.map((item, index) => {
                 const isEdited = item.value !== item.originalValue;
 
                 return (
                   <Col xs={24} sm={12} key={item.key}>
-                    <div className="bg-white p-4 rounded-lg shadow-sm border">
-                      {/* Label */}
+                    <div
+                      className={`p-4 rounded-lg border border-borderer transition 
+          ${isEdited ? "bg-stepbgheader" : "bg-white"}`}
+                    >
                       <Text className="text-xs text-gray-500">
                         {formatLabel(item.key)}
                       </Text>
 
-                      {/* Input */}
                       <Input
                         value={item.value}
                         disabled={isAnyProcessing}
                         onChange={(e) => handleChange(index, e.target.value)}
-                        className="mt-1 font-medium"
-                        status={isEdited ? "warning" : ""}
+                        className="mt-1 font-medium border border-borderer focus:border-primary focus:ring-0"
                       />
                     </div>
                   </Col>
                 );
               })}
             </Row>
-          )}
-        </div>
 
-        {/* FOOTER */}
-        <div className="p-4 border-t flex justify-between items-center">
-          <Button
-            icon={<RotateCcw size={16} />}
-            loading={loadingPark}
-            disabled={isAnyProcessing}
-            onClick={handlePark}
-          >
-            Park Data
-          </Button>
+            {/* PO LIST */}
+            {poList.length > 0 && (
+              <div className="mt-6">
+                <Text strong>PO Numbers</Text>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {poList.map((po) => (
+                    <Button
+                      key={po}
+                      type={selectedPO === po ? "primary" : "default"}
+                      onClick={() => setSelectedPO(po)}
+                    >
+                      {po}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          <ForwardButton label="Next Step" disabled={isAnyProcessing} />
-        </div>
+            {/* TABLE */}
+            {items.length > 0 && (
+              <div className="mt-6">
+                <Text strong>Line Items</Text>
+
+                <Table<LineItem>
+                  rowKey={(_, index) => `${selectedPO}-${index}`}
+                  dataSource={items}
+                  columns={getDynamicColumns()}
+                  rowSelection={rowSelection}
+                  pagination={false}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="p-4 border-t flex justify-end">
+        <Button
+          loading={loadingPark}
+          disabled={isAnyProcessing}
+          onClick={handleParkConfirm}
+          className="bg-primary text-white border-none hover:!bg-secondary"
+        >
+          Park Data
+        </Button>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { useState, useMemo, useEffect } from "react";
 import { Eye, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { getTableData } from "../services/dashboardService";
+import { useStep } from "../hooks/useStep";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 
 const { Option } = Select;
 
@@ -17,6 +19,8 @@ interface DataType {
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState("");
+  const { current, goTo } = useStep();
+  const { startPolling } = usePollDocumentStatus();
   const [statusFilter, setStatusFilter] = useState<
     DataType["status"] | undefined
   >(undefined);
@@ -28,6 +32,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const handleView = (record: DataType) => {
     openStepper(record.file_id, record.file_name, record.state);
+    startPolling(record.file_id, goTo, () => current);
   };
 
   useEffect(() => {

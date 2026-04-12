@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
-import apiClient from "../services/apiClient"; // adjust path
-import PdfPreview from "./PdfPreview";
+import apiClient from "../services/apiClient";
+// import PdfPreview from "./PdfPreview";
 import { File } from "lucide-react";
 import type {
   ExtractedItem,
@@ -212,109 +212,108 @@ export default function Reconciliation() {
   }
 
   return (
-    <div className="flex gap-6 h-full">
-      <PdfPreview />
+    // <div className="flex gap-6 h-full">
+    //   <PdfPreview />
 
-      <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
-        {isAnyProcessing && (
-          <ProcessingOverlay
-            title="Processing in Progress"
-            description="Please wait..."
+    //   <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
+
+    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+      {isAnyProcessing && (
+        <ProcessingOverlay
+          title="Processing in Progress"
+          description="Please wait..."
+        />
+      )}
+
+      {/* HEADER */}
+      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
+        <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+          <File size={18} /> SAP Reconciliation Data
+        </h2>
+
+        {/* <BackButton /> */}
+      </div>
+      {isDirty && (
+        <div className="mb-4">
+          <Alert
+            message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
+            type="warning"
+            showIcon
           />
-        )}
-
-        {/* HEADER */}
-        <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
-          <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-            <File size={18} /> SAP Reconciliation Data
-          </h2>
-
-          {/* <BackButton /> */}
         </div>
-        {isDirty && (
-          <div className="mb-4">
-            <Alert
-              message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
-              type="warning"
-              showIcon
-            />
-          </div>
-        )}
-        {/* CONTENT */}
-        <div className="flex-1 overflow-auto p-6">
-          <Row gutter={[16, 16]}>
-            {data.map((item) => {
-              const isFullWidth =
-                item.key === "text" || item.key === "headerText";
+      )}
+      {/* CONTENT */}
+      <div className="flex-1 overflow-auto p-6">
+        <Row gutter={[16, 16]}>
+          {data.map((item) => {
+            const isFullWidth =
+              item.key === "text" || item.key === "headerText";
 
-              const isEdited =
-                item.originalValue && item.value !== item.originalValue;
+            const isEdited =
+              item.originalValue && item.value !== item.originalValue;
 
-              return (
-                <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                  <div
-                    className={`rounded-xl p-4 ${
-                      isEdited ? "bg-blue-50" : "bg-[#E9EEF3]"
-                    }`}
-                  >
-                    <Text>{formatLabel(item.key)}</Text>
+            return (
+              <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                <div
+                  className={`rounded-xl p-4 ${
+                    isEdited ? "bg-blue-50" : "bg-[#E9EEF3]"
+                  }`}
+                >
+                  <Text>{formatLabel(item.key)}</Text>
 
-                    {item.editable ? (
-                      <Input
-                        value={item.value}
-                        onChange={(e) => handleChange(item.key, e.target.value)}
-                      />
-                    ) : (
-                      <div>{item.value || "--"}</div>
-                    )}
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-          <br></br>
+                  {item.editable ? (
+                    <Input
+                      value={item.value}
+                      onChange={(e) => handleChange(item.key, e.target.value)}
+                    />
+                  ) : (
+                    <div>{item.value || "--"}</div>
+                  )}
+                </div>
+              </Col>
+            );
+          })}
+        </Row>
+        <br></br>
 
-          {/* RECONCILIATION */}
+        {/* RECONCILIATION */}
 
-          <ReconciliationTable
-            data={reconcileData}
-            onChange={setReconcileData}
-          />
-          <br></br>
+        <ReconciliationTable data={reconcileData} onChange={setReconcileData} />
+        <br></br>
 
-          {poList?.length > 0 && (
-            <>
-              <h2 className="text-lg font-semibold flex items-center gap-2 text-primary mb-2">
-                <File size={18} /> PO Number(s)
-              </h2>
+        {poList?.length > 0 && (
+          <>
+            <h2 className="text-lg font-semibold flex items-center gap-2 text-primary mb-2">
+              <File size={18} /> PO Number(s)
+            </h2>
 
-              <POSelector
-                selectedPO={selectedPO}
-                onSelect={setSelectedPO}
-                poList={poList}
-                onEdit={handlePOEdit}
-              />
-            </>
-          )}
-          <br></br>
-
-          {currentData?.length > 0 && (
-            <LineItemsTable
-              data={currentData}
+            <POSelector
               selectedPO={selectedPO}
-              onChange={setSelectionMap}
+              onSelect={setSelectedPO}
+              poList={poList}
+              onEdit={handlePOEdit}
             />
-          )}
-        </div>
+          </>
+        )}
+        <br></br>
 
-        {/* FOOTER */}
-        <div className="p-4 border-t flex justify-between">
-          <Button loading={retryLoading} onClick={handleRetry}>
-            Retry Fetch SAP Data
-          </Button>
+        {currentData?.length > 0 && (
+          <LineItemsTable
+            data={currentData}
+            selectedPO={selectedPO}
+            onChange={setSelectionMap}
+          />
+        )}
+      </div>
 
-          <ForwardButton label="Parking" onClick={handleParking} />
-        </div>
+      {/* FOOTER */}
+      <div className="p-4 border-t flex justify-between">
+        <Button loading={retryLoading} onClick={handleRetry}>
+          Retry Fetch SAP Data
+        </Button>
+
+        <ForwardButton label="Parking" onClick={handleParking} />
+        {/* </div> */}
       </div>
     </div>
   );

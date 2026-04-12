@@ -9,6 +9,7 @@ import Lookup from "./Lookup";
 import Reconciliation from "./Reconciliation";
 import Parking from "./Parking";
 import type { Step } from "../types/common";
+import PdfPreview from "./PdfPreview";
 
 type StepProgressKeyMap = Record<
   number,
@@ -182,8 +183,23 @@ function StepProgressBarInner() {
         </div>
       </div>
       <div className="h-[90%] flex flex-col justify-between px-10 py-6">
-        <div className="flex-1 overflow-auto w-full h-full">
-          {steps[current - 1].component}
+        <div className="flex-1 w-full">
+          {current === 1 ? (
+            <div className="h-full overflow-auto">
+              {steps[current - 1].component}
+            </div>
+          ) : (
+            <div className="flex h-full gap-4">
+              <div className="w-1/2">
+                <PdfPreview />
+              </div>
+
+              {/* RIGHT → STEP CONTENT */}
+              <div className="w-1/2 overflow-auto">
+                {steps[current - 1].component}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
