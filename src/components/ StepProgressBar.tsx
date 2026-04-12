@@ -1,5 +1,5 @@
 // components/StepProgressBar.tsx
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
 import { useAppStore } from "../store/useAppStore";
@@ -52,6 +52,10 @@ function StepProgressBarInner() {
   const maxAllowedStep = stepMap[currentStep] ?? 5;
 
   const isStepDisabled = (stepId: number): boolean => {
+    if (!fileId) {
+      return stepId !== 1;
+    }
+
     if (stepId > maxAllowedStep) return true;
     const key = stepProgressKey[stepId];
     if (!key) return false;
@@ -80,25 +84,35 @@ function StepProgressBarInner() {
   };
 
   const handleNext = () => {
+    if (!fileId) return;
     if (canGoNext) {
       goTo(current + 1);
     }
   };
-  const hasStartedPolling = useRef(false);
-
   useEffect(() => {
-    if (!currentStep || !fileId || hasStartedPolling.current) return;
+    if (!fileId || !currentStep) return;
 
     const stepNumber = stepMap[currentStep];
 
-    if (stepNumber && stepNumber !== current) {
+    if (!stepNumber) return;
+
+    //  Always sync step
+    if (stepNumber !== current) {
       goTo(stepNumber);
-
-      startPolling(fileId, goTo, () => stepNumber);
-
-      hasStartedPolling.current = true;
     }
+
+    //  Always ensure polling is running
+    startPolling(fileId, goTo, () => stepNumber);
   }, [currentStep, fileId]);
+
+  // useEffect(() => {
+  //   if (!currentStep) return;
+  //   const stepNumber = stepMap[currentStep];
+  //   if (stepNumber && stepNumber !== current) {
+  //     goTo(stepNumber);
+  //     // setCurrentStep("");
+  //   }
+  // }, [currentStep]);
 
   return (
     <div className="h-full flex flex-col">

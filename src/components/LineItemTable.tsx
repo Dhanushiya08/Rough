@@ -1,11 +1,13 @@
 import { Table } from "antd";
 import { useState } from "react";
 import type { LineItem } from "../types/reconciliation";
+
 type LineItemsTableProps = {
   data: LineItem[];
   selectedPO: string;
   onChange: (map: Record<string, string[]>) => void;
 };
+
 export const LineItemsTable = ({
   data,
   selectedPO,
@@ -35,39 +37,19 @@ export const LineItemsTable = ({
     },
   };
 
-  // const columns = Object.keys(data[0] || {}).map((key) => ({
-  //   title: key.toUpperCase(),
-  //   dataIndex: key,
-  //   key,
-  // }));
+  const columns =
+    data && data.length > 0
+      ? Object.keys(data[0])
+          .filter((key) => key !== "genaiSelected")
+          .map((key) => ({
+            title: key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase()),
+            dataIndex: key,
+            key,
+          }))
+      : [];
 
-  const columns = [
-    {
-      title: "Short Text",
-      dataIndex: "shortText",
-      key: "shortText",
-    },
-    {
-      title: "Linked PO",
-      dataIndex: "linkedPo",
-      key: "linkedPo",
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Unit Price",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-    },
-  ];
   return (
     <Table
       rowKey={(_, index) => `${selectedPO}-${index}`}

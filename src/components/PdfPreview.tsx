@@ -86,7 +86,7 @@ export default function PdfPreview() {
   console.log(fileUrl, fileType);
 
   return (
-    <div className="w-1/2 border rounded-xl bg-gray-100 flex flex-col overflow-hidden">
+    <div className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden">
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">

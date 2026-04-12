@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { Row, Col, Typography, Input, Spin, Button, Table } from "antd";
+import { Row, Col, Typography, Input, Spin, Button, Table, Modal } from "antd";
 import { File } from "lucide-react";
-import { Modal } from "antd";
+
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import apiClient from "../services/apiClient";
 
-import type { LineItem, ParkApiItem } from "../types/parking";
-import type { ExtractedItem, ReconciliationItem } from "../types/common";
+import type { LineItem } from "../types/parking";
+import type { ExtractedItem } from "../types/common";
 
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
@@ -24,7 +24,6 @@ type ParkItem = {
 
 type GetListResponse = {
   data: ExtractedItem[];
-  sapReconcile: ParkApiItem[];
   items: LineItem[];
   poNumber: string[];
 };
@@ -41,14 +40,10 @@ export default function Parking() {
   const pollingActive = useAppStore((s) => s.pollingActive);
 
   const [data, setData] = useState<ParkItem[]>([]);
-  const [reconcileData, setReconcileData] = useState<ReconciliationItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
   const [items, setItems] = useState<LineItem[]>([]);
 
   const [selectedPO, setSelectedPO] = useState<string>("");
-  const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
-    {},
-  );
 
   const [loading, setLoading] = useState(false);
   const [loadingPark, setLoadingPark] = useState(false);
@@ -77,7 +72,6 @@ export default function Parking() {
 
       const body: GetListResponse = res.data.body;
 
-      // FORM DATA
       setData(
         body.data.map((i) => ({
           key: i.key,
@@ -87,23 +81,7 @@ export default function Parking() {
         })),
       );
 
-      // RECONCILE (optional)
-      setReconcileData(
-        body.sapReconcile?.map((i) => ({
-          key: i.field,
-          label: formatLabel(i.field),
-          extractedValue: i.extracted || "",
-          sapValue: i.sap || "",
-          value: i.selected === "sap" ? (i.sap ?? "") : (i.extracted ?? ""),
-          source: i.selected ?? null,
-          originalValue: i.extracted || "",
-        })) || [],
-      );
-
-      // ITEMS
       setItems(body.items || []);
-
-      // PO LIST
       setPoList(body.poNumber || []);
       setSelectedPO(body.poNumber?.[0] || "");
     } catch (err) {
@@ -129,78 +107,16 @@ export default function Parking() {
   };
 
   // =========================
-  //  DYNAMIC TABLE LOGIC
+  // DYNAMIC TABLE
   // =========================
-
   const getAllKeys = (data: LineItem[]): string[] => {
     const keySet = new Set<string>();
-
     data.forEach((row) => {
       Object.keys(row).forEach((key) => keySet.add(key));
     });
-
     return Array.from(keySet);
   };
-  const handleParkConfirm = () => {
-    Modal.confirm({
-      title: "Confirm Parking",
-      content: "Are you sure you want to park this data into SAP?",
-      okText: "Yes, Park",
-      cancelText: "Cancel",
-      okButtonProps: {
-        style: { backgroundColor: "#002D62", borderColor: "#002D62" },
-      },
 
-      onOk: async () => {
-        try {
-          setLoadingPark(true);
-
-          const payload = {
-            event: "update-data",
-            file_id: fileId,
-            file_name: fileName,
-            state: "park",
-            data: {
-              poNumber: poList,
-
-              data: data.map((item) => ({
-                key: item.key,
-                value: item.value,
-              })),
-
-              sapReconcile: reconcileData.map((item) => ({
-                field: item.key,
-                extracted: item.extractedValue,
-                sap: item.sapValue,
-                selected: item.source,
-              })),
-
-              items: items.map((item, index) => {
-                const rowKey = `${selectedPO}-${index}`;
-
-                return {
-                  ...item,
-                  genaiSelected: (selectionMap[selectedPO] || []).includes(
-                    rowKey,
-                  ),
-                };
-              }),
-            },
-          };
-
-          console.log("Parking Payload:", payload);
-
-          await apiClient.post(API_URL, payload);
-
-          startPolling(fileId, goTo, () => current);
-        } catch (err) {
-          console.error("Parking API failed:", err);
-        } finally {
-          setLoadingPark(false);
-        }
-      },
-    });
-  };
   const getDynamicColumns = (): ColumnsType<LineItem> => {
     if (!items.length) return [];
 
@@ -219,7 +135,6 @@ export default function Parking() {
         render: (_: unknown, record: LineItem, rowIndex: number) => {
           const value = record[key];
 
-          // Convert unknown safely to string
           const displayValue =
             typeof value === "string" || typeof value === "number"
               ? String(value)
@@ -234,12 +149,10 @@ export default function Parking() {
               value={displayValue}
               onChange={(e) => {
                 const newItems = [...items];
-
                 newItems[rowIndex] = {
                   ...newItems[rowIndex],
                   [key]: e.target.value,
                 };
-
                 setItems(newItems);
               }}
             />
@@ -249,67 +162,55 @@ export default function Parking() {
   };
 
   // =========================
-  // ROW SELECTION
-  // =========================
-  const rowSelection = {
-    selectedRowKeys: selectionMap[selectedPO] || [],
-    onChange: (selectedRowKeys: React.Key[]) => {
-      setSelectionMap((prev) => ({
-        ...prev,
-        [selectedPO]: selectedRowKeys as string[],
-      }));
-    },
-  };
-
-  // =========================
   // SUBMIT
   // =========================
-  // const handlePark = async () => {
-  //   try {
-  //     setLoadingPark(true);
+  const handleParkConfirm = () => {
+    Modal.confirm({
+      title: "Confirm Parking",
+      content: "Are you sure you want to park this data into SAP?",
+      okText: "Yes, Park",
+      cancelText: "Cancel",
+      okButtonProps: {
+        style: { backgroundColor: "#002D62", borderColor: "#002D62" },
+      },
 
-  //     const payload = {
-  //       event: "update-data",
-  //       file_id: fileId,
-  //       file_name: fileName,
-  //       state: "park",
-  //       data: {
-  //         poNumber: poList,
+      onOk: async () => {
+        try {
+          setLoadingPark(true);
 
-  //         data: data.map((item) => ({
-  //           key: item.key,
-  //           value: item.value,
-  //         })),
+          const payload = {
+            event: "park-data",
+            file_id: fileId,
+            file_name: fileName,
+            state: "park",
+            data: {
+              poNumber: poList,
 
-  //         sapReconcile: reconcileData.map((item) => ({
-  //           field: item.key,
-  //           extracted: item.extractedValue,
-  //           sap: item.sapValue,
-  //           selected: item.source,
-  //         })),
+              data: data.map((item) => ({
+                key: item.key,
+                value: item.value,
+              })),
 
-  //         items: items.map((item, index) => {
-  //           const rowKey = `${selectedPO}-${index}`;
+              items: items.map((item) => ({
+                ...item,
+                genaiSelected: true,
+              })),
+            },
+          };
 
-  //           return {
-  //             ...item,
-  //             genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
-  //           };
-  //         }),
-  //       },
-  //     };
+          console.log("Parking Payload:", payload);
 
-  //     console.log("Parking Payload:", payload);
+          await apiClient.post(API_URL, payload);
 
-  //     await apiClient.post(API_URL, payload);
-
-  //     startPolling(fileId, goTo, () => current);
-  //   } catch (err) {
-  //     console.error("Parking API failed:", err);
-  //   } finally {
-  //     setLoadingPark(false);
-  //   }
-  // };
+          startPolling(fileId, goTo, () => current);
+        } catch (err) {
+          console.error("Parking API failed:", err);
+        } finally {
+          setLoadingPark(false);
+        }
+      },
+    });
+  };
 
   // =========================
   // UI
@@ -342,8 +243,9 @@ export default function Parking() {
                 return (
                   <Col xs={24} sm={12} key={item.key}>
                     <div
-                      className={`p-4 rounded-lg border border-borderer transition 
-          ${isEdited ? "bg-stepbgheader" : "bg-white"}`}
+                      className={`p-4 rounded-lg border border-borderer transition ${
+                        isEdited ? "bg-stepbgheader" : "bg-white"
+                      }`}
                     >
                       <Text className="text-xs text-gray-500">
                         {formatLabel(item.key)}
@@ -388,7 +290,6 @@ export default function Parking() {
                   rowKey={(_, index) => `${selectedPO}-${index}`}
                   dataSource={items}
                   columns={getDynamicColumns()}
-                  rowSelection={rowSelection}
                   pagination={false}
                 />
               </div>
