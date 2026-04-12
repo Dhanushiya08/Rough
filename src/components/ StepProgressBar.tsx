@@ -1,5 +1,5 @@
 // components/StepProgressBar.tsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
 import { useAppStore } from "../store/useAppStore";
@@ -10,6 +10,7 @@ import Reconciliation from "./Reconciliation";
 import Parking from "./Parking";
 import type { Step } from "../types/common";
 import PdfPreview from "./PdfPreview";
+import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 
 type StepProgressKeyMap = Record<
   number,
@@ -35,6 +36,8 @@ function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
   const currentStep = useAppStore((s) => s.currentStep);
+  const fileId = useAppStore((s) => s.fileId);
+  const { startPolling } = usePollDocumentStatus();
   // const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
 
@@ -81,15 +84,21 @@ function StepProgressBarInner() {
       goTo(current + 1);
     }
   };
+  const hasStartedPolling = useRef(false);
 
   useEffect(() => {
-    if (!currentStep) return;
+    if (!currentStep || !fileId || hasStartedPolling.current) return;
+
     const stepNumber = stepMap[currentStep];
+
     if (stepNumber && stepNumber !== current) {
       goTo(stepNumber);
-      // setCurrentStep("");
+
+      startPolling(fileId, goTo, () => stepNumber);
+
+      hasStartedPolling.current = true;
     }
-  }, [currentStep]);
+  }, [currentStep, fileId]);
 
   return (
     <div className="h-full flex flex-col">
