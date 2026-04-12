@@ -62,6 +62,9 @@ export default function Reconciliation() {
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
   console.log(selectionMap, "selectionMap");
+  // Add state for items grouped by PO
+  const [itemsByPO, setItemsByPO] = useState<Record<string, LineItem[]>>({});
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -103,6 +106,15 @@ export default function Reconciliation() {
       // Items
       setItems(body.items || []);
 
+      // Group items by PO
+      const grouped: Record<string, LineItem[]> = {};
+      (body.items || []).forEach((item) => {
+        const po = (item.poNumber as string) || body.poNumber?.[0] || "unknown";
+        // const po = item.poNumber || body.poNumber?.[0] || "unknown";
+        if (!grouped[po]) grouped[po] = [];
+        grouped[po].push(item);
+      });
+      setItemsByPO(grouped);
       // PO
       setPoList(body.poNumber || []);
       setSelectedPO(body.poNumber?.[0] || "");
@@ -116,6 +128,13 @@ export default function Reconciliation() {
   useEffect(() => {
     fetchData();
   }, []);
+  useEffect(() => {
+    // When PO changes, if no manual selection exists, fall back to genaiSelected
+    if (!selectionMap[selectedPO]) {
+      // nothing to do, computedInitialKeys already handles this
+      return;
+    }
+  }, [selectedPO]);
 
   const handleChange = (key: string, value: string) => {
     setData((prev) =>
@@ -174,14 +193,23 @@ export default function Reconciliation() {
             selected: item.source,
           })),
 
-          items: items.map((item, index) => {
-            const rowKey = `${selectedPO}-${index}`;
+          // items: items.map((item, index) => {
+          //   const rowKey = `${selectedPO}-${index}`;
 
-            return {
-              ...item,
-              genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
-            };
-          }),
+          //   return {
+          //     ...item,
+          //     genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
+          //   };
+          // }),
+          items: Object.entries(itemsByPO).flatMap(([po, poItems]) =>
+            poItems.map((item, index) => {
+              const rowKey = `${po}-${index}`;
+              return {
+                ...item,
+                genaiSelected: (selectionMap[po] || []).includes(rowKey),
+              };
+            }),
+          ),
         },
       };
 
@@ -296,10 +324,17 @@ export default function Reconciliation() {
           </>
         )}
         <br></br>
-
+        {/* 
         {currentData?.length > 0 && (
           <LineItemsTable
             data={currentData}
+            selectedPO={selectedPO}
+            onChange={setSelectionMap}
+          />
+        )} */}
+        {currentData?.length > 0 && (
+          <LineItemsTable
+            data={(selectedPO && itemsByPO[selectedPO]) || currentData}
             selectedPO={selectedPO}
             onChange={setSelectionMap}
           />

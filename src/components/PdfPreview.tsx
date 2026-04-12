@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -22,6 +22,7 @@ type TiffControls = {
   scale: number;
 };
 export default function PdfPreview() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1);
   const [fileUrl, setFileUrl] = useState<string>("");
@@ -77,6 +78,7 @@ export default function PdfPreview() {
         </p>
 
         {/* Premium Controls */}
+
         <div className="flex items-center gap-2 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-inner border">
           <button
             disabled={fileType === "pdf" ? !canZoomOut : tiffScale <= 0.1}
@@ -128,8 +130,13 @@ export default function PdfPreview() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-3 min-w-0">
+      {/* <div className="flex-1 overflow-auto p-3 min-w-0">
+       */}
 
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden p-3 min-h-0"
+      >
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (
           <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>

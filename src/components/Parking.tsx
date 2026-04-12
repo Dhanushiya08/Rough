@@ -116,54 +116,17 @@ export default function Parking() {
     });
     return Array.from(keySet);
   };
-
   const getDynamicColumns = (): ColumnsType<LineItem> => {
     if (!items.length) return [];
 
-    const excludedKeys = ["genaiSelected"];
-    const nonEditableFields = ["item_no"];
-
     const allKeys = getAllKeys(items);
 
-    return allKeys
-      .filter((key) => !excludedKeys.includes(key))
-      .map((key) => ({
-        title: formatLabel(key),
-        dataIndex: key,
-        key,
-
-        render: (_: unknown, record: LineItem, rowIndex: number) => {
-          const value = record[key];
-
-          const displayValue =
-            typeof value === "string" || typeof value === "number"
-              ? String(value)
-              : "";
-
-          if (nonEditableFields.includes(key)) {
-            return <span>{displayValue}</span>;
-          }
-
-          return (
-            <Input
-              value={displayValue}
-              onChange={(e) => {
-                const newItems = [...items];
-                newItems[rowIndex] = {
-                  ...newItems[rowIndex],
-                  [key]: e.target.value,
-                };
-                setItems(newItems);
-              }}
-            />
-          );
-        },
-      }));
+    return allKeys.map((key) => ({
+      title: formatLabel(key),
+      dataIndex: key,
+      key,
+    }));
   };
-
-  // =========================
-  // SUBMIT
-  // =========================
   const handleParkConfirm = () => {
     Modal.confirm({
       title: "Confirm Parking",
@@ -284,13 +247,14 @@ export default function Parking() {
             {/* TABLE */}
             {items.length > 0 && (
               <div className="mt-6">
-                <Text strong>Line Items</Text>
+                {/* <Text strong>Line Items</Text> */}
 
                 <Table<LineItem>
                   rowKey={(_, index) => `${selectedPO}-${index}`}
                   dataSource={items}
                   columns={getDynamicColumns()}
                   pagination={false}
+                  className="custom-ant-table"
                 />
               </div>
             )}
