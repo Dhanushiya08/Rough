@@ -12,9 +12,20 @@ interface Progress {
   park: StepStatus;
 }
 
+// const getTargetStep = (progress: Progress): number => {
+//   if (progress.park === "processing") return 5;
+//   if (progress.sap === "processing") return 4;
+//   if (progress.lookup === "processing") return 3;
+//   if (progress.extract === "processing") return 2;
+//   if (progress.park === "completed") return 5;
+//   if (progress.sap === "completed") return 4;
+//   if (progress.lookup === "completed") return 3;
+//   if (progress.extract === "completed") return 2;
+//   return 1;
+// };
 const getTargetStep = (progress: Progress): number => {
-  if (progress.park === "processing") return 5;
-  if (progress.sap === "processing") return 4;
+  if (progress.park === "processing" || progress.park === "waiting") return 5;
+  if (progress.sap === "processing" || progress.sap === "waiting") return 4;
   if (progress.lookup === "processing") return 3;
   if (progress.extract === "processing") return 2;
   if (progress.park === "completed") return 5;

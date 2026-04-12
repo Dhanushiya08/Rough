@@ -38,23 +38,6 @@ export default function PdfPreview() {
     setNumPages(numPages);
   };
 
-  // const detectFileType = (url: string) => {
-  //   try {
-  //     const cleanUrl = url.split("?")[0];
-  //     const ext = cleanUrl.split(".").pop()?.toLowerCase();
-
-  //     if (ext === "pdf") {
-  //       setFileType("pdf");
-  //     } else if (ext === "tiff" || ext === "tif") {
-  //       setFileType("tiff");
-  //     } else {
-  //       setFileType("unknown");
-  //     }
-  //   } catch {
-  //     setFileType("unknown");
-  //   }
-  // };
-
   const canZoomOut = scale > 0.5;
   const canZoomIn = scale < 3;
   const tiffScale = tiffControls?.scale ?? 1;
@@ -145,8 +128,7 @@ export default function PdfPreview() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-3">
-        {/* {fileMutation.isPending && <p>Loading file...</p>} */}
+      <div className="flex-1 overflow-auto p-3 min-w-0">
 
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (
@@ -156,11 +138,12 @@ export default function PdfPreview() {
                 key={page}
                 pageNumber={page}
                 scale={scale}
-                className="mb-4"
+                className="mb-4 max-w-full"
               />
             ))}
           </Document>
         )}
+
         {/* TIFF */}
         {
           fileType === "tiff" && fileUrl && (

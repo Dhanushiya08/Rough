@@ -55,7 +55,7 @@ function StepProgressBarInner() {
     if (!fileId) {
       return stepId !== 1;
     }
-
+    if (stepId === 1 && maxAllowedStep > 1) return true;
     if (stepId > maxAllowedStep) return true;
     const key = stepProgressKey[stepId];
     if (!key) return false;
@@ -212,13 +212,11 @@ function StepProgressBarInner() {
               {steps[current - 1].component}
             </div>
           ) : (
-            <div className="flex h-full gap-4">
-              <div className="w-1/2">
+            <div className="flex h-full gap-4 overflow-hidden">
+              <div className="w-1/2 min-w-0 h-full shrink-0">
                 <PdfPreview />
               </div>
-
-              {/* RIGHT → STEP CONTENT */}
-              <div className="w-1/2 overflow-auto">
+              <div className="w-1/2 min-w-0 h-full overflow-auto shrink-0">
                 {steps[current - 1].component}
               </div>
             </div>
