@@ -139,6 +139,7 @@ export default function Dashboard() {
         <Tag
           color={statusColorMap[status]}
           className="capitalize px-3 py-1 rounded-full font-medium"
+          variant={"outlined"}
         >
           {status}
         </Tag>
@@ -229,7 +230,7 @@ export default function Dashboard() {
       </div>
 
       {/*  TABLE */}
-      <div className="bg-white rounded-xl shadow-sm p-4 overflow-x-scroll">
+      <div className="bg-white rounded-xl shadow-sm p-4">
         <Table
           columns={columns}
           dataSource={filteredData}

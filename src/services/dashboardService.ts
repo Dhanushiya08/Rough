@@ -6,13 +6,13 @@ type ApiResponse = {
         message: string;
         statusCode: number;
       }
-    | string; 
+    | string;
   statusCode?: number;
 };
 type ApiTableItem = {
   file_id: string;
   file_name: string;
-  state: string; 
+  state: string;
   status: string;
   lang: string;
 };
@@ -31,6 +31,7 @@ export type DataType = {
   state: (typeof validStates)[number];
   status: (typeof validStatuses)[number];
   lang: (typeof validLangs)[number];
+  created_at: string;
 };
 const isValidState = (value: unknown): value is DataType["state"] =>
   typeof value === "string" && validStates.includes(value as DataType["state"]);
@@ -68,6 +69,7 @@ export const getTableData = async (): Promise<DataType[]> => {
         return {
           file_id: item.file_id,
           file_name: item.file_name,
+          created_at: item.created_at,
           state,
           status,
           lang,

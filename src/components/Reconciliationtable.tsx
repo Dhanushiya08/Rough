@@ -71,12 +71,11 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
 
         return (
           <div className="flex items-center gap-2">
-            {record.sapValue || "--"}
-
             <Radio
               checked={record.source === "sap"}
               onChange={() => updateRow(record.key, "sap")}
             />
+            {record.sapValue || "--"}
           </div>
         );
       },

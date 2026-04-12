@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Typography, Input, Spin, Button } from "antd";
+import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
 import apiClient from "../services/apiClient"; // adjust path
 import PdfPreview from "./PdfPreview";
 import { File } from "lucide-react";
@@ -37,6 +37,7 @@ export default function Reconciliation() {
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
   const [selectedPO, setSelectedPO] = useState<string>("");
 
   const { startPolling } = usePollDocumentStatus();
@@ -197,6 +198,7 @@ export default function Reconciliation() {
   const currentData = items;
   console.log(currentData);
   const handlePOEdit = (oldPO: string, newPO: string) => {
+    setIsDirty(true);
     setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
   };
 
@@ -228,7 +230,15 @@ export default function Reconciliation() {
 
           {/* <BackButton /> */}
         </div>
-
+        {isDirty && (
+          <div className="mb-4">
+            <Alert
+              message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
+              type="warning"
+              showIcon
+            />
+          </div>
+        )}
         {/* CONTENT */}
         <div className="flex-1 overflow-auto p-6">
           <Row gutter={[16, 16]}>
