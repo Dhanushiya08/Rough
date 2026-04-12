@@ -63,23 +63,6 @@ export default function Uploading() {
     resolver: zodResolver(schema),
   });
 
-  // const uploadMutation = useMutation({
-  //   mutationFn: ({ file, id }: { file: File; id: string }) =>
-  //     uploadDocument(file, id, setProgress),
-
-  //   onSuccess: (data) => {
-  //     toast.success("Upload successful");
-  //     setFileId(data.file_id);
-  //     setIsUploaded(true);
-  //     setConfirm(false);
-  //   },
-
-  //   onError: () => {
-  //     toast.error("Upload failed");
-  //     setIsUploaded(false);
-  //   },
-  // });
-
   const uploadMutation = useMutation({
     mutationFn: async ({ file, id }: { file: File; id: string }) => {
       if (file.size > 15 * 1024 * 1024) {
@@ -101,12 +84,6 @@ export default function Uploading() {
         headers: {
           "Content-Type": file.type,
         },
-        // onUploadProgress: (progressEvent) => {
-        //   const percent = Math.round(
-        //     (progressEvent.loaded * 100) / (progressEvent.total || 1),
-        //   );
-        //   setProgress(percent);
-        // },
       });
 
       return {
@@ -164,25 +141,6 @@ export default function Uploading() {
     { label: "Mandarin", value: "mandarin" },
   ];
 
-  // const processingMutation = useMutation({
-  //   mutationFn: ({ file_id, lang }: { file_id: string; lang: string }) =>
-  //     startDocumentProcessing({
-  //       event: "start-trigger",
-  //       lang,
-  //       file_id,
-  //       file_name: fileName,
-  //     }),
-
-  //   onSuccess: () => {
-  //     toast.success("Processing started");
-
-  //     goNext?.();
-  //   },
-
-  //   onError: () => {
-  //     toast.error("Processing failed");
-  //   },
-  // });
   const processingMutation = useMutation({
     mutationFn: async ({
       file_id,
@@ -205,7 +163,8 @@ export default function Uploading() {
     onSuccess: () => {
       toast.success("Processing started");
       setProcessingStarted(true);
-
+      useAppStore.getState().setUserManualStep(false);
+      // goTo(2);
       if (fileId) {
         startPolling(fileId, goTo, () => current);
       }
@@ -263,126 +222,6 @@ export default function Uploading() {
     // setProgress(0);
     setIsUploaded(false);
   };
-  // const pollDocumentStatus = (file_id: string) => {
-  //   const startTime = Date.now();
-  //   const TIMEOUT = 20000; // 20 sec
-
-  //   const interval = setInterval(async () => {
-  //     try {
-  //       const { data } = await apiClient.post("/posts", {
-  //         event: "get-doc",
-  //         file_id,
-  //       });
-
-  //       const body =
-  //         typeof data.body === "string" ? JSON.parse(data.body) : data.body;
-
-  //       console.log("Polling:", body);
-
-  //       const progress = body?.progress;
-
-  //       //  check completion
-  //       if (
-  //         progress?.extract === "completed" &&
-  //         progress?.lookup === "completed" &&
-  //         progress?.sap === "completed" &&
-  //         progress?.park === "completed"
-  //       ) {
-  //         clearInterval(interval);
-  //         toast.success("Processing completed ");
-  //         return;
-  //       }
-
-  //       //  stop after 20 sec
-  //       if (Date.now() - startTime > TIMEOUT) {
-  //         clearInterval(interval);
-  //         toast.error("Timeout: Not completed");
-  //       }
-  //     } catch (err: unknown) {
-  //       clearInterval(interval);
-
-  //       let message = "Polling failed";
-
-  //       if (axios.isAxiosError(err)) {
-  //         message = err.response?.data?.message || err.message || message;
-  //       } else if (err instanceof Error) {
-  //         message = err.message;
-  //       }
-
-  //       toast.error(message);
-  //     }
-  //   }, 3000); // every 3 sec
-  // };
-  // const prevProgressRef = useRef<Progress | null>(null);
-
-  // const pollDocumentStatus = (file_id: string) => {
-  //   const interval = setInterval(async () => {
-  //     try {
-  //       const { data } = await apiClient.post("/posts", {
-  //         event: "get-doc",
-  //         file_id,
-  //       });
-
-  //       const body =
-  //         typeof data.body === "string" ? JSON.parse(data.body) : data.body;
-
-  //       // const progress = body?.progress;
-  //       const progress: Progress | undefined = body?.progress;
-  //       console.log("Polling:", progress);
-  //       if (!progress) return;
-
-  //       const prev = prevProgressRef.current;
-
-  //       //  Step-by-step detection
-  //       if (prev) {
-  //         if (
-  //           prev.extract !== "completed" &&
-  //           progress?.extract === "completed"
-  //         ) {
-  //           goNext?.();
-  //         }
-
-  //         if (prev.lookup !== "completed" && progress?.lookup === "completed") {
-  //           goNext?.();
-  //         }
-
-  //         if (prev.sap !== "completed" && progress?.sap === "completed") {
-  //           goNext?.();
-  //         }
-
-  //         if (prev.park !== "completed" && progress?.park === "completed") {
-  //           goNext?.();
-  //         }
-  //       }
-
-  //       // save current state
-  //       prevProgressRef.current = progress;
-
-  //       //  final completion
-  //       if (
-  //         progress?.extract === "completed" &&
-  //         progress?.lookup === "completed" &&
-  //         progress?.sap === "completed" &&
-  //         progress?.park === "completed"
-  //       ) {
-  //         clearInterval(interval);
-  //         toast.success("Processing completed");
-  //       }
-  //     } catch (err: unknown) {
-  //       clearInterval(interval);
-
-  //       let message = "Polling failed";
-
-  //       if (axios.isAxiosError(err)) {
-  //         message = err.response?.data?.message || err.message || message;
-  //       } else if (err instanceof Error) {
-  //         message = err.message;
-  //       }
-
-  //       toast.error(message);
-  //     }
-  //   }, 20000);
-  // };
 
   return (
     <div className="h-full flex items-center justify-center bg-[#F7F9FB]">
@@ -496,21 +335,6 @@ export default function Uploading() {
         {errors.file && (
           <p className="text-red-500 text-xs">{errors.file.message}</p>
         )}
-
-        {/* PROGRESS */}
-        {/* {progress > 0 && (
-          <div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs mt-1 text-secondary text-right">
-              {progress}%
-            </p>
-          </div>
-        )} */}
       </div>
     </div>
   );

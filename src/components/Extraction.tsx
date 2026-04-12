@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
-import { Row, Col, Typography, Button, Spin, Alert } from "antd";
+import { useEffect, useState, useRef } from "react";
+import { Row, Col, Typography, Button, Alert } from "antd";
 import { RotateCcw, File } from "lucide-react";
 // import PdfPreview from "./PdfPreview";
 // import BackButton from "./BackButton";
 // import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
-import type { ExtractionEvent } from "../types/common";
+// import type { ExtractionEvent } from "../types/common";
 import ProcessingOverlay from "./ProcessingOverlay";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
+import { retryExtractionProcess } from "../services/extractionListService";
 
 const { Text } = Typography;
 
@@ -23,15 +24,17 @@ export default function Extraction() {
   const fileId = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
+  const lang = useAppStore((s) => s.lang);
   // const lang = useAppStore((s) => s.lang);
+  const hasRefetchedRef = useRef(false);
   const pollingActive = useAppStore((s) => s.pollingActive);
 
-  const [event, setEvent] = useState<ExtractionEvent>("get-list");
+  // const [event, setEvent] = useState<ExtractionEvent>("get-list");
   // const [retryCount, setRetryCount] = useState(0);
   const [loadingRetry, setLoadingRetry] = useState(false);
   const { startPolling } = usePollDocumentStatus();
   const { current, goTo } = useStep();
-
+  // const [hasRefetched, setHasRefetched] = useState(false);
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
@@ -44,36 +47,34 @@ export default function Extraction() {
     isLoading,
     error,
     refetch,
-  } = useExtraction(fileId, fileName, event);
+  } = useExtraction(fileId, fileName, "get-list");
   console.log(data);
 
   const handleRetry = async () => {
     setLoadingRetry(true);
-    setEvent("retry-process");
-    await refetch();
+    // setEvent("retry-process");
+    // setHasRefetched(false);
+
+    hasRefetchedRef.current = false;
+
+    // await refetch();
+    await retryExtractionProcess(fileId, "extract", fileName, lang);
+
     startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
   };
+
   useEffect(() => {
-    if (progress?.extract === "completed") {
+    if (!pollingActive) return;
+
+    if (progress?.extract === "completed" && !hasRefetchedRef.current) {
+      hasRefetchedRef.current = true;
       refetch();
     }
-  }, [progress?.extract]);
+  }, [progress?.extract, pollingActive]);
 
   return (
     <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
-      {/* <div className="flex gap-6 h-screen overflow-hidden"> */}
-      {/* LEFT SIDE (PDF) */}
-      {/* // <PdfPreview /> */}
-      {/* RIGHT SIDE (EXTRACTION PANEL) */}
-      {/* <div className="relative w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden"> */}
-      {/*  OVERLAY ONLY INSIDE RIGHT PANEL */}
-      {/* {isAnyProcessing && (
-          <ProcessingOverlay
-            title="Processing in Progress"
-            description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
-          />
-        )} */}
       {/* HEADER */}
       <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
@@ -86,12 +87,15 @@ export default function Extraction() {
       <div className="flex-1 overflow-auto p-6">
         {isAnyProcessing ? (
           <ProcessingOverlay
-            title="Processing in Progress"
+            title="Processing Document"
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
           />
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full w-full">
-            <Spin />
+            <ProcessingOverlay
+              title="Loading Data"
+              description="Please wait..."
+            />
           </div>
         ) : error ? (
           <div className="text-red-500 text-sm">

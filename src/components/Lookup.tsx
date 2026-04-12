@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
+import { Row, Col, Typography, Input, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
 // import PdfPreview from "./PdfPreview";
 // import ForwardButton from "./ForwardButton";
@@ -78,16 +78,6 @@ export default function Lookup() {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
-      {/* <div className="flex gap-6"> */}
-      {/* // <PdfPreview /> */}
-      {/* <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden"> */}
-      {/* Overlay */}
-      {/* {isAnyProcessing && (
-          <ProcessingOverlay
-            title="Processing in Progress"
-            description="Please wait..."
-          />
-        )} */}
       {/* HEADER */}
       <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
@@ -100,15 +90,20 @@ export default function Lookup() {
       <div className="flex-1 overflow-auto p-6">
         {isAnyProcessing ? (
           <ProcessingOverlay
-            title="Processing in Progress"
+            title="Processing Document"
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
           />
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full w-full">
-            <Spin />
+            <ProcessingOverlay
+              title="Loading Data"
+              description="Please wait..."
+            />
           </div>
         ) : error ? (
-          <Alert message="Failed to load data" type="error" />
+          <div className="mx-2">
+            <Alert message="Failed to load data" type="error" />
+          </div>
         ) : (
           <>
             {isDirty && (

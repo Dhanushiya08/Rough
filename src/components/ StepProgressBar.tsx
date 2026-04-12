@@ -89,31 +89,26 @@ function StepProgressBarInner() {
       goTo(current + 1);
     }
   };
-  useEffect(() => {
-    if (!fileId || !currentStep) return;
-
-    const stepNumber = stepMap[currentStep];
-
-    if (!stepNumber) return;
-
-    //  Always sync step
-    if (stepNumber !== current) {
-      goTo(stepNumber);
-    }
-
-    //  Always ensure polling is running
-    startPolling(fileId, goTo, () => stepNumber);
-  }, [currentStep, fileId]);
-
   // useEffect(() => {
-  //   if (!currentStep) return;
-  //   const stepNumber = stepMap[currentStep];
-  //   if (stepNumber && stepNumber !== current) {
-  //     goTo(stepNumber);
-  //     // setCurrentStep("");
-  //   }
-  // }, [currentStep]);
+  //   if (!fileId || !currentStep) return;
 
+  //   const stepNumber = stepMap[currentStep];
+
+  //   if (!stepNumber) return;
+
+  //   if (stepNumber !== current) {
+  //     goTo(stepNumber);
+  //   }
+
+  //   startPolling(fileId, goTo, () => stepNumber);
+  // }, [currentStep, fileId]);
+
+
+useEffect(() => {
+  if (!fileId) return;
+
+  startPolling(fileId, goTo, () => current); 
+}, [fileId, current]);
   return (
     <div className="h-full flex flex-col">
       <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">

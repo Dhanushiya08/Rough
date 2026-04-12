@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { Row, Col, Typography, Input, Spin, Button, Table, Modal } from "antd";
+import { useState, useEffect, useRef } from "react";
+import { Row, Col, Typography, Input, Button, Table, Modal } from "antd";
 import { File } from "lucide-react";
 
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import apiClient from "../services/apiClient";
 
+import toast from "react-hot-toast";
 import type { LineItem } from "../types/parking";
 import type { ExtractedItem } from "../types/common";
 
@@ -39,6 +40,7 @@ export default function Parking() {
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
 
+  const completedToastRef = useRef(false);
   const [data, setData] = useState<ParkItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
   const [items, setItems] = useState<LineItem[]>([]);
@@ -56,9 +58,9 @@ export default function Parking() {
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
 
-  // =========================
-  // FETCH DATA
-  // =========================
+  const isAllCompleted =
+    !!progress && Object.values(progress).every((s) => s === "completed");
+
   const fetchParkData = async () => {
     try {
       setLoading(true);
@@ -175,13 +177,19 @@ export default function Parking() {
     });
   };
 
-  // =========================
-  // UI
-  // =========================
+  useEffect(() => {
+    if (isAllCompleted && !completedToastRef.current) {
+      completedToastRef.current = true;
+      toast.success("All steps completed successfully");
+    }
+  }, [isAllCompleted]);
   return (
     <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
       {isAnyProcessing && (
-        <ProcessingOverlay title="Processing..." description="Please wait..." />
+        <ProcessingOverlay
+          title="Processing Document"
+          description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+        />
       )}
 
       {/* HEADER */}
@@ -195,7 +203,10 @@ export default function Parking() {
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6">
         {loading ? (
-          <Spin />
+          <ProcessingOverlay
+            title="Loading Data"
+            description="Please wait..."
+          />
         ) : (
           <>
             {/* FORM */}
@@ -247,8 +258,6 @@ export default function Parking() {
             {/* TABLE */}
             {items.length > 0 && (
               <div className="mt-6">
-                {/* <Text strong>Line Items</Text> */}
-
                 <Table<LineItem>
                   rowKey={(_, index) => `${selectedPO}-${index}`}
                   dataSource={items}
@@ -266,7 +275,8 @@ export default function Parking() {
       <div className="p-4 border-t flex justify-end">
         <Button
           loading={loadingPark}
-          disabled={isAnyProcessing}
+          // disabled={isAnyProcessing}
+          disabled={isAnyProcessing || isAllCompleted}
           onClick={handleParkConfirm}
           className="bg-primary text-white border-none hover:!bg-secondary"
         >

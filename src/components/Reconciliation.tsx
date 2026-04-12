@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Typography, Input, Spin, Button, Alert } from "antd";
+import { Row, Col, Typography, Input, Button, Alert } from "antd";
 import apiClient from "../services/apiClient";
 // import PdfPreview from "./PdfPreview";
 import { File } from "lucide-react";
@@ -258,7 +258,7 @@ export default function Reconciliation() {
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center h-full">
-        <Spin />
+        <ProcessingOverlay title="Loading Data" description="Please wait..." />
       </div>
     );
   }
@@ -272,8 +272,8 @@ export default function Reconciliation() {
     <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
       {isAnyProcessing && (
         <ProcessingOverlay
-          title="Processing in Progress"
-          description="Please wait..."
+          title="Processing Document"
+          description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
         />
       )}
 
