@@ -283,7 +283,7 @@ export default function Reconciliation() {
 
           {poList?.length > 0 && (
             <>
-              <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-primary mb-2">
                 <File size={18} /> PO Number(s)
               </h2>
 
