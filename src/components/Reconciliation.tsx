@@ -160,25 +160,26 @@ export default function Reconciliation() {
         file_name: fileName,
         state: "sap",
         data: {
-          poNumbers: poList,
+          poNumber: poList,
 
           data: data.map((item) => ({
             key: item.key,
             value: item.value,
           })),
 
-          reconcileData: reconcileData.map((item) => ({
-            key: item.key,
-            value: item.value,
-            source: item.source,
+          sapReconcile: reconcileData.map((item) => ({
+            field: item.key,
+            extracted: item.extractedValue,
+            sap: item.sapValue,
+            selected: item.source,
           })),
 
-          lineItems: items.map((item, index) => {
+          items: items.map((item, index) => {
             const rowKey = `${selectedPO}-${index}`;
 
             return {
               ...item,
-              selected: (selectionMap[selectedPO] || []).includes(rowKey),
+              genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
             };
           }),
         },
