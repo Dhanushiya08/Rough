@@ -126,7 +126,7 @@ export default function Reconciliation() {
   const handleRetry = async () => {
     try {
       setRetryLoading(true);
-
+      setIsDirty(false);
       await apiClient.post(API_URL, {
         event: "retry-process",
         file_id: fileId,

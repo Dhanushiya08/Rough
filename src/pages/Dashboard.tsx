@@ -96,6 +96,7 @@ export default function Dashboard() {
         return new Intl.DateTimeFormat("en-US", {
           dateStyle: "medium",
           timeStyle: "short",
+          timeZone: "Asia/Singapore",
         }).format(date);
       },
     },
