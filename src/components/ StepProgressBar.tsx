@@ -34,6 +34,7 @@ const stepProgressKey: StepProgressKeyMap = {
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
+  const immediateLoad = useAppStore((s) => s.immediateLoad);
   const progress = useAppStore((s) => s.progress);
   // const currentStep = useAppStore((s) => s.currentStep);
   const fileId = useAppStore((s) => s.fileId);
@@ -131,9 +132,10 @@ function StepProgressBarInner() {
 
   //   startPolling(fileId, goTo, () => current);
   // }, [fileId, current]);
+
   useEffect(() => {
     if (!fileId) return;
-    startPolling(fileId, goTo, () => currentRef.current);
+    startPolling(fileId, goTo, () => currentRef.current, immediateLoad);
   }, [fileId]);
   return (
     <div className="h-full flex flex-col">

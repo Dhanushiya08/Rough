@@ -30,8 +30,15 @@ interface AppStore {
   currentStep: string;
   setCurrentStep: (step: string) => void;
 
+  immediateLoad: boolean;
+
   showStepper: boolean;
-  openStepper: (id: string, name: string, currentStep: string) => void;
+  openStepper: (
+    id: string,
+    name: string,
+    currentStep: string,
+    immediate?: boolean,
+  ) => void;
   closeStepper: () => void;
 }
 
@@ -52,20 +59,22 @@ export const useAppStore = create<AppStore>((set) => ({
   setPollingActive: (v) => set({ pollingActive: v }),
 
   userManualStep: false,
-  // setUserManualStep: (v) => set({ pollingActive: v }),
   setUserManualStep: (v) => set({ userManualStep: v }),
 
   currentStep: "",
   setCurrentStep: (step) => set({ currentStep: step }),
 
+  immediateLoad: false,
+
   showStepper: false,
 
-  openStepper: (id, name, currentStep) =>
+  openStepper: (id, name, currentStep, immediate = false) =>
     set({
       fileId: id,
       fileName: name,
       currentStep,
       showStepper: true,
+      immediateLoad: immediate,
     }),
 
   closeStepper: () =>
@@ -74,5 +83,6 @@ export const useAppStore = create<AppStore>((set) => ({
       fileName: "",
       currentStep: "",
       showStepper: false,
+      immediateLoad: false,
     }),
 }));

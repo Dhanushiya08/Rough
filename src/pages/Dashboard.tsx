@@ -31,7 +31,7 @@ export default function Dashboard() {
   const openStepper = useAppStore((s) => s.openStepper);
   const [loading, setLoading] = useState(false);
   const handleView = (record: DataType) => {
-    openStepper(record.file_id, record.file_name, record.state);
+    openStepper(record.file_id, record.file_name, record.state, true);
     // startPolling(record.file_id, goTo, () => current);
     // startPolling(record.file_id);
   };
