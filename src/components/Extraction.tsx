@@ -58,7 +58,8 @@ export default function Extraction() {
     hasRefetchedRef.current = false;
 
     // await refetch();
-    await retryExtractionProcess(fileId, "extract", fileName, lang);
+    // await
+    retryExtractionProcess(fileId, "extract", fileName, lang);
 
     startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
