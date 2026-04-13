@@ -97,9 +97,6 @@ export default function Parking() {
     if (fileId) fetchParkData();
   }, [fileId]);
 
-  // =========================
-  // FORM CHANGE
-  // =========================
   const handleChange = (index: number, newValue: string) => {
     setData((prev) =>
       prev.map((item, i) =>
@@ -108,9 +105,6 @@ export default function Parking() {
     );
   };
 
-  // =========================
-  // DYNAMIC TABLE
-  // =========================
   const getAllKeys = (data: LineItem[]): string[] => {
     const keySet = new Set<string>();
     data.forEach((row) => {
@@ -184,7 +178,7 @@ export default function Parking() {
     }
   }, [isAllCompleted]);
   return (
-    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
@@ -193,11 +187,21 @@ export default function Parking() {
       )}
 
       {/* HEADER */}
-      <div className="flex p-6 border-b bg-stepbgheader">
+      <div className="flex justify-between p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
           Parking Data in SAP
         </h2>
+        {/* <Button
+          loading={loadingPark}
+          // disabled={isAnyProcessing}
+          disabled={isAnyProcessing || isAllCompleted}
+          onClick={handleParkConfirm}
+          className="bg-primary text-white border-none hover:!bg-secondary"
+        >
+          Park Data
+        </Button> */}
+        {/* <div className="flex items-center gap-3"></div> */}
       </div>
 
       {/* CONTENT */}

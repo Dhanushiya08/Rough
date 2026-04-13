@@ -77,13 +77,21 @@ export default function Lookup() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
       {/* HEADER */}
-      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
+      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
           Lookup Data
         </h2>
+        {/* <Button
+          icon={<RotateCcw size={16} />}
+          loading={loadingRetry}
+          disabled={isAnyProcessing}
+          onClick={handleRetry}
+        >
+          Retry Look Up
+        </Button> */}
         {/* <BackButton /> */}
       </div>
       {/* CONTENT */}

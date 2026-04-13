@@ -9,6 +9,7 @@ import { useAppStore } from "../store/useAppStore";
 import "../App.css";
 import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import ProcessingOverlay from "./ProcessingOverlay";
 
 //  Worker (only once here)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -34,9 +35,11 @@ export default function PdfPreview() {
     () => Array.from({ length: numPages }, (_, i) => i + 1),
     [numPages],
   );
+  const [isRendering, setIsRendering] = useState(true);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
+    setIsRendering(false);
   };
 
   const canZoomOut = scale > 0.5;
@@ -44,14 +47,14 @@ export default function PdfPreview() {
   const tiffScale = tiffControls?.scale ?? 1;
   const fileMutation = useMutation({
     mutationFn: fetchFileUrl,
-
+    onMutate: () => {
+      setIsRendering(true);
+    },
     onSuccess: (res) => {
-      console.log(res);
       setFileType(res.body.file_type);
       const url = res.body.presignedUrl;
       console.log(url);
       setFileUrl(url);
-      // detectFileType(url);
     },
 
     onError: () => {
@@ -67,17 +70,22 @@ export default function PdfPreview() {
       file_name: fileName,
     });
   }, [file_id]);
-  console.log(fileUrl, fileType);
 
   return (
     <div
       className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
       style={{ minHeight: 0 }}
     >
+      {(fileMutation.isPending || isRendering) && (
+        <ProcessingOverlay
+          title="Loading Document"
+          description="Please wait while we prepare your file..."
+        />
+      )}
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
-          Pages: {numPages || "--"}
+          {fileType === "pdf" && <p>Pages: {numPages || "--"}</p>}
         </p>
 
         {/* Premium Controls */}
@@ -133,9 +141,6 @@ export default function PdfPreview() {
         </div>
       </div>
 
-      {/* <div className="flex-1 overflow-auto p-3 min-w-0">
-       */}
-
       <div
         ref={containerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-3 min-h-0"
@@ -156,12 +161,9 @@ export default function PdfPreview() {
         )}
 
         {/* TIFF */}
-        {
-          fileType === "tiff" && fileUrl && (
-            <ZoomableTIFFViewer tiff={fileUrl} onZoomChange={setTiffControls} />
-          )
-          // <TIFFViewer tiff={fileUrl} />
-        }
+        {fileType === "tiff" && fileUrl && (
+          <ZoomableTIFFViewer tiff={fileUrl} onZoomChange={setTiffControls} />
+        )}
         {/* fallback */}
         {fileType === "unknown" && (
           <p className="text-red-500">Unsupported file type</p>

@@ -226,10 +226,7 @@ export default function Reconciliation() {
   };
   const currentData = items;
   console.log(currentData);
-  // const handlePOEdit = (oldPO: string, newPO: string) => {
-  //   setIsDirty(true);
-  //   setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
-  // };
+
   const handlePOEdit = (oldPO: string, newPO: string) => {
     setIsDirty(true);
 
@@ -264,12 +261,7 @@ export default function Reconciliation() {
   }
 
   return (
-    // <div className="flex gap-6 h-full">
-    //   <PdfPreview />
-
-    //   <div className="w-1/2 border rounded-xl flex flex-col bg-[#F7F9FB] overflow-hidden">
-
-    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
@@ -278,15 +270,22 @@ export default function Reconciliation() {
       )}
 
       {/* HEADER */}
-      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
+      <div className="flex justify-between items-center p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} /> SAP Reconciliation Data
         </h2>
+        <div className="flex items-center gap-3">
+          <Button loading={retryLoading} onClick={handleRetry}>
+            Retry Fetch SAP Data
+          </Button>
+
+          <ForwardButton label="Update" onClick={handleParking} />
+        </div>
 
         {/* <BackButton /> */}
       </div>
       {isDirty && (
-        <div className="mb-4">
+        <div className="mb-4 px-3">
           <Alert
             message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
             type="warning"
@@ -311,7 +310,9 @@ export default function Reconciliation() {
                     isEdited ? "bg-blue-50" : "bg-[#E9EEF3]"
                   }`}
                 >
-                  <Text>{formatLabel(item.key)}</Text>
+                  <Text className="text-xs text-gray-500">
+                    {formatLabel(item.key)}
+                  </Text>
 
                   {item.editable ? (
                     <Input
@@ -319,7 +320,9 @@ export default function Reconciliation() {
                       onChange={(e) => handleChange(item.key, e.target.value)}
                     />
                   ) : (
-                    <div>{item.value || "--"}</div>
+                    <div className="text-sm text-gray-800 ">
+                      {item.value || "--"}
+                    </div>
                   )}
                 </div>
               </Col>
@@ -361,7 +364,7 @@ export default function Reconciliation() {
           <LineItemsTable
             data={(selectedPO && itemsByPO[selectedPO]) || currentData}
             selectedPO={selectedPO}
-            selectionMap={selectionMap} // 👈 pass parent state
+            selectionMap={selectionMap}
             onChange={setSelectionMap}
           />
         )}
@@ -373,7 +376,8 @@ export default function Reconciliation() {
           Retry Fetch SAP Data
         </Button>
 
-        <ForwardButton label="Parking" onClick={handleParking} />
+        <ForwardButton label="Update" onClick={handleParking} />
+
         {/* </div> */}
       </div>
     </div>

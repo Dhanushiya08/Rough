@@ -224,7 +224,7 @@ export default function Uploading() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center bg-[#F7F9FB]">
+    <div className="h-full flex items-center justify-center bg-stepbgbody">
       <Toaster />
 
       <div className="w-[420px] bg-white rounded-md p-5 space-y-4 shadow-md relative">

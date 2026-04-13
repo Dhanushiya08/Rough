@@ -65,7 +65,6 @@ export default function Extraction() {
     setLoadingRetry(false);
   };
 
-  
   useEffect(() => {
     // if (!pollingActive) return;
 
@@ -76,13 +75,14 @@ export default function Extraction() {
   }, [progress?.extract]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#F7F9FB] overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
       {/* HEADER */}
-      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader">
+      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} className="text-primary" />
           Extracted Data
         </h2>
+
         {/* <BackButton /> */}
       </div>
       {/* CONTENT */}
@@ -159,8 +159,8 @@ export default function Extraction() {
             onClick={handleLookUp}
             disabled={isAnyProcessing}
           /> */}
+        {/* </div> */}
       </div>
-      {/* </div> */}
     </div>
   );
 }
