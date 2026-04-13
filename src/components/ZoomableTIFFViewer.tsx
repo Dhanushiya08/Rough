@@ -25,8 +25,11 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const dragStart = useRef({ x: 0, y: 0 });
-
+  useEffect(() => {
+    setIsLoading(true);
+  }, [tiff]);
   const clampPan = (x: number, y: number, currentScale = scale) => {
     if (!containerRef.current || !contentRef.current) return { x, y };
 
@@ -92,6 +95,13 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
       className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden"
       style={{ cursor: isDragging ? "grabbing" : "grab" }}
     >
+      {" "}
+      {isLoading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200 z-10 gap-3">
+          <div className="w-10 h-10 border-4  border-secondary rounded-full animate-spin" />
+          <span className="text-sm text-primary">Loading image...</span>
+        </div>
+      )}
       <div
         ref={contentRef}
         style={{
@@ -100,7 +110,7 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
           transition: isDragging ? "none" : "transform 0.1s ease",
         }}
       >
-        <TIFFViewer tiff={tiff} />
+        <TIFFViewer tiff={tiff} onLoad={() => setIsLoading(false)} />
       </div>
     </div>
   );

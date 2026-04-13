@@ -139,7 +139,8 @@ function StepProgressBarInner() {
   }, [fileId]);
   return (
     <div className="h-full flex flex-col">
-      <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4">
+      <div className="flex-none shrink-0 flex items-center px-10 border-b bg-stepbgheader py-4">
+        {/* <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4"> */}
         <div className="flex items-center justify-between w-full">
           <button
             onClick={handlePrev}
@@ -228,15 +229,16 @@ function StepProgressBarInner() {
           </button>
         </div>
       </div>
-      <div className="h-[90%] flex flex-col justify-between px-10 py-6">
-        <div className="flex-1 w-full">
+      <div className="flex-1 flex flex-col px-4 py-4 min-h-0 overflow-hidden">
+        {/* <div className="h-[90%] flex flex-col justify-between px-10 py-6"> */}
+        <div className="flex-1 w-full min-h-0">
           {current === 1 ? (
             <div className="h-full overflow-auto">
               {steps[current - 1].component}
             </div>
           ) : (
-            <div className="flex h-full gap-4 overflow-hidden">
-              <div className="w-1/2 min-w-0 h-full h-screen shrink-0">
+            <div className="flex h-full overflow-hidden min-h-0">
+              <div className="w-1/2 min-w-0 h-full shrink-0">
                 <PdfPreview />
               </div>
               <div className="w-1/2 min-w-0 h-full overflow-auto shrink-0">

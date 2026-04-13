@@ -192,7 +192,7 @@ export default function Parking() {
           <File size={18} />
           Parking Data in SAP
         </h2>
-        {/* <Button
+        <Button
           loading={loadingPark}
           // disabled={isAnyProcessing}
           disabled={isAnyProcessing || isAllCompleted}
@@ -200,7 +200,7 @@ export default function Parking() {
           className="bg-primary text-white border-none hover:!bg-secondary"
         >
           Park Data
-        </Button> */}
+        </Button>
         {/* <div className="flex items-center gap-3"></div> */}
       </div>
 
@@ -277,7 +277,7 @@ export default function Parking() {
 
       {/* FOOTER */}
       <div className="p-4 border-t flex justify-end">
-        <Button
+        {/* <Button
           loading={loadingPark}
           // disabled={isAnyProcessing}
           disabled={isAnyProcessing || isAllCompleted}
@@ -285,7 +285,7 @@ export default function Parking() {
           className="bg-primary text-white border-none hover:!bg-secondary"
         >
           Park Data
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

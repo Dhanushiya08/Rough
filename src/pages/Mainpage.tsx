@@ -9,23 +9,28 @@ export default function Mainpage() {
   const { showStepper, closeStepper } = useAppStore();
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      <Navbar />
-      {/* <StepProgressBar /> */}
-      {!showStepper && <Dashboard />}
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+      <div className="flex-none">
+        <Navbar />
+      </div>
 
-      {showStepper && (
-        <>
-          <StepProgressBar />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {!showStepper && <Dashboard />}
 
-          <FloatButton
-            icon={<ArrowLeft className="text-primary" size={18} />}
-            onClick={closeStepper}
-            tooltip="Back to Dashboard"
-            style={{ left: 24, bottom: 24 }}
-          />
-        </>
-      )}
+        {showStepper && (
+          <>
+            <div className="h-full overflow-hidden">
+              <StepProgressBar />
+            </div>
+            <FloatButton
+              icon={<ArrowLeft className="text-primary" size={18} />}
+              onClick={closeStepper}
+              tooltip="Back to Dashboard"
+              style={{ left: 24, bottom: 24 }}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }

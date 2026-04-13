@@ -11,6 +11,7 @@ import type {
 import ForwardButton from "./ForwardButton";
 // import BackButton from "./BackButton";
 import ReconciliationTable from "./Reconciliationtable";
+import toast, { Toaster } from "react-hot-toast";
 import { LineItemsTable } from "./LineItemTable";
 import { POSelector } from "./POSelector";
 import { useAppStore } from "../store/useAppStore";
@@ -47,6 +48,7 @@ export default function Reconciliation() {
 
   const [loading, setLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
+  const [parkLoading, setParkLoading] = useState(false);
 
   const fileId = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
@@ -171,7 +173,7 @@ export default function Reconciliation() {
   };
   const handleParking = async () => {
     try {
-      setRetryLoading(true);
+      setParkLoading(true);
 
       const payload = {
         event: "update-data",
@@ -216,12 +218,14 @@ export default function Reconciliation() {
       console.log(" Parking Payload:", payload);
 
       await apiClient.post(API_URL, payload);
+      toast.success("Updated successful");
 
       startPolling(fileId, goTo, () => current);
     } catch (err) {
-      console.error(" Parking API failed:", err);
+      console.error("Parking API failed:", err);
+      toast.error("Failed");
     } finally {
-      setRetryLoading(false);
+      setParkLoading(false);
     }
   };
   const currentData = items;
@@ -262,6 +266,7 @@ export default function Reconciliation() {
 
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+      <Toaster />
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
@@ -272,14 +277,18 @@ export default function Reconciliation() {
       {/* HEADER */}
       <div className="flex justify-between items-center p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
-          <File size={18} /> SAP Reconciliation Data
+          <File size={18} /> SAP Reconciliation
         </h2>
         <div className="flex items-center gap-3">
           <Button loading={retryLoading} onClick={handleRetry}>
-            Retry Fetch SAP Data
+            Retry Fetch
           </Button>
 
-          <ForwardButton label="Update" onClick={handleParking} />
+          <ForwardButton
+            label="Update"
+            onClick={handleParking}
+            loading={parkLoading}
+          />
         </div>
 
         {/* <BackButton /> */}
@@ -295,44 +304,6 @@ export default function Reconciliation() {
       )}
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6">
-        <Row gutter={[16, 16]}>
-          {data.map((item) => {
-            const isFullWidth =
-              item.key === "text" || item.key === "headerText";
-
-            const isEdited =
-              item.originalValue && item.value !== item.originalValue;
-
-            return (
-              <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                <div
-                  className={`rounded-xl p-4 ${
-                    isEdited ? "bg-blue-50" : "bg-[#E9EEF3]"
-                  }`}
-                >
-                  <Text className="text-xs text-gray-500">
-                    {formatLabel(item.key)}
-                  </Text>
-
-                  {item.editable ? (
-                    <Input
-                      value={item.value}
-                      onChange={(e) => handleChange(item.key, e.target.value)}
-                    />
-                  ) : (
-                    <div className="text-sm text-gray-800 ">
-                      {item.value || "--"}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            );
-          })}
-        </Row>
-        <br></br>
-
-        {/* RECONCILIATION */}
-
         <ReconciliationTable data={reconcileData} onChange={setReconcileData} />
         <br></br>
 
@@ -368,18 +339,52 @@ export default function Reconciliation() {
             onChange={setSelectionMap}
           />
         )}
+        <br></br>
+        <Row gutter={[16, 16]}>
+          {data.map((item) => {
+            const isFullWidth =
+              item.key === "text" || item.key === "headerText";
+
+            const isEdited =
+              item.originalValue && item.value !== item.originalValue;
+
+            return (
+              <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                <div
+                  className={`rounded-xl p-4 ${
+                    isEdited ? "bg-blue-50" : "bg-[#E9EEF3]"
+                  }`}
+                >
+                  <Text className="text-xs text-gray-500">
+                    {formatLabel(item.key)}
+                  </Text>
+
+                  {item.editable ? (
+                    <Input
+                      value={item.value}
+                      onChange={(e) => handleChange(item.key, e.target.value)}
+                    />
+                  ) : (
+                    <div className="text-sm text-gray-800 ">
+                      {item.value || "--"}
+                    </div>
+                  )}
+                </div>
+              </Col>
+            );
+          })}
+        </Row>
       </div>
 
       {/* FOOTER */}
-      <div className="p-4 border-t flex justify-between">
+      {/* <div className="p-4 border-t flex justify-between">
         <Button loading={retryLoading} onClick={handleRetry}>
           Retry Fetch SAP Data
         </Button>
 
         <ForwardButton label="Update" onClick={handleParking} />
 
-        {/* </div> */}
-      </div>
+      </div> */}
     </div>
   );
 }

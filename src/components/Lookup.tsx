@@ -79,19 +79,19 @@ export default function Lookup() {
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
       {/* HEADER */}
-      <div className="flex justify-start items-center p-6 border-b bg-stepbgheader border rounded-xl">
+      <div className="flex justify-between items-center p-6 border-b bg-stepbgheader border rounded-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
           Lookup Data
         </h2>
-        {/* <Button
+        <Button
           icon={<RotateCcw size={16} />}
           loading={loadingRetry}
           disabled={isAnyProcessing}
           onClick={handleRetry}
         >
           Retry Look Up
-        </Button> */}
+        </Button>
         {/* <BackButton /> */}
       </div>
       {/* CONTENT */}
@@ -183,7 +183,7 @@ export default function Lookup() {
         )}
       </div>
       {/* FOOTER */}
-      <div className="p-4 border-t flex justify-end items-center">
+      {/* <div className="p-4 border-t flex justify-end items-center">
         <Button
           icon={<RotateCcw size={16} />}
           loading={loadingRetry}
@@ -193,9 +193,8 @@ export default function Lookup() {
           Retry Look Up
         </Button>
 
-        {/* <ForwardButton label="Next Step" disabled={isAnyProcessing} /> */}
-        {/* </div> */}
-      </div>
+        <ForwardButton label="Next Step" disabled={isAnyProcessing} />
+      </div> */}
     </div>
   );
 }

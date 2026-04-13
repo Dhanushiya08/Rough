@@ -23,7 +23,7 @@ export default function ForwardButton({
   return (
     <Button
       type="primary"
-      icon={<ArrowRight size={16} />}
+      icon={label !== "Update" && <ArrowRight size={16} />}
       iconPlacement="end"
       loading={loading}
       disabled={disabled ?? current === totalSteps}
