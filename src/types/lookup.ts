@@ -6,6 +6,7 @@ export interface LookupItem {
   originalValue?: string;
   editable?: boolean;
   dependsOn?: string;
+  errorReason?: string;
 }
 
 // export interface LookupTriggerRequest {

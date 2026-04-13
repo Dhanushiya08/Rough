@@ -11,7 +11,9 @@ import { retryLookupProcess } from "../services/lookupListService";
 import type { LookupItem } from "../types/lookup";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
-
+import toast, { Toaster } from "react-hot-toast";
+import { Tooltip } from "antd";
+import { AlertTriangle } from "lucide-react";
 const { Text } = Typography;
 
 const formatLabel = (key: string) =>
@@ -64,6 +66,7 @@ export default function Lookup() {
         poNumber: data.poNumber,
         data: localData,
       });
+      toast.success("Retry process has started successfully.");
       setUserManualStep(false);
       startPolling(fileId, goTo, () => current);
 
@@ -71,6 +74,7 @@ export default function Lookup() {
 
       setIsDirty(false);
     } catch (err) {
+      toast.error("Failed");
       console.error(err);
     } finally {
       setLoadingRetry(false);
@@ -79,7 +83,7 @@ export default function Lookup() {
 
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
-      {/* HEADER */}
+      {/* HEADER */} <Toaster />
       <div className="flex justify-between items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
@@ -149,33 +153,78 @@ export default function Lookup() {
                 const isDisabled = item.dependsOn
                   ? !localData.find((i) => i.key === item.dependsOn)?.value
                   : false;
-
+                const hasError = !!item.errorReason;
                 return (
-                  <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                    <div
-                      className={`rounded-xl p-4 shadow-sm ${
-                        isEdited
-                          ? "border border-blue-400 bg-blue-50"
-                          : "bg-[#E9EEF3]"
-                      }`}
-                    >
-                      <Text className="text-xs text-gray-500">
-                        {formatLabel(item.key)}
-                      </Text>
+                  // <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                  //   <div
+                  //     className={`rounded-xl p-4 shadow-sm ${
+                  //       isEdited
+                  //         ? "border border-blue-400 bg-blue-50"
+                  //         : "bg-[#E9EEF3]"
+                  //     }`}
+                  //   >
+                  //     <Text className="text-xs text-gray-500">
+                  //       {formatLabel(item.key)}
+                  //     </Text>
 
-                      {item.editable ? (
-                        <Input
-                          value={item.value}
-                          disabled={isDisabled}
-                          onChange={(e) =>
-                            handleChange(item.key, e.target.value)
-                          }
-                          className="mt-2"
-                        />
-                      ) : (
-                        <div className="mt-2 text-sm">{item.value || "--"}</div>
-                      )}
-                    </div>
+                  //     {item.editable ? (
+                  //       <Input
+                  //         value={item.value}
+                  //         disabled={isDisabled}
+                  //         onChange={(e) =>
+                  //           handleChange(item.key, e.target.value)
+                  //         }
+                  //         className="mt-2"
+                  //       />
+                  //     ) : (
+                  //       <div className="mt-2 text-sm">{item.value || "--"}</div>
+                  //     )}
+                  //   </div>
+                  // </Col>
+                  <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                    <Tooltip title={hasError ? item.errorReason : ""}>
+                      <div
+                        className={`rounded-xl p-4 shadow-sm transition-all duration-200 relative
+        ${
+          hasError
+            ? "border border-orange-400 bg-orange-50 hover:shadow-md cursor-help"
+            : isEdited
+              ? "border border-secondary bg-blue-50"
+              : "bg-[#E9EEF3]"
+        }
+      `}
+                      >
+                        {/* Header with icon */}
+                        <div className="flex items-center justify-between">
+                          <Text className="text-xs text-gray-500">
+                            {formatLabel(item.key)}
+                          </Text>
+
+                          {hasError && (
+                            <AlertTriangle
+                              size={16}
+                              className="text-orange-500"
+                            />
+                          )}
+                        </div>
+
+                        {/* Field */}
+                        {item.editable ? (
+                          <Input
+                            value={item.value}
+                            disabled={isDisabled}
+                            onChange={(e) =>
+                              handleChange(item.key, e.target.value)
+                            }
+                            className="mt-2"
+                          />
+                        ) : (
+                          <div className="mt-2 text-sm">
+                            {item.value || "--"}
+                          </div>
+                        )}
+                      </div>
+                    </Tooltip>
                   </Col>
                 );
               })}

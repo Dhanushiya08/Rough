@@ -10,6 +10,7 @@ import ProcessingOverlay from "./ProcessingOverlay";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
 import { retryExtractionProcess } from "../services/extractionListService";
+import toast, { Toaster } from "react-hot-toast";
 
 const { Text } = Typography;
 
@@ -59,6 +60,7 @@ export default function Extraction() {
     // await refetch();
     // await
     retryExtractionProcess(fileId, "extract", fileName, lang);
+    toast.success("Retry process has started successfully.");
     setUserManualStep(false);
     startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
@@ -75,6 +77,7 @@ export default function Extraction() {
 
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+      <Toaster />
       {/* HEADER */}
       <div className="flex justify-start items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">

@@ -24,13 +24,6 @@ const stepProgressKey: StepProgressKeyMap = {
   4: "sap",
   5: "park",
 };
-// const stepMap: Record<string, number> = {
-//   upload: 1,
-//   extract: 2,
-//   lookup: 3,
-//   sap: 4,
-//   park: 5,
-// };
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
@@ -113,25 +106,6 @@ function StepProgressBarInner() {
       goTo(current + 1);
     }
   };
-  // useEffect(() => {
-  //   if (!fileId || !currentStep) return;
-
-  //   const stepNumber = stepMap[currentStep];
-
-  //   if (!stepNumber) return;
-
-  //   if (stepNumber !== current) {
-  //     goTo(stepNumber);
-  //   }
-
-  //   startPolling(fileId, goTo, () => stepNumber);
-  // }, [currentStep, fileId]);
-
-  // useEffect(() => {
-  //   if (!fileId) return;
-
-  //   startPolling(fileId, goTo, () => current);
-  // }, [fileId, current]);
 
   useEffect(() => {
     if (!fileId) return;
@@ -140,7 +114,6 @@ function StepProgressBarInner() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-none shrink-0 flex items-center px-10 border-b bg-stepbgheader py-4">
-        {/* <div className="h-[10%] flex items-center px-10 border-b border-gray-200 bg-stepbgheader py-4"> */}
         <div className="flex items-center justify-between w-full">
           <button
             onClick={handlePrev}
@@ -172,6 +145,27 @@ function StepProgressBarInner() {
               const isCompleted = step.id < current;
               const isActive = step.id === current;
               const disabled = isStepDisabled(step.id);
+              const key = stepProgressKey[step.id];
+              const status = key && progress ? progress[key] : null;
+              const stepColorClass =
+                status === "failed"
+                  ? "bg-red-500 border-red-500 text-white"
+                  : status === "waiting"
+                    ? "bg-secondary text-white"
+                    : isCompleted || isActive
+                      ? "bg-primary border-primary text-white"
+                      : "bg-[#D9E4EA] border-gray-300 text-gray-400";
+
+              const labelColor =
+                status === "failed"
+                  ? "text-red-500"
+                  : status === "waiting"
+                    ? "text-secondary"
+                    : isActive
+                      ? "text-primary"
+                      : isCompleted
+                        ? "text-gray-600"
+                        : "text-gray-400";
 
               return (
                 <button
@@ -187,18 +181,24 @@ function StepProgressBarInner() {
                     disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  <div
+                  {/* <div
                     className={[
                       "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
                       isCompleted || isActive
                         ? "bg-primary border-primary text-white"
                         : "bg-[#D9E4EA] border-gray-300 text-gray-400",
                     ].join(" ")}
+                  > */}
+                  <div
+                    className={[
+                      "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
+                      stepColorClass,
+                    ].join(" ")}
                   >
                     {isCompleted ? "✓" : step.id}
                   </div>
 
-                  <span
+                  {/* <span
                     className={[
                       "text-xs font-semibold uppercase tracking-wide",
                       isActive
@@ -206,6 +206,12 @@ function StepProgressBarInner() {
                         : isCompleted
                           ? "text-gray-600"
                           : "text-gray-400",
+                    ].join(" ")}
+                  > */}
+                  <span
+                    className={[
+                      "text-xs font-semibold uppercase tracking-wide",
+                      labelColor,
                     ].join(" ")}
                   >
                     {step.label}
@@ -230,7 +236,6 @@ function StepProgressBarInner() {
         </div>
       </div>
       <div className="flex-1 flex flex-col px-4 py-4 min-h-0 overflow-hidden">
-        {/* <div className="h-[90%] flex flex-col justify-between px-10 py-6"> */}
         <div className="flex-1 w-full min-h-0">
           {current === 1 ? (
             <div className="h-full overflow-auto">

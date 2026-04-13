@@ -179,7 +179,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    // <div className="h-full stepbgheader px-10 py-4 overflow-auto">
+    <div className="h-full flex flex-col stepbgheader px-10 py-4">
       {/* HEADER */}
       <div className="mb-5 flex justify-between items-center">
         <div>
@@ -237,7 +238,8 @@ export default function Dashboard() {
       </div>
 
       {/*  TABLE */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
+      {/* <div className="bg-white rounded-xl shadow-sm p-4"> */}
+      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-hidden">
         <Table
           columns={columns}
           dataSource={filteredData}
@@ -245,6 +247,7 @@ export default function Dashboard() {
           rowKey="file_id"
           pagination={{ pageSize: 6 }}
           className="custom-ant-table rounded-lg"
+          scroll={{ y: "100%" }}
         />
       </div>
     </div>

@@ -179,6 +179,7 @@ export default function Parking() {
   }, [isAllCompleted]);
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+      
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
