@@ -6,7 +6,6 @@ import { RotateCcw, File } from "lucide-react";
 // import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
-// import type { ExtractionEvent } from "../types/common";
 import ProcessingOverlay from "./ProcessingOverlay";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
@@ -28,6 +27,7 @@ export default function Extraction() {
   // const lang = useAppStore((s) => s.lang);
   const hasRefetchedRef = useRef(false);
   const pollingActive = useAppStore((s) => s.pollingActive);
+  const setUserManualStep = useAppStore((s) => s.setUserManualStep);
 
   // const [event, setEvent] = useState<ExtractionEvent>("get-list");
   // const [retryCount, setRetryCount] = useState(0);
@@ -52,7 +52,6 @@ export default function Extraction() {
 
   const handleRetry = async () => {
     setLoadingRetry(true);
-    // setEvent("retry-process");
     // setHasRefetched(false);
 
     hasRefetchedRef.current = false;
@@ -60,7 +59,7 @@ export default function Extraction() {
     // await refetch();
     // await
     retryExtractionProcess(fileId, "extract", fileName, lang);
-
+    setUserManualStep(false);
     startPolling(fileId, goTo, () => current);
     setLoadingRetry(false);
   };

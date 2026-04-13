@@ -1,20 +1,7 @@
 // types/extraction.ts
-// import type { BaseRequest } from "./base";
 
-// export interface ExtractionRequest extends BaseRequest {
-//   event: "start" | "retry";
-//   retry?: number;
-// }
 import type { RequestWithEvent } from "./common";
-// export interface ApiResponse<T> {
-//   response: {
-//     statusCode: number;
-//     body: {
-//       poNumber: string[];
-//       data: T;
-//     };
-//   };
-// }
+
 export interface ApiResponse<T> {
   statusCode: number;
   body: {
@@ -45,16 +32,4 @@ export interface ExtractionItem {
   editable?: boolean;
 }
 
-// export interface ExtractionRequest {
-//   id?: string;
-//   retry?: number;
-//   file_id: string;
-//   lang: string;
-//   status: string;
-// }
-// export interface getExtractionRequest {
-//   file_id: string;
-//   status?: string;
-//   event: "get-list" | "retry-process" | "look-up";
-//   retry?: number;
-// }
+

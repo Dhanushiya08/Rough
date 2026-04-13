@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Row, Col, Typography, Input, Button, Alert } from "antd";
 import apiClient from "../services/apiClient";
-// import PdfPreview from "./PdfPreview";
-import { File } from "lucide-react";
+import { File, RotateCcw } from "lucide-react";
 import type {
   ExtractedItem,
   LineItem,
@@ -40,7 +39,7 @@ export default function Reconciliation() {
   const [poList, setPoList] = useState<string[]>([]);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedPO, setSelectedPO] = useState<string>("");
-
+  const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const { startPolling } = usePollDocumentStatus();
   const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
     {},
@@ -162,7 +161,7 @@ export default function Reconciliation() {
           })),
         },
       });
-
+      setUserManualStep(false);
       startPolling(fileId, goTo, () => current);
       await fetchData(); // refresh
     } catch (err) {
@@ -280,7 +279,11 @@ export default function Reconciliation() {
           <File size={18} /> SAP Reconciliation
         </h2>
         <div className="flex items-center gap-3">
-          <Button loading={retryLoading} onClick={handleRetry}>
+          <Button
+            loading={retryLoading}
+            onClick={handleRetry}
+            icon={<RotateCcw size={16} />}
+          >
             Retry Fetch
           </Button>
 
@@ -322,14 +325,6 @@ export default function Reconciliation() {
           </>
         )}
         <br></br>
-        {/* 
-        {currentData?.length > 0 && (
-          <LineItemsTable
-            data={currentData}
-            selectedPO={selectedPO}
-            onChange={setSelectionMap}
-          />
-        )} */}
 
         {currentData?.length > 0 && (
           <LineItemsTable

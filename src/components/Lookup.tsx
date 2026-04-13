@@ -22,6 +22,7 @@ export default function Lookup() {
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
+  const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const lang = useAppStore((s) => s.lang);
   const { startPolling } = usePollDocumentStatus();
   const { current, goTo } = useStep();
@@ -63,7 +64,7 @@ export default function Lookup() {
         poNumber: data.poNumber,
         data: localData,
       });
-
+      setUserManualStep(false);
       startPolling(fileId, goTo, () => current);
 
       await refetch();
