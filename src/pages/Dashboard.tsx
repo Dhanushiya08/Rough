@@ -239,7 +239,7 @@ export default function Dashboard() {
 
       {/*  TABLE */}
       {/* <div className="bg-white rounded-xl shadow-sm p-4"> */}
-      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-scroll">
         <Table
           columns={columns}
           dataSource={filteredData}
@@ -247,7 +247,7 @@ export default function Dashboard() {
           rowKey="file_id"
           pagination={{ pageSize: 6 }}
           className="custom-ant-table rounded-lg"
-          scroll={{ y: "100%" }}
+          // scroll={{ y: "100%" }}
         />
       </div>
     </div>
