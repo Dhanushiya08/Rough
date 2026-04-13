@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { TIFFViewer } from "react-tiff";
 import "react-tiff/dist/index.css";
+import ProcessingOverlay from "./ProcessingOverlay";
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
@@ -97,10 +98,10 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
     >
       {" "}
       {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200 z-10 gap-3">
-          <div className="w-10 h-10 border-4  border-secondary rounded-full animate-spin" />
-          <span className="text-sm text-primary">Loading image...</span>
-        </div>
+        <ProcessingOverlay
+          title="Preparing your document..."
+          description="We are retrieving and rendering your document. This may take a few moments."
+        />
       )}
       <div
         ref={contentRef}

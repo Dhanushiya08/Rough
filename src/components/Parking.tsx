@@ -187,7 +187,7 @@ export default function Parking() {
       )}
 
       {/* HEADER */}
-      <div className="flex justify-between p-6 border-b bg-stepbgheader border rounded-xl">
+      <div className="flex justify-between px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
           Parking Data in SAP

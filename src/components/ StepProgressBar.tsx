@@ -238,10 +238,10 @@ function StepProgressBarInner() {
             </div>
           ) : (
             <div className="flex h-full overflow-hidden min-h-0">
-              <div className="w-1/2 min-w-0 h-full shrink-0">
+              <div className="w-1/2 min-w-0 px-3 h-full shrink-0">
                 <PdfPreview />
               </div>
-              <div className="w-1/2 min-w-0 h-full overflow-auto shrink-0">
+              <div className="w-1/2 min-w-0 h-full px-3 overflow-auto shrink-0">
                 {steps[current - 1].component}
               </div>
             </div>
