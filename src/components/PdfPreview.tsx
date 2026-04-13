@@ -55,6 +55,9 @@ export default function PdfPreview() {
       const url = res.body.presignedUrl;
       console.log(url);
       setFileUrl(url);
+      if (res.body.file_type !== "pdf") {
+        setIsRendering(false);
+      }
     },
 
     onError: () => {
@@ -70,7 +73,7 @@ export default function PdfPreview() {
       file_name: fileName,
     });
   }, [file_id]);
-
+  console.log(isRendering);
   return (
     <div
       className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
