@@ -7,7 +7,7 @@ import type { DataType } from "../services/dashboardService";
 
 const { Option } = Select;
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
