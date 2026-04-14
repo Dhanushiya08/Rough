@@ -88,7 +88,7 @@ export default function Extraction() {
         {/* <BackButton /> */}
       </div>
       {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 border border-borderer  border-t-0 thinscroll">
         {isAnyProcessing ? (
           <ProcessingOverlay
             title="Processing Document"

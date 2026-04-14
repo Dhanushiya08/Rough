@@ -40,6 +40,10 @@
   background-color: #f0f4f7 !important;
   opacity: 1 !important;
 }
+
+.thinscroll {
+  scrollbar-width: thin !important;
+}
 ._1mIwz button:not(:disabled):hover {
   background-color: #e5e7eb !important;
   opacity: 0.8 !important;

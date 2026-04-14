@@ -306,7 +306,7 @@ export default function Reconciliation() {
         </div>
       )}
       {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 border border-borderer  border-t-0 thinscroll">
         <ReconciliationTable data={reconcileData} onChange={setReconcileData} />
         <br></br>
 

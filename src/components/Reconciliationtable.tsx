@@ -72,7 +72,8 @@ const ReconciliationTable: React.FC<Props> = ({ data, onChange }) => {
         return (
           <div className="flex items-center gap-2">
             <Radio
-              checked={record.source === "sap"}
+              checked={record.source === "sap" && !!record.sapValue}
+              disabled={!record.sapValue}
               onChange={() => updateRow(record.key, "sap")}
             />
             {record.sapValue || "--"}
