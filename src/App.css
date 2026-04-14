@@ -9,8 +9,7 @@
 }
 
 .custom-ant-table {
-  overflow-y: hidden;
-  overflow-x: scroll;
+  overflow: auto;
 }
 
 .custom-ant-table .ant-table-tbody > tr > td {
