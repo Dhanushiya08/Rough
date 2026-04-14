@@ -9,6 +9,16 @@ type ApiResponse = {
     | string;
   statusCode?: number;
 };
+type ApiCountResponse = {
+  body:
+    | {
+        count: number;
+        message: string;
+        statusCode: number;
+      }
+    | string;
+  statusCode?: number;
+};
 type ApiTableItem = {
   file_id: string;
   file_name: string;
@@ -33,6 +43,13 @@ export type DataType = {
   lang: (typeof validLangs)[number];
   created_at: string;
 };
+export type TableFilters = {
+  search?: string;
+  state?: DataType["state"];
+  status?: DataType["status"];
+  page?: number;
+  pageSize?: number;
+};
 const isValidState = (value: unknown): value is DataType["state"] =>
   typeof value === "string" && validStates.includes(value as DataType["state"]);
 
@@ -43,9 +60,12 @@ const isValidStatus = (value: unknown): value is DataType["status"] =>
 const isValidLang = (value: unknown): value is DataType["lang"] =>
   typeof value === "string" && validLangs.includes(value as DataType["lang"]);
 
-export const getTableData = async (): Promise<DataType[]> => {
+export const getTableData = async (
+  filters: TableFilters = {},
+): Promise<DataType[]> => {
   const response = await apiClient.post<ApiResponse>("/posts", {
     event: "get-table-data",
+    ...filters,
   });
 
   const rawBody = response.data?.body;
@@ -82,4 +102,19 @@ export const getTableData = async (): Promise<DataType[]> => {
     .filter((item): item is DataType => item !== null);
 
   return formattedData;
+};
+
+export const getTableCount = async (
+  filters: Omit<TableFilters, "page" | "pageSize"> = {},
+): Promise<number> => {
+  const response = await apiClient.post<ApiCountResponse>("/posts", {
+    event: "get-table-count",
+    ...filters,
+  });
+
+  const rawBody = response.data?.body;
+  const parsedBody =
+    typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
+
+  return parsedBody?.count ?? 0;
 };

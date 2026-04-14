@@ -1,74 +1,78 @@
 import { Table, Tag, Input, Select } from "antd";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { getTableData } from "../services/dashboardService";
-// import { useStep } from "../hooks/useStep";
-// import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import { getTableData, getTableCount } from "../services/dashboardService";
+import type { DataType } from "../services/dashboardService";
 
 const { Option } = Select;
 
-interface DataType {
-  file_id: string;
-  file_name: string;
-  state: "extract" | "lookup" | "sap" | "park";
-  status: "pending" | "processing" | "waiting" | "completed" | "failed";
-  lang: "english" | "bahasa" | "mandarin";
-}
+const PAGE_SIZE = 6;
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState("");
-  // const { current, goTo } = useStep();
-  // const { startPolling } = usePollDocumentStatus();
-  const [statusFilter, setStatusFilter] = useState<
-    DataType["status"] | undefined
-  >(undefined);
-
-  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(
-    undefined,
-  );
-  const openStepper = useAppStore((s) => s.openStepper);
+  const [statusFilter, setStatusFilter] = useState<DataType["status"] | undefined>(undefined);
+  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const openStepper = useAppStore((s) => s.openStepper);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleView = (record: DataType) => {
     openStepper(record.file_id, record.file_name, record.state, true);
-    // startPolling(record.file_id, goTo, () => current);
-    // startPolling(record.file_id);
+  };
+
+  const fetchAll = (search: string, status: DataType["status"] | undefined, state: DataType["state"] | undefined, page: number) => {
+    const filters = {
+      ...(search ? { search } : {}),
+      ...(status ? { status } : {}),
+      ...(state ? { state } : {}),
+    };
+
+    setLoading(true);
+    Promise.all([
+      getTableData({ ...filters, page, pageSize: PAGE_SIZE }),
+      getTableCount(filters),
+    ])
+      .then(([rows, count]) => {
+        setData(rows);
+        setTotal(count);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  };
+
+  const scheduleFetch = (search: string, status: DataType["status"] | undefined, state: DataType["state"] | undefined, page: number) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAll(search, status, state, page);
+    }, 150);
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await getTableData();
-        console.log(res);
-
-        const normalized = res.map((item) => ({
-          ...item,
-          state: item.state.toLowerCase() as DataType["state"],
-        }));
-
-        setData(normalized);
-        // setData(res);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+    scheduleFetch(searchText, statusFilter, stateFilter, currentPage);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
+  }, [searchText, statusFilter, stateFilter, currentPage]);
 
-    fetchData();
-  }, []);
-  //  Filtering logic
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      return (
-        item.file_name.toLowerCase().includes(searchText.toLowerCase()) &&
-        (!statusFilter || item.status === statusFilter) &&
-        (!stateFilter || item.state === stateFilter)
-      );
-    });
-  }, [data, searchText, statusFilter, stateFilter]);
+  const handleSearchChange = (val: string) => {
+    setSearchText(val);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (val: DataType["status"] | undefined) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+  };
+
+  const handleStateChange = (val: DataType["state"] | undefined) => {
+    setStateFilter(val);
+    setCurrentPage(1);
+  };
 
   const statusColorMap: Record<DataType["status"], string> = {
     pending: "default",
@@ -179,7 +183,6 @@ export default function Dashboard() {
   ];
 
   return (
-    // <div className="h-full stepbgheader px-10 py-4 overflow-auto">
     <div className="h-full flex flex-col stepbgheader px-10 py-4">
       {/* HEADER */}
       <div className="mb-5 flex justify-between items-center">
@@ -201,21 +204,22 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/*  FILTER BAR */}
+      {/* FILTER BAR */}
       <div className="bg-white p-4 rounded-xl shadow-sm mb-4 flex flex-wrap gap-4">
         <Input
           placeholder="Search file name..."
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           className="w-64"
           allowClear
+          onClear={() => handleSearchChange("")}
         />
 
         <Select
           placeholder="Status"
           allowClear
           className="w-44"
-          onChange={(val) => setStatusFilter(val)}
+          onChange={handleStatusChange}
         >
           <Option value="pending">Pending</Option>
           <Option value="processing">Processing</Option>
@@ -228,7 +232,7 @@ export default function Dashboard() {
           placeholder="State"
           allowClear
           className="w-44"
-          onChange={(val) => setStateFilter(val)}
+          onChange={handleStateChange}
         >
           <Option value="extract">Extract</Option>
           <Option value="lookup">Lookup</Option>
@@ -237,17 +241,21 @@ export default function Dashboard() {
         </Select>
       </div>
 
-      {/*  TABLE */}
-      {/* <div className="bg-white rounded-xl shadow-sm p-4"> */}
+      {/* TABLE */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-scroll">
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={data}
           loading={loading}
           rowKey="file_id"
-          pagination={{ pageSize: 6 }}
+          pagination={{
+            current: currentPage,
+            pageSize: PAGE_SIZE,
+            total,
+            onChange: (page) => setCurrentPage(page),
+            showSizeChanger: false,
+          }}
           className="custom-ant-table rounded-lg"
-          // scroll={{ y: "100%" }}
         />
       </div>
     </div>

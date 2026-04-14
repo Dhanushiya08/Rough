@@ -79,73 +79,11 @@ export default function Extraction() {
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       <Toaster />
       {/* HEADER */}
-      <div className="flex justify-start items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
+      <div className="flex justify-between items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} className="text-primary" />
           Extracted Data
         </h2>
-
-        {/* <BackButton /> */}
-      </div>
-      {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 thinscroll">
-        {isAnyProcessing ? (
-          <ProcessingOverlay
-            title="Processing Document"
-            description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
-          />
-        ) : isLoading ? (
-          <div className="flex justify-center items-center h-full w-full">
-            <ProcessingOverlay
-              title="Loading Data"
-              description="Please wait..."
-            />
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-sm">
-            <Alert
-              message="Failed to load extracted data."
-              type="error"
-              showIcon
-            />
-          </div>
-        ) : (
-          <Row gutter={[16, 16]}>
-            {data?.poNumber?.length > 0 && (
-              <Col span={24}>
-                <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
-                  <Text className="text-xs text-gray-500">PO Numbers</Text>
-
-                  <div className="mt-2 text-sm text-gray-800 break-words">
-                    {data.poNumber.filter(Boolean).join(", ") || "--"}
-                  </div>
-                </div>
-              </Col>
-            )}
-
-            {(data?.data ?? []).map((item) => {
-              const isFullWidth =
-                item.key === "text" || item.key === "headerText";
-
-              return (
-                <Col span={isFullWidth ? 24 : 12} key={item.key}>
-                  <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
-                    <Text className="text-xs text-gray-500">
-                      {formatLabel(item.key)}
-                    </Text>
-
-                    <div className="mt-2 text-sm text-gray-800 break-words">
-                      {item.value || "--"}
-                    </div>
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-        )}
-      </div>
-      {/* FOOTER */}
-      <div className="p-4 border-t bg-stepbgbody flex justify-end items-center">
         <Button
           icon={<RotateCcw size={16} />}
           loading={loadingRetry}
@@ -155,6 +93,77 @@ export default function Extraction() {
         >
           Retry Extraction
         </Button>
+
+        {/* <BackButton /> */}
+        {/* </div> */}
+        {/* CONTENT */}
+        <div className="flex-1 overflow-auto p-6 thinscroll">
+          {isAnyProcessing ? (
+            <ProcessingOverlay
+              title="Processing Document"
+              description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+            />
+          ) : isLoading ? (
+            <div className="flex justify-center items-center h-full w-full">
+              <ProcessingOverlay
+                title="Loading Data"
+                description="Please wait..."
+              />
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-sm">
+              <Alert
+                message="Failed to load extracted data."
+                type="error"
+                showIcon
+              />
+            </div>
+          ) : (
+            <Row gutter={[16, 16]}>
+              {data?.poNumber?.length > 0 && (
+                <Col span={24}>
+                  <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+                    <Text className="text-xs text-gray-500">PO Numbers</Text>
+
+                    <div className="mt-2 text-sm text-gray-800 break-words">
+                      {data.poNumber.filter(Boolean).join(", ") || "--"}
+                    </div>
+                  </div>
+                </Col>
+              )}
+
+              {(data?.data ?? []).map((item) => {
+                const isFullWidth =
+                  item.key === "text" || item.key === "headerText";
+
+                return (
+                  <Col span={isFullWidth ? 24 : 12} key={item.key}>
+                    <div className="bg-[#E9EEF3] rounded-xl p-4 shadow-sm">
+                      <Text className="text-xs text-gray-500">
+                        {formatLabel(item.key)}
+                      </Text>
+
+                      <div className="mt-2 text-sm text-gray-800 break-words">
+                        {item.value || "--"}
+                      </div>
+                    </div>
+                  </Col>
+                );
+              })}
+            </Row>
+          )}
+        </div>
+        {/* FOOTER */}
+        {/* <div className="p-4 border-t bg-stepbgbody flex justify-end items-center">
+        <Button
+          icon={<RotateCcw size={16} />}
+          loading={loadingRetry}
+          onClick={handleRetry}
+          disabled={isAnyProcessing}
+          className="flex items-center gap-2 border border-borderer text-primary bg-white hover:!bg-secondary hover:!text-white hover:!border-secondary shadow-sm"
+        >
+          Retry Extraction
+        </Button> */}
 
         {/* <ForwardButton
             label="Look Up"

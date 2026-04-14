@@ -161,12 +161,12 @@ function StepProgressBarInner() {
               const labelColor =
                 status === "failed"
                   ? "text-red-500"
-                  : status === "waiting"
+                  : status === "waiting" || status === "completed"
                     ? "text-secondary"
                     : isActive
                       ? "text-primary"
                       : isCompleted
-                        ? "text-gray-600"
+                        ? "text-secondary"
                         : "text-gray-400";
 
               return (
