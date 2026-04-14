@@ -7,7 +7,7 @@ import type { DataType } from "../services/dashboardService";
 
 const { Option } = Select;
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 7;
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
@@ -267,7 +267,7 @@ export default function Dashboard() {
             onChange: (page) => setCurrentPage(page),
             showSizeChanger: false,
           }}
-          className="custom-ant-table rounded-lg h-full"
+          className="custom-ant-table rounded-lg h-full overflow-auto"
         />
       </div>
     </div>
