@@ -112,7 +112,6 @@ export default function Dashboard() {
     {
       title: "Created At",
       dataIndex: "created_at",
-      width: 120,
       render: (created_at: string) => {
         if (!created_at) return "-";
         const date = new Date(created_at.replace(" ", "T"));
@@ -173,7 +172,6 @@ export default function Dashboard() {
     {
       title: "Action",
       key: "action",
-      width: 140,
       render: (_: unknown, record: DataType) => {
         const isDisabled = record.status === "pending";
 
@@ -256,7 +254,7 @@ export default function Dashboard() {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-scroll">
+      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-auto">
         <Table
           columns={columns}
           dataSource={data}
@@ -269,7 +267,7 @@ export default function Dashboard() {
             onChange: (page) => setCurrentPage(page),
             showSizeChanger: false,
           }}
-          className="custom-ant-table rounded-lg"
+          className="custom-ant-table rounded-lg h-full"
         />
       </div>
     </div>
