@@ -12,8 +12,12 @@ const PAGE_SIZE = 6;
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<DataType["status"] | undefined>(undefined);
-  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<
+    DataType["status"] | undefined
+  >(undefined);
+  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(
+    undefined,
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -25,7 +29,12 @@ export default function Dashboard() {
     openStepper(record.file_id, record.file_name, record.state, true);
   };
 
-  const fetchAll = (search: string, status: DataType["status"] | undefined, state: DataType["state"] | undefined, page: number) => {
+  const fetchAll = (
+    search: string,
+    status: DataType["status"] | undefined,
+    state: DataType["state"] | undefined,
+    page: number,
+  ) => {
     const filters = {
       ...(search ? { search } : {}),
       ...(status ? { status } : {}),
@@ -45,11 +54,16 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   };
 
-  const scheduleFetch = (search: string, status: DataType["status"] | undefined, state: DataType["state"] | undefined, page: number) => {
+  const scheduleFetch = (
+    search: string,
+    status: DataType["status"] | undefined,
+    state: DataType["state"] | undefined,
+    page: number,
+  ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       fetchAll(search, status, state, page);
-    }, 150);
+    }, 400);
   };
 
   useEffect(() => {
