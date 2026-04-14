@@ -79,7 +79,7 @@ export default function Extraction() {
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       <Toaster />
       {/* HEADER */}
-      <div className="flex flex-col justify-between items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
+      <div className="flex justify-between items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} className="text-primary" />
           Extracted Data
