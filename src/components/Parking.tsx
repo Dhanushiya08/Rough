@@ -187,7 +187,7 @@ export default function Parking() {
       )}
 
       {/* HEADER */}
-      <div className="flex justify-between px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
+      <div className="flex justify-between px-4 py-3 border-b bg-stepbgheader rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
           <File size={18} />
           Parking Data in SAP
@@ -221,7 +221,7 @@ export default function Parking() {
                 return (
                   <Col xs={24} sm={12} key={item.key}>
                     <div
-                      className={`p-4 rounded-lg border border-borderer transition ${
+                      className={`p-2 rounded-lg border border-borderer transition ${
                         isEdited ? "bg-stepbgheader" : "bg-white"
                       }`}
                     >

@@ -52,18 +52,28 @@ function StepProgressBarInner() {
     if (
       progress.park === "completed" ||
       progress.park === "processing" ||
-      progress.park === "waiting"
+      progress.park === "waiting" ||
+      progress.park === "failed"
     )
       return 5;
     if (
       progress.sap === "completed" ||
       progress.sap === "processing" ||
-      progress.sap === "waiting"
+      progress.sap === "waiting" ||
+      progress.sap === "failed"
     )
       return 4;
-    if (progress.lookup === "completed" || progress.lookup === "processing")
+    if (
+      progress.lookup === "completed" ||
+      progress.lookup === "processing" ||
+      progress.lookup === "failed"
+    )
       return 3;
-    if (progress.extract === "completed" || progress.extract === "processing")
+    if (
+      progress.extract === "completed" ||
+      progress.extract === "processing" ||
+      progress.extract === "failed"
+    )
       return 2;
     return 1;
   })();
@@ -149,7 +159,7 @@ function StepProgressBarInner() {
               const status = key && progress ? progress[key] : null;
               const stepColorClass =
                 status === "failed"
-                  ? "bg-red-500 border-red-500 text-white"
+                  ? "bg-red-50 border-red-400 text-red-500"
                   : isCompleted || isActive
                     ? "bg-primary border-primary text-white"
                     : status === "waiting" || status === "completed"
@@ -197,7 +207,7 @@ function StepProgressBarInner() {
                       stepColorClass,
                     ].join(" ")}
                   >
-                    {isCompleted ? "✓" : step.id}
+                    {status === "failed" ? "✕" : isCompleted ? "✓" : step.id}
                   </div>
 
                   {/* <span
