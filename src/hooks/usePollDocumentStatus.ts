@@ -13,10 +13,10 @@ interface Progress {
 }
 
 const getTargetStep = (progress: Progress): number => {
-  if (progress.park === "processing" || progress.park === "waiting") return 5;
-  if (progress.sap === "processing" || progress.sap === "waiting") return 4;
-  if (progress.lookup === "processing") return 3;
-  if (progress.extract === "processing") return 2;
+  if (progress.park === "processing" || progress.park === "waiting" || progress.park === "failed") return 5;
+  if (progress.sap === "processing" || progress.sap === "waiting" || progress.sap === "failed") return 4;
+  if (progress.lookup === "processing" || progress.lookup === "failed") return 3;
+  if (progress.extract === "processing" || progress.extract === "failed") return 2;
   if (progress.park === "completed") return 5;
   if (progress.sap === "completed") return 4;
   if (progress.lookup === "completed") return 3;
@@ -73,6 +73,9 @@ export function usePollDocumentStatus() {
         if (isAnyFailed(progress)) {
           stopPolling();
           toast.error("Processing failed");
+          const targetStep = getTargetStep(progress);
+          const userManualStep = useAppStore.getState().userManualStep;
+          if (!userManualStep) goTo(targetStep);
           return;
         }
 
