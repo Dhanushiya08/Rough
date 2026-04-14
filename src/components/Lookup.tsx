@@ -82,7 +82,7 @@ export default function Lookup() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       {/* HEADER */} <Toaster />
       <div className="flex justify-between items-center px-4 py-3 border-b bg-stepbgheader border rounded-t-xl">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
@@ -100,7 +100,7 @@ export default function Lookup() {
         {/* <BackButton /> */}
       </div>
       {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 border border-borderer  border-t-0 thinscroll">
+      <div className="flex-1 overflow-auto p-6 thinscroll">
         {isAnyProcessing ? (
           <ProcessingOverlay
             title="Processing Document"

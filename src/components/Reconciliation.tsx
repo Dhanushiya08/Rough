@@ -264,7 +264,7 @@ export default function Reconciliation() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       <Toaster />
       {isAnyProcessing && (
         <ProcessingOverlay
@@ -297,7 +297,7 @@ export default function Reconciliation() {
         {/* <BackButton /> */}
       </div>
       {isDirty && (
-        <div className="mb-4 px-3">
+        <div className="my-4 px-3">
           <Alert
             message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
             type="warning"
@@ -306,7 +306,7 @@ export default function Reconciliation() {
         </div>
       )}
       {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 border border-borderer  border-t-0 thinscroll">
+      <div className="flex-1 overflow-auto p-6 thinscroll">
         <ReconciliationTable data={reconcileData} onChange={setReconcileData} />
         <br></br>
 

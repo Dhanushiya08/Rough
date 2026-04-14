@@ -178,7 +178,7 @@ export default function Parking() {
     }
   }, [isAllCompleted]);
   return (
-    <div className="w-full h-full flex flex-col bg-stepbgbody overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
@@ -205,7 +205,7 @@ export default function Parking() {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 overflow-auto p-6 border border-borderer  border-t-0 thinscroll">
+      <div className="flex-1 overflow-auto p-6 thinscroll">
         {loading ? (
           <ProcessingOverlay
             title="Loading Data"

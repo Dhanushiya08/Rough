@@ -152,7 +152,7 @@ function StepProgressBarInner() {
                   ? "bg-red-500 border-red-500 text-white"
                   : isCompleted || isActive
                     ? "bg-primary border-primary text-white"
-                    : status === "waiting"
+                    : status === "waiting" || status === "completed"
                       ? "bg-white text-secondary border-secondary"
                       : status === "pending" || disabled
                         ? "bg-[#D9E4EA] border-gray-300 text-gray-400"

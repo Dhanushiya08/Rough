@@ -111,11 +111,7 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
           transition: isDragging ? "none" : "transform 0.1s ease",
         }}
       >
-        <TIFFViewer
-          tiff={tiff}
-          paginate="ltr"
-          onLoad={() => setIsLoading(false)}
-        />
+        <TIFFViewer tiff={tiff} onLoad={() => setIsLoading(false)} />
       </div>
     </div>
   );
