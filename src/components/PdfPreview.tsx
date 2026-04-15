@@ -9,7 +9,7 @@ import { useAppStore } from "../store/useAppStore";
 import "../App.css";
 import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
-import ProcessingOverlay from "./ProcessingOverlay";
+// import ProcessingOverlay from "./ProcessingOverlay";
 
 //  Worker (only once here)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -56,12 +56,14 @@ export default function PdfPreview() {
       console.log(url);
       setFileUrl(url);
       if (res.body.file_type !== "pdf") {
+        console.log(res.body.file_type);
         setIsRendering(false);
       }
     },
 
     onError: () => {
       toast.error("Failed to fetch file");
+      setIsRendering(false);
     },
   });
   useEffect(() => {
@@ -79,12 +81,12 @@ export default function PdfPreview() {
       className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
       style={{ minHeight: 0 }}
     >
-      {(fileMutation.isPending || isRendering) && (
+      {/* {(fileMutation.isPending || isRendering) && (
         <ProcessingOverlay
-          title="Loading Document"
-          description="Please wait while we prepare your file..."
+          title="Preparing your document..."
+          description="We are retrieving and rendering your document. This may take a few moments."
         />
-      )}
+      )} */}
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
