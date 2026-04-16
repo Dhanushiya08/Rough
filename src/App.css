@@ -1,6 +1,9 @@
 body {
   scrollbar-width: thin;
 }
+* {
+  scrollbar-width: thin;
+}
 .custom-ant-table .ant-table-thead > tr > th {
   background-color: theme("colors.stepbgheader");
   color: theme("colors.primary");

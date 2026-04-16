@@ -1,6 +1,6 @@
 import { Table, Tag, Input, Select } from "antd";
 import { useState, useEffect, useRef } from "react";
-import { Eye, Upload } from "lucide-react";
+import { Eye, RefreshCw, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { getTableData, getTableCount } from "../services/dashboardService";
 import type { DataType } from "../services/dashboardService";
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleView = (record: DataType) => {
+    console.log(record, "onclick record");
     openStepper(
       record.file_id,
       record.file_name,
@@ -113,7 +114,9 @@ export default function Dashboard() {
     bahasa: "green",
     mandarin: "orange",
   };
-
+  const handleRefresh = () => {
+    fetchAll(searchText, statusFilter, stateFilter, currentPage);
+  };
   const columns = [
     {
       title: "Created At",
@@ -257,6 +260,14 @@ export default function Dashboard() {
           <Option value="sap">SAP</Option>
           <Option value="park">Park</Option>
         </Select>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+          Refresh
+        </button>
       </div>
 
       {/* TABLE */}
