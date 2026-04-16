@@ -145,7 +145,9 @@ export default function Lookup() {
               {/* Fields */}
               {localData.map((item: LookupItem) => {
                 const isFullWidth =
-                  item.key === "text" || item.key === "headerText";
+                  item.key === "text" ||
+                  item.key === "headerText" ||
+                  item.key == "documentHeaderText";
 
                 const isEdited =
                   item.originalValue && item.value !== item.originalValue;
@@ -220,7 +222,11 @@ export default function Lookup() {
                           />
                         ) : (
                           <div className="mt-2 text-sm">
-                            {item.value || "--"}
+                            {Array.isArray(item.value)
+                              ? item.value.length
+                                ? item.value.join(", ")
+                                : "--"
+                              : item.value || "--"}
                           </div>
                         )}
                       </div>

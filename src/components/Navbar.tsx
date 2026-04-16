@@ -52,7 +52,7 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="md:hidden px-4 pb-4 pt-2 flex flex-col gap-3 border-t border-borderer bg-white">
+        <div className="md:hidden px-4 py-4 flex flex-row justify-end gap-3 border-t border-borderer bg-white">
           <span className="text-sm text-gray-700">demo@1cloudhub.com</span>
           <button
             aria-label="Log out"
