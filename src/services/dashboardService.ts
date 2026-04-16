@@ -116,5 +116,5 @@ export const getTableCount = async (
   const parsedBody =
     typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
 
-  return parsedBody?.count ?? 0;
+  return parsedBody?.data.count ?? 0;
 };
