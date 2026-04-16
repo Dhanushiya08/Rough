@@ -36,6 +36,7 @@ interface AppStore {
   openStepper: (
     id: string,
     name: string,
+    lang: string,
     currentStep: string,
     immediate?: boolean,
   ) => void;
@@ -68,10 +69,11 @@ export const useAppStore = create<AppStore>((set) => ({
 
   showStepper: false,
 
-  openStepper: (id, name, currentStep, immediate = false) =>
+  openStepper: (id, name, lang, currentStep, immediate = false) =>
     set({
       fileId: id,
       fileName: name,
+      lang: lang,
       currentStep,
       showStepper: true,
       immediateLoad: immediate,
@@ -81,6 +83,7 @@ export const useAppStore = create<AppStore>((set) => ({
     set({
       fileId: "",
       fileName: "",
+      lang: "",
       currentStep: "",
       showStepper: false,
       immediateLoad: false,

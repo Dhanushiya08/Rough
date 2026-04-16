@@ -26,7 +26,13 @@ export default function Dashboard() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleView = (record: DataType) => {
-    openStepper(record.file_id, record.file_name, record.state, true);
+    openStepper(
+      record.file_id,
+      record.file_name,
+      record.lang,
+      record.state,
+      true,
+    );
   };
 
   const fetchAll = (
@@ -208,7 +214,7 @@ export default function Dashboard() {
         </div>
 
         <button
-          onClick={() => openStepper("", "", "upload")}
+          onClick={() => openStepper("", "", "", "upload")}
           className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-blue-800 transition"
         >
           <Upload size={18} />
