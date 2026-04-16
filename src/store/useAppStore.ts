@@ -85,5 +85,6 @@ export const useAppStore = create<AppStore>((set) => ({
       showStepper: false,
       immediateLoad: false,
       userManualStep: false,
+      progress: null,
     }),
 }));
