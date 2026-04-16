@@ -30,6 +30,7 @@ export default function PdfPreview() {
   const [fileType, setFileType] = useState<string>("");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
+  // const [filename, setFilename] = useState<string>("");
   const [tiffControls, setTiffControls] = useState<TiffControls | null>(null);
   const pages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => i + 1),
@@ -53,6 +54,8 @@ export default function PdfPreview() {
     onSuccess: (res) => {
       setFileType(res.body.file_type);
       const url = res.body.presignedUrl;
+      // const file_name = res.body.file_name;
+      // setFilename(file_name);
       console.log(url);
       setFileUrl(url);
       if (res.body.file_type !== "pdf") {
@@ -90,7 +93,8 @@ export default function PdfPreview() {
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
-          {fileType === "pdf" && <p>Pages: {numPages || "--"}</p>}
+          {/* {fileType === "pdf" && <p>Pages: {numPages || "--"}</p>} */}
+          {fileName ? fileName : ""}
         </p>
 
         {/* Premium Controls */}
