@@ -157,7 +157,11 @@ export default function PdfPreview() {
       >
         {/* PDF */}
         {fileType === "pdf" && fileUrl && (
-          <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
+          <Document
+            file={fileUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={(err) => console.error("PDF load error:", err)}
+          >
             {pages.map((page) => (
               <Page
                 key={page}

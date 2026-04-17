@@ -124,9 +124,8 @@ export default function Dashboard() {
       render: (created_at: string) => {
         if (!created_at) return "-";
 
-        const date = new Date(created_at.replace(" ", "T"));
+        const date = new Date(created_at.replace(" ", "T") + "Z");
         if (isNaN(date.getTime())) return "-";
-        date.setHours(date.getHours() + 8);
 
         return new Intl.DateTimeFormat("en-US", {
           dateStyle: "medium",
