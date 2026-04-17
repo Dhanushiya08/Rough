@@ -262,6 +262,12 @@ export default function Reconciliation() {
       </div>
     );
   }
+  const handleAddPO = () => {
+    const newPO = `PO-${Date.now()}`;
+    setPoList((prev) => [...prev, newPO]);
+    setItemsByPO((prev) => ({ ...prev, [newPO]: [] }));
+    setSelectedPO(newPO);
+  };
 
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
@@ -316,11 +322,18 @@ export default function Reconciliation() {
               <File size={18} /> PO Number(s)
             </h2>
 
+            {/* <POSelector
+              selectedPO={selectedPO}
+              onSelect={setSelectedPO}
+              poList={poList}
+              onEdit={handlePOEdit}
+            /> */}
             <POSelector
               selectedPO={selectedPO}
               onSelect={setSelectedPO}
               poList={poList}
               onEdit={handlePOEdit}
+              onAdd={handleAddPO}
             />
           </>
         )}
@@ -328,7 +341,8 @@ export default function Reconciliation() {
 
         {currentData?.length > 0 && (
           <LineItemsTable
-            data={(selectedPO && itemsByPO[selectedPO]) || currentData}
+            // data={(selectedPO && itemsByPO[selectedPO]) || currentData}
+            data={itemsByPO[selectedPO] ?? currentData}
             selectedPO={selectedPO}
             selectionMap={selectionMap}
             onChange={setSelectionMap}

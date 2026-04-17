@@ -1,4 +1,3 @@
-// components/POSelector.tsx
 import React, { useState } from "react";
 import { Pencil, Check, X } from "lucide-react";
 
@@ -7,6 +6,7 @@ interface Props {
   onSelect: (po: string) => void;
   poList: string[];
   onEdit: (oldPO: string, newPO: string) => void;
+  onAdd: () => void;
 }
 
 export const POSelector: React.FC<Props> = ({
@@ -14,12 +14,13 @@ export const POSelector: React.FC<Props> = ({
   onSelect,
   poList,
   onEdit,
+  onAdd,
 }) => {
   const [editingPO, setEditingPO] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
   const handleEditClick = (e: React.MouseEvent, po: string) => {
-    e.stopPropagation(); // prevent card selection
+    e.stopPropagation();
     setEditingPO(po);
     setEditValue(po);
   };
@@ -28,10 +29,7 @@ export const POSelector: React.FC<Props> = ({
     e.stopPropagation();
     if (editValue.trim()) {
       onEdit(originalPO, editValue.trim());
-      // If the edited PO was selected, update selection too
-      if (selectedPO === originalPO) {
-        onSelect(editValue.trim());
-      }
+      if (selectedPO === originalPO) onSelect(editValue.trim());
     }
     setEditingPO(null);
   };
@@ -57,9 +55,9 @@ export const POSelector: React.FC<Props> = ({
                 : "bg-white hover:bg-gray-50"
             }`}
           >
-            {/* <p className="text-xs text-gray-400">PO NUMBER</p> */}
             {isEditing ? (
-              <div className="flex items-center gap-1 mt-1">
+              // ── EDIT MODE ──
+              <div className="flex items-center gap-1">
                 <input
                   autoFocus
                   value={editValue}
@@ -83,23 +81,32 @@ export const POSelector: React.FC<Props> = ({
                 />
                 <button
                   onClick={(e) => handleSave(e, po)}
+                  title="Save"
                   className="text-green-500 hover:text-green-700 shrink-0"
                 >
                   <Check size={14} />
                 </button>
                 <button
                   onClick={handleCancel}
+                  title="Cancel"
                   className="text-red-400 hover:text-red-600 shrink-0"
                 >
                   <X size={14} />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between mt-0.5">
-                <p className="font-medium">{po}</p>
+              // ── DEFAULT MODE ──
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-medium text-sm">{po}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Click to select
+                  </p>
+                </div>
                 <button
                   onClick={(e) => handleEditClick(e, po)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary"
+                  title="Edit PO number"
+                  className="text-gray-400 hover:text-primary transition-colors ml-2 shrink-0"
                 >
                   <Pencil size={13} />
                 </button>
@@ -108,6 +115,15 @@ export const POSelector: React.FC<Props> = ({
           </div>
         );
       })}
+
+      {/* ── ADD PO ── */}
+      <div
+        onClick={onAdd}
+        className="p-3 border border-dashed rounded cursor-pointer transition flex items-center justify-center gap-2 text-gray-400 hover:text-primary hover:border-primary hover:bg-gray-50"
+      >
+        <span className="text-xl leading-none">+</span>
+        <span className="text-sm font-medium">Add PO</span>
+      </div>
     </div>
   );
 };
