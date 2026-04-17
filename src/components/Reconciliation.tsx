@@ -263,10 +263,10 @@ export default function Reconciliation() {
     );
   }
   const handleAddPO = () => {
-    const newPO = `PO-${Date.now()}`;
-    setPoList((prev) => [...prev, newPO]);
-    setItemsByPO((prev) => ({ ...prev, [newPO]: [] }));
-    setSelectedPO(newPO);
+    if (poList.includes("")) return;
+    setPoList((prev) => [...prev, ""]);
+    setItemsByPO((prev) => ({ ...prev, "": [] }));
+    setSelectedPO("");
   };
 
   return (
@@ -374,7 +374,8 @@ export default function Reconciliation() {
                       onChange={(e) => handleChange(item.key, e.target.value)}
                     />
                   ) : (
-                    <div className="text-sm text-gray-800 ">
+                    // <div className="text-sm text-gray-800 ">
+                    <div className="text-sm text-gray-800 line-clamp-2">
                       {item.value || "--"}
                     </div>
                   )}

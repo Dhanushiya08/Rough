@@ -16,8 +16,13 @@ export const POSelector: React.FC<Props> = ({
   onEdit,
   onAdd,
 }) => {
-  const [editingPO, setEditingPO] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  // const [editingPO, setEditingPO] = useState<string | null>(null);
+  // const [editValue, setEditValue] = useState("");
+  // Change your state init to auto-edit empty PO
+  const [editingPO, setEditingPO] = useState<string | null>(
+    poList.includes("") ? "" : null, // 👈 auto-open edit for new empty PO
+  );
+  const [editValue, setEditValue] = useState(poList.includes("") ? "" : "");
 
   const handleEditClick = (e: React.MouseEvent, po: string) => {
     e.stopPropagation();
