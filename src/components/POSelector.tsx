@@ -7,6 +7,7 @@ interface Props {
   poList: string[];
   onEdit: (oldPO: string, newPO: string) => void;
   onAdd: () => void;
+  onCancelAdd: () => void;
 }
 
 export const POSelector: React.FC<Props> = ({
@@ -15,14 +16,12 @@ export const POSelector: React.FC<Props> = ({
   poList,
   onEdit,
   onAdd,
+  onCancelAdd,
 }) => {
-  // const [editingPO, setEditingPO] = useState<string | null>(null);
-  // const [editValue, setEditValue] = useState("");
-  // Change your state init to auto-edit empty PO
   const [editingPO, setEditingPO] = useState<string | null>(
-    poList.includes("") ? "" : null, // 👈 auto-open edit for new empty PO
+    poList.includes("") ? "" : null,
   );
-  const [editValue, setEditValue] = useState(poList.includes("") ? "" : "");
+  const [editValue, setEditValue] = useState("");
 
   const handleEditClick = (e: React.MouseEvent, po: string) => {
     e.stopPropagation();
@@ -39,8 +38,12 @@ export const POSelector: React.FC<Props> = ({
     setEditingPO(null);
   };
 
-  const handleCancel = (e: React.MouseEvent) => {
+  // ✅ accepts po param + closing brace was missing
+  const handleCancel = (e: React.MouseEvent, po: string) => {
     e.stopPropagation();
+    if (po === "") {
+      onCancelAdd();
+    }
     setEditingPO(null);
   };
 
@@ -52,7 +55,7 @@ export const POSelector: React.FC<Props> = ({
 
         return (
           <div
-            key={po}
+            key={po === "" ? "__new__" : po}
             onClick={() => !isEditing && onSelect(po.trim())}
             className={`p-3 border rounded cursor-pointer transition relative group ${
               isActive
@@ -61,7 +64,6 @@ export const POSelector: React.FC<Props> = ({
             }`}
           >
             {isEditing ? (
-              // ── EDIT MODE ──
               <div className="flex items-center gap-1">
                 <input
                   autoFocus
@@ -79,6 +81,7 @@ export const POSelector: React.FC<Props> = ({
                     }
                     if (e.key === "Escape") {
                       e.stopPropagation();
+                      if (po === "") onCancelAdd();
                       setEditingPO(null);
                     }
                   }}
@@ -92,7 +95,7 @@ export const POSelector: React.FC<Props> = ({
                   <Check size={14} />
                 </button>
                 <button
-                  onClick={handleCancel}
+                  onClick={(e) => handleCancel(e, po)}
                   title="Cancel"
                   className="text-red-400 hover:text-red-600 shrink-0"
                 >
@@ -100,7 +103,6 @@ export const POSelector: React.FC<Props> = ({
                 </button>
               </div>
             ) : (
-              // ── DEFAULT MODE ──
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium text-sm">{po}</p>

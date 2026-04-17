@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Row, Col, Typography, Input, Button, Alert } from "antd";
+import { Tooltip } from "antd";
 import apiClient from "../services/apiClient";
 import { File, RotateCcw } from "lucide-react";
 import type {
@@ -268,6 +269,17 @@ export default function Reconciliation() {
     setItemsByPO((prev) => ({ ...prev, "": [] }));
     setSelectedPO("");
   };
+  const handleCancelAdd = () => {
+    setPoList((prev) => prev.filter((p) => p !== ""));
+    setItemsByPO((prev) => {
+      const updated = { ...prev };
+      delete updated[""];
+      return updated;
+    });
+    setSelectedPO(poList.filter((p) => p !== "")[0] ?? "");
+  };
+  const truncate = (text: string | undefined, limit: number = 50): string =>
+    text && text.length > limit ? text.slice(0, limit) + "..." : text || "--";
 
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
@@ -334,6 +346,7 @@ export default function Reconciliation() {
               poList={poList}
               onEdit={handlePOEdit}
               onAdd={handleAddPO}
+              onCancelAdd={handleCancelAdd}
             />
           </>
         )}
@@ -357,6 +370,8 @@ export default function Reconciliation() {
             const isEdited =
               item.originalValue && item.value !== item.originalValue;
 
+            const isLong = item.value && item.value.length > 50;
+
             return (
               <Col span={isFullWidth ? 24 : 12} key={item.key}>
                 <div
@@ -375,8 +390,25 @@ export default function Reconciliation() {
                     />
                   ) : (
                     // <div className="text-sm text-gray-800 ">
-                    <div className="text-sm text-gray-800 line-clamp-2">
-                      {item.value || "--"}
+                    //   {item.value || "--"}
+                    // </div>
+                    <div className="text-sm text-gray-800 break-words">
+                      {isLong ? (
+                        <Tooltip
+                          title={
+                            <div className="max-w-[250px] break-words whitespace-pre-wrap">
+                              {item.value}
+                            </div>
+                          }
+                          placement="topLeft"
+                        >
+                          <span className="cursor-pointer">
+                            {truncate(item.value)}
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        item.value || "--"
+                      )}
                     </div>
                   )}
                 </div>
