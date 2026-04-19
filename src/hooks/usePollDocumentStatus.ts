@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { useAppStore } from "../store/useAppStore";
 import apiClient from "../services/apiClient";
 import toast from "react-hot-toast";
@@ -25,24 +24,23 @@ const getTargetStep = (progress: Progress): number => {
 };
 
 const isAnyProcessing = (progress: Progress): boolean =>
-  Object.values(progress).some((status) => status === "processing");
+  Object.values(progress).some((s) => s === "processing");
 
 const isAllCompleted = (progress: Progress): boolean =>
-  Object.values(progress).every((status) => status === "completed");
+  Object.values(progress).every((s) => s === "completed");
 
 const isAnyFailed = (progress: Progress): boolean =>
-  Object.values(progress).some((status) => status === "failed");
+  Object.values(progress).some((s) => s === "failed");
+
+// Module-level: one interval across all hook instances — prevents orphaned intervals on unmount
+let globalIntervalId: ReturnType<typeof setInterval> | null = null;
 
 export function usePollDocumentStatus() {
-  const setProgress = useAppStore((s) => s.setProgress);
-  const setPollingActive = useAppStore((s) => s.setPollingActive);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const stopPolling = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-      setPollingActive(false);
+    if (globalIntervalId) {
+      clearInterval(globalIntervalId);
+      globalIntervalId = null;
+      useAppStore.getState().setPollingActive(false);
     }
   };
 
@@ -50,10 +48,9 @@ export function usePollDocumentStatus() {
     file_id: string,
     goTo: (step: number) => void,
     getCurrent: () => number,
-    immediate = false,
   ) => {
-    stopPolling();
-    setPollingActive(true);
+    if (globalIntervalId) clearInterval(globalIntervalId);
+    useAppStore.getState().setPollingActive(true);
 
     const tick = async () => {
       try {
@@ -66,9 +63,12 @@ export function usePollDocumentStatus() {
           typeof data.body === "string" ? JSON.parse(data.body) : data.body;
 
         const progress: Progress | undefined = body?.progress;
-        if (!progress) return;
+        if (!progress) {
+          useAppStore.getState().setInitialLoading(false);
+          return;
+        }
 
-        setProgress(progress);
+        useAppStore.getState().setProgress(progress);
 
         if (isAnyFailed(progress)) {
           stopPolling();
@@ -76,6 +76,7 @@ export function usePollDocumentStatus() {
           const targetStep = getTargetStep(progress);
           const userManualStep = useAppStore.getState().userManualStep;
           if (!userManualStep) goTo(targetStep);
+          useAppStore.getState().setInitialLoading(false);
           return;
         }
 
@@ -87,23 +88,24 @@ export function usePollDocumentStatus() {
           goTo(targetStep);
         }
 
+        useAppStore.getState().setInitialLoading(false);
+
         if (!isAnyProcessing(progress)) {
           stopPolling();
           if (isAllCompleted(progress)) {
             toast.success("Processing completed");
-            if (!userManualStep) {
-              goTo(targetStep);
-            }
+            if (!userManualStep) goTo(targetStep);
           }
         }
       } catch {
         stopPolling();
+        useAppStore.getState().setInitialLoading(false);
         toast.error("Polling failed");
       }
     };
 
-    if (immediate) tick();
-    intervalRef.current = setInterval(tick, 5000);
+    tick();
+    globalIntervalId = setInterval(tick, 5000);
   };
 
   return { startPolling, stopPolling };

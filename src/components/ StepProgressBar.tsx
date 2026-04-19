@@ -11,6 +11,7 @@ import Parking from "./Parking";
 import type { Step } from "../types/common";
 import PdfPreview from "./PdfPreview";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
+import ProcessingOverlay from "./ProcessingOverlay";
 
 type StepProgressKeyMap = Record<
   number,
@@ -27,11 +28,11 @@ const stepProgressKey: StepProgressKeyMap = {
 
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
-  const immediateLoad = useAppStore((s) => s.immediateLoad);
   const progress = useAppStore((s) => s.progress);
   // const currentStep = useAppStore((s) => s.currentStep);
   const fileId = useAppStore((s) => s.fileId);
-  const { startPolling } = usePollDocumentStatus();
+  const { startPolling, stopPolling } = usePollDocumentStatus();
+  const initialLoading = useAppStore((s) => s.initialLoading);
   // const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const currentRef = useRef(current);
@@ -118,11 +119,15 @@ function StepProgressBarInner() {
   };
 
   useEffect(() => {
-    if (!fileId) return;
-    startPolling(fileId, goTo, () => currentRef.current, immediateLoad);
+    if (!fileId) {
+      stopPolling();
+      return;
+    }
+    startPolling(fileId, goTo, () => currentRef.current);
+    return () => stopPolling();
   }, [fileId]);
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <div className="flex-none shrink-0 flex items-center px-10 border-b bg-stepbgheader py-4">
         <div className="flex items-center justify-between w-full">
           <button
@@ -265,6 +270,12 @@ function StepProgressBarInner() {
           )}
         </div>
       </div>
+      {initialLoading && (
+        <ProcessingOverlay
+          title="Opening Document"
+          description="Fetching document state, please wait..."
+        />
+      )}
     </div>
   );
 }

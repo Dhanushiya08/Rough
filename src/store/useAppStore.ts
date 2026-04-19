@@ -32,6 +32,9 @@ interface AppStore {
 
   immediateLoad: boolean;
 
+  initialLoading: boolean;
+  setInitialLoading: (v: boolean) => void;
+
   showStepper: boolean;
   openStepper: (
     id: string,
@@ -67,6 +70,9 @@ export const useAppStore = create<AppStore>((set) => ({
 
   immediateLoad: false,
 
+  initialLoading: false,
+  setInitialLoading: (v) => set({ initialLoading: v }),
+
   showStepper: false,
 
   openStepper: (id, name, lang, currentStep, immediate = false) =>
@@ -77,6 +83,9 @@ export const useAppStore = create<AppStore>((set) => ({
       currentStep,
       showStepper: true,
       immediateLoad: immediate,
+      initialLoading: !!id,
+      progress: null,
+      pollingActive: false,
     }),
 
   closeStepper: () =>
@@ -87,6 +96,8 @@ export const useAppStore = create<AppStore>((set) => ({
       currentStep: "",
       showStepper: false,
       immediateLoad: false,
+      initialLoading: false,
+      pollingActive: false,
       userManualStep: false,
       progress: null,
     }),

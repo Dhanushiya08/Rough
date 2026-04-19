@@ -35,6 +35,7 @@ const formatLabel = (key: string) =>
 export default function Reconciliation() {
   const [data, setData] = useState<ExtractedItem[]>([]);
   const [reconcileData, setReconcileData] = useState<ReconciliationItem[]>([]);
+  const [reconcileByPO, setReconcileByPO] = useState<Record<string, ReconciliationItem[]>>({});
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
@@ -93,17 +94,25 @@ export default function Reconciliation() {
       );
 
       // Reconcile
-      setReconcileData(
-        body.sapReconcile.map((i: SapReconcileApiItem) => ({
-          key: i.field,
-          label: formatLabel(i.field),
-          extractedValue: i.extracted || "",
-          sapValue: i.sap || "",
-          value: i.selected === "sap" ? i.sap! : i.extracted!,
-          source: i.selected ?? null,
-          originalValue: i.extracted || "",
-        })),
-      );
+      const mappedReconcile: ReconciliationItem[] = body.sapReconcile.map((i: SapReconcileApiItem) => ({
+        key: i.field,
+        label: formatLabel(i.field),
+        extractedValue: i.extracted || "",
+        sapValue: i.sap || "",
+        value: i.selected === "sap" ? i.sap! : i.extracted!,
+        source: i.selected ?? null,
+        originalValue: i.extracted || "",
+        poNumber: i.poNumber,
+      }));
+      setReconcileData(mappedReconcile);
+
+      const groupedReconcile: Record<string, ReconciliationItem[]> = {};
+      mappedReconcile.forEach((item) => {
+        const key = item.poNumber || body.poNumber?.[0] || "unknown";
+        if (!groupedReconcile[key]) groupedReconcile[key] = [];
+        groupedReconcile[key].push(item);
+      });
+      setReconcileByPO(groupedReconcile);
 
       // Items
       setItems(body.items || []);
@@ -231,6 +240,16 @@ export default function Reconciliation() {
   const currentData = items;
   console.log(currentData);
 
+  const handlePORemove = (po: string) => {
+    setIsDirty(true);
+    const newList = poList.filter((p) => p !== po);
+    setPoList(newList);
+    setItemsByPO((prev) => { const u = { ...prev }; delete u[po]; return u; });
+    setReconcileByPO((prev) => { const u = { ...prev }; delete u[po]; return u; });
+    setSelectionMap((prev) => { const u = { ...prev }; delete u[po]; return u; });
+    if (selectedPO === po) setSelectedPO(newList[0] || "");
+  };
+
   const handlePOEdit = (oldPO: string, newPO: string) => {
     setIsDirty(true);
 
@@ -325,7 +344,16 @@ export default function Reconciliation() {
       )}
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6 thinscroll">
-        <ReconciliationTable data={reconcileData} onChange={setReconcileData} />
+        <ReconciliationTable
+          data={(selectedPO && reconcileByPO[selectedPO]) || reconcileData}
+          onChange={(updated) => {
+            setReconcileData(updated);
+            if (selectedPO) {
+              setReconcileByPO((prev) => ({ ...prev, [selectedPO]: updated }));
+            }
+            setIsDirty(true);
+          }}
+        />
         <br></br>
 
         {poList?.length > 0 && (
@@ -347,6 +375,8 @@ export default function Reconciliation() {
               onEdit={handlePOEdit}
               onAdd={handleAddPO}
               onCancelAdd={handleCancelAdd}
+              onRemove={handlePORemove}
+              lang={lang}
             />
           </>
         )}

@@ -29,6 +29,7 @@ export default function Extraction() {
   const hasRefetchedRef = useRef(false);
   const pollingActive = useAppStore((s) => s.pollingActive);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
+  const setInitialLoading = useAppStore((s) => s.setInitialLoading);
 
   // const [event, setEvent] = useState<ExtractionEvent>("get-list");
   // const [retryCount, setRetryCount] = useState(0);
@@ -53,17 +54,18 @@ export default function Extraction() {
 
   const handleRetry = async () => {
     setLoadingRetry(true);
-    // setHasRefetched(false);
-
     hasRefetchedRef.current = false;
-
-    // await refetch();
-    // await
-    retryExtractionProcess(fileId, "extract", fileName, lang);
-    toast.success("Retry process has started successfully.");
-    setUserManualStep(false);
-    startPolling(fileId, goTo, () => current);
-    setLoadingRetry(false);
+    try {
+      await retryExtractionProcess(fileId, "extract", fileName, lang);
+      toast.success("Retry process has started successfully.");
+      setUserManualStep(false);
+      setInitialLoading(true);
+      startPolling(fileId, goTo, () => current);
+    } catch {
+      toast.error("Retry failed");
+    } finally {
+      setLoadingRetry(false);
+    }
   };
 
   useEffect(() => {

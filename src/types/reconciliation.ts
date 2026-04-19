@@ -26,12 +26,14 @@ export type ReconciliationItem = {
   value: string;
   originalValue: string;
   source: "sap" | "extracted" | null;
+  poNumber?: string;
 };
 export type SapReconcileApiItem = {
   field: string;
   extracted?: string;
   sap?: string;
   selected?: "sap" | "extracted" | null;
+  poNumber?: string;
 };
 export type LineItem = Record<string, unknown> & {
   genaiSelected?: boolean;

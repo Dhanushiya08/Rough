@@ -25,6 +25,7 @@ export default function Lookup() {
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
+  const setInitialLoading = useAppStore((s) => s.setInitialLoading);
   const lang = useAppStore((s) => s.lang);
   const { startPolling } = usePollDocumentStatus();
   const { current, goTo } = useStep();
@@ -68,6 +69,7 @@ export default function Lookup() {
       });
       toast.success("Retry process has started successfully.");
       setUserManualStep(false);
+      setInitialLoading(true);
       startPolling(fileId, goTo, () => current);
 
       await refetch();

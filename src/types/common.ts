@@ -51,6 +51,7 @@ export interface ReconciliationItem {
   value: string;
   originalValue: string;
   source: "extracted" | "sap" | null;
+  poNumber?: string;
 }
 
 export type LineItem = Record<string, unknown>;
