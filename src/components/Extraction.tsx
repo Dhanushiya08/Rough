@@ -52,20 +52,15 @@ export default function Extraction() {
   } = useExtraction(fileId, fileName, "get-list");
   console.log(data);
 
-  const handleRetry = async () => {
+  const handleRetry = () => {
     setLoadingRetry(true);
     hasRefetchedRef.current = false;
-    try {
-      await retryExtractionProcess(fileId, "extract", fileName, lang);
-      toast.success("Retry process has started successfully.");
-      setUserManualStep(false);
-      setInitialLoading(true);
-      startPolling(fileId, goTo, () => current);
-    } catch {
-      toast.error("Retry failed");
-    } finally {
-      setLoadingRetry(false);
-    }
+    setUserManualStep(false);
+    setInitialLoading(true);
+    retryExtractionProcess(fileId, "extract", fileName, lang);
+    toast.success("Retry process has started successfully.");
+    startPolling(fileId, goTo, () => current);
+    setLoadingRetry(false);
   };
 
   useEffect(() => {
@@ -100,7 +95,7 @@ export default function Extraction() {
       {/* </div> */}
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6 thinscroll">
-        {(loadingRetry || isAnyProcessing) ? (
+        {loadingRetry || isAnyProcessing ? (
           <ProcessingOverlay
             title="Processing Document"
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
