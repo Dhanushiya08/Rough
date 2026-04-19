@@ -35,7 +35,9 @@ const formatLabel = (key: string) =>
 export default function Reconciliation() {
   const [data, setData] = useState<ExtractedItem[]>([]);
   const [reconcileData, setReconcileData] = useState<ReconciliationItem[]>([]);
-  const [reconcileByPO, setReconcileByPO] = useState<Record<string, ReconciliationItem[]>>({});
+  const [reconcileByPO, setReconcileByPO] = useState<
+    Record<string, ReconciliationItem[]>
+  >({});
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
@@ -94,16 +96,18 @@ export default function Reconciliation() {
       );
 
       // Reconcile
-      const mappedReconcile: ReconciliationItem[] = body.sapReconcile.map((i: SapReconcileApiItem) => ({
-        key: i.field,
-        label: formatLabel(i.field),
-        extractedValue: i.extracted || "",
-        sapValue: i.sap || "",
-        value: i.selected === "sap" ? i.sap! : i.extracted!,
-        source: i.selected ?? null,
-        originalValue: i.extracted || "",
-        poNumber: i.poNumber,
-      }));
+      const mappedReconcile: ReconciliationItem[] = body.sapReconcile.map(
+        (i: SapReconcileApiItem) => ({
+          key: i.field,
+          label: formatLabel(i.field),
+          extractedValue: i.extracted || "",
+          sapValue: i.sap || "",
+          value: i.selected === "sap" ? i.sap! : i.extracted!,
+          source: i.selected ?? null,
+          originalValue: i.extracted || "",
+          poNumber: i.poNumber,
+        }),
+      );
       setReconcileData(mappedReconcile);
 
       const groupedReconcile: Record<string, ReconciliationItem[]> = {};
@@ -244,9 +248,21 @@ export default function Reconciliation() {
     setIsDirty(true);
     const newList = poList.filter((p) => p !== po);
     setPoList(newList);
-    setItemsByPO((prev) => { const u = { ...prev }; delete u[po]; return u; });
-    setReconcileByPO((prev) => { const u = { ...prev }; delete u[po]; return u; });
-    setSelectionMap((prev) => { const u = { ...prev }; delete u[po]; return u; });
+    setItemsByPO((prev) => {
+      const u = { ...prev };
+      delete u[po];
+      return u;
+    });
+    setReconcileByPO((prev) => {
+      const u = { ...prev };
+      delete u[po];
+      return u;
+    });
+    setSelectionMap((prev) => {
+      const u = { ...prev };
+      delete u[po];
+      return u;
+    });
     if (selectedPO === po) setSelectedPO(newList[0] || "");
   };
 
@@ -355,19 +371,11 @@ export default function Reconciliation() {
           }}
         />
         <br></br>
-
-        {poList?.length > 0 && (
+        {lang !== "english" && (
           <>
             <h2 className="text-lg font-semibold flex items-center gap-2 text-primary mb-2">
               <File size={18} /> PO Number(s)
             </h2>
-
-            {/* <POSelector
-              selectedPO={selectedPO}
-              onSelect={setSelectedPO}
-              poList={poList}
-              onEdit={handlePOEdit}
-            /> */}
             <POSelector
               selectedPO={selectedPO}
               onSelect={setSelectedPO}
