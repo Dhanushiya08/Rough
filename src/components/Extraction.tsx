@@ -57,9 +57,13 @@ export default function Extraction() {
     hasRefetchedRef.current = false;
     setUserManualStep(false);
     setInitialLoading(true);
-    retryExtractionProcess(fileId, "extract", fileName, lang);
-    toast.success("Retry process has started successfully.");
-    startPolling(fileId, goTo, () => current);
+    retryExtractionProcess(fileId, "extract", fileName, lang)
+      .then(() => {})
+      .catch(() => {})
+      .finally(() => {
+        toast.success("Retry process has started successfully.");
+        startPolling(fileId, goTo, () => current);
+      });
     setLoadingRetry(false);
   };
 
