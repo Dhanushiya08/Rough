@@ -319,7 +319,7 @@ export default function Reconciliation() {
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       <Toaster />
-      {(retryLoading || parkLoading || pollingActive || isAnyProcessing) && (
+      {(retryLoading || parkLoading || isAnyProcessing) && (
         <ProcessingOverlay
           title="Processing Document"
           description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
