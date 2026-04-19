@@ -66,7 +66,7 @@ export default function Reconciliation() {
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
-  console.log(selectionMap, "selectionMap");
+  // console.log(selectionMap, "selectionMap");
   // Add state for items grouped by PO
   const [itemsByPO, setItemsByPO] = useState<Record<string, LineItem[]>>({});
 
@@ -319,7 +319,7 @@ export default function Reconciliation() {
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
       <Toaster />
-      {isAnyProcessing && (
+      {(retryLoading || parkLoading || pollingActive || isAnyProcessing) && (
         <ProcessingOverlay
           title="Processing Document"
           description="Your request is currently being processed. Please wait and do not make any changes or navigate away."

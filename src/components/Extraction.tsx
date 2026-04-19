@@ -100,7 +100,7 @@ export default function Extraction() {
       {/* </div> */}
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6 thinscroll">
-        {isAnyProcessing ? (
+        {(loadingRetry || pollingActive) ? (
           <ProcessingOverlay
             title="Processing Document"
             description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
