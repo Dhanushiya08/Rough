@@ -39,6 +39,7 @@ export default function Parking() {
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
   const pollingActive = useAppStore((s) => s.pollingActive);
+  const [isParkSuccess, setIsParkSuccess] = useState(false);
 
   const completedToastRef = useRef(false);
   const [data, setData] = useState<ParkItem[]>([]);
@@ -160,10 +161,27 @@ export default function Parking() {
           console.log("Parking Payload:", payload);
 
           await apiClient.post(API_URL, payload);
+          const response = await apiClient.post(API_URL, payload);
+
+          console.log("Parking Response:", response);
+
+          const apiMessage = response?.data?.body?.MESSAGE;
+          const apiType = response?.data?.body?.TYPE;
+
+          if (apiType === "S") {
+            toast.success(apiMessage);
+            setIsParkSuccess(true);
+            startPolling(fileId, goTo, () => current);
+          } else if (apiType === "E") {
+            toast.error(apiMessage || "Parking failed");
+          } else {
+            toast(apiMessage);
+          }
 
           startPolling(fileId, goTo, () => current);
         } catch (err) {
           console.error("Parking API failed:", err);
+          toast.error("Parking failed. Please try again.");
         } finally {
           setLoadingPark(false);
         }
@@ -195,7 +213,8 @@ export default function Parking() {
         <Button
           loading={loadingPark}
           // disabled={isAnyProcessing}
-          disabled={isAnyProcessing || isAllCompleted}
+          // disabled={isAnyProcessing || isAllCompleted}
+          disabled={isAnyProcessing || isAllCompleted || isParkSuccess}
           onClick={handleParkConfirm}
           className="bg-primary text-white border-none hover:!bg-secondary"
         >
