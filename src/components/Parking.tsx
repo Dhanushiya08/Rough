@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Row, Col, Typography, Input, Button, Table, Modal } from "antd";
 import { File } from "lucide-react";
-
+import toast, { Toaster } from "react-hot-toast";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import apiClient from "../services/apiClient";
 
-import toast from "react-hot-toast";
 import type { LineItem } from "../types/parking";
 import type { ExtractedItem } from "../types/common";
 
@@ -158,9 +157,8 @@ export default function Parking() {
             },
           };
 
-          console.log("Parking Payload:", payload);
+          console.log("Final Parking Payload:", payload);
 
-          // await apiClient.post(API_URL, payload);
           const response = await apiClient.post(API_URL, payload);
 
           console.log("Parking Response:", response);
@@ -197,6 +195,7 @@ export default function Parking() {
   }, [isAllCompleted]);
   return (
     <div className="w-full h-full flex flex-col bg-stepbgbody border rounded-xl overflow-hidden">
+      <Toaster />
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
