@@ -160,7 +160,7 @@ export default function Parking() {
 
           console.log("Parking Payload:", payload);
 
-          await apiClient.post(API_URL, payload);
+          // await apiClient.post(API_URL, payload);
           const response = await apiClient.post(API_URL, payload);
 
           console.log("Parking Response:", response);
