@@ -112,16 +112,29 @@ export default function Parking() {
     });
     return Array.from(keySet);
   };
+  // const getDynamicColumns = (): ColumnsType<LineItem> => {
+  //   if (!items.length) return [];
+
+  //   const allKeys = getAllKeys(items);
+
+  //   return allKeys.map((key) => ({
+  //     title: formatLabel(key),
+  //     dataIndex: key,
+  //     key,
+  //   }));
+  // };
   const getDynamicColumns = (): ColumnsType<LineItem> => {
     if (!items.length) return [];
 
     const allKeys = getAllKeys(items);
 
-    return allKeys.map((key) => ({
-      title: formatLabel(key),
-      dataIndex: key,
-      key,
-    }));
+    return allKeys
+      .filter((key) => key !== "genaiSelected" && key !== "genaiId")
+      .map((key) => ({
+        title: formatLabel(key),
+        dataIndex: key,
+        key,
+      }));
   };
   const handleParkConfirm = () => {
     Modal.confirm({

@@ -42,7 +42,8 @@ export const LineItemsTable = ({
   const columns =
     data && data.length > 0
       ? Object.keys(data[0])
-          .filter((key) => key !== "genaiSelected")
+          // .filter((key) => key !== "genaiSelected")
+          .filter((key) => key !== "genaiSelected" && key !== "genaiId")
           .map((key) => ({
             title: key
               .replace(/([A-Z])/g, " $1")
