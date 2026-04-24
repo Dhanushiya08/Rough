@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [copiedRow, setCopiedRow] = useState<string | null>(null);
 
   const openStepper = useAppStore((s) => s.openStepper);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,18 +98,23 @@ export default function Dashboard() {
     setCurrentPage(1);
   };
 
-  const handleCopy = async (value?: string) => {
+  const handleCopy = async (value?: string, fileId?: string) => {
     if (!value) return;
 
     try {
       await navigator.clipboard.writeText(value);
+
+      setCopiedRow(fileId || null);
       toast.success("Copied");
+
+      setTimeout(() => {
+        setCopiedRow(null);
+      }, 2000);
     } catch (error) {
       toast.error("Copy failed");
       console.log(error);
     }
   };
-
   const statusColorMap: Record<DataType["status"], string> = {
     pending: "default",
     processing: "blue",
@@ -209,10 +215,11 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-800">{value}</span>
 
-            <Tooltip title="Copy">
+            <Tooltip title={copiedRow === record.file_id ? "Copied" : "Copy"}>
               <button
                 type="button"
-                onClick={() => handleCopy(value)}
+                // onClick={() => handleCopy(value)}
+                onClick={() => handleCopy(value, record.file_id)}
                 className="text-gray-500 hover:text-primary transition"
               >
                 <Copy size={16} />
