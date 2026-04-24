@@ -42,6 +42,7 @@ export type DataType = {
   status: (typeof validStatuses)[number];
   lang: (typeof validLangs)[number];
   created_at: string;
+  invoice_doc_number?: string | null;
 };
 export type TableFilters = {
   search?: string;

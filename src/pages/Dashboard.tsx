@@ -1,10 +1,11 @@
-import { Table, Tag, Input, Select } from "antd";
+import { Table, Tag, Input, Select, Tooltip } from "antd";
 import { useState, useEffect, useRef } from "react";
-import { Eye, RefreshCw, Upload } from "lucide-react";
+import { Eye, RefreshCw, Upload, Copy } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { getTableData, getTableCount } from "../services/dashboardService";
 import type { DataType } from "../services/dashboardService";
 import ProcessingOverlay from "../components/ProcessingOverlay";
+import toast from "react-hot-toast";
 
 const { Option } = Select;
 
@@ -96,6 +97,18 @@ export default function Dashboard() {
     setCurrentPage(1);
   };
 
+  const handleCopy = async (value?: string) => {
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success("Copied");
+    } catch (error) {
+      toast.error("Copy failed");
+      console.log(error);
+    }
+  };
+
   const statusColorMap: Record<DataType["status"], string> = {
     pending: "default",
     processing: "blue",
@@ -133,6 +146,34 @@ export default function Dashboard() {
           timeStyle: "short",
           timeZone: "Asia/Singapore",
         }).format(date);
+      },
+    },
+
+    {
+      title: "Invoice Doc Number",
+      dataIndex: "invoice_doc_number",
+      render: (_: unknown, record: DataType) => {
+        const value = record?.invoice_doc_number?.toString()?.trim();
+
+        if (!value) {
+          return <span className="text-gray-400">-</span>;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-800">{value}</span>
+
+            <Tooltip title="Copy">
+              <button
+                type="button"
+                onClick={() => handleCopy(value)}
+                className="text-gray-500 hover:text-primary transition"
+              >
+                <Copy size={16} />
+              </button>
+            </Tooltip>
+          </div>
+        );
       },
     },
     {
