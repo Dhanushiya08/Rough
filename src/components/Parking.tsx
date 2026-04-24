@@ -203,7 +203,8 @@ export default function Parking() {
   useEffect(() => {
     if (isAllCompleted && !completedToastRef.current) {
       completedToastRef.current = true;
-      toast.success("All steps completed successfully");
+      // toast.success("All steps completed successfully");
+      console.log("All steps completed successfully");
     }
   }, [isAllCompleted]);
   return (
@@ -212,7 +213,7 @@ export default function Parking() {
       {isAnyProcessing && (
         <ProcessingOverlay
           title="Processing Document"
-          description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+          description="Your request is currently being processed."
         />
       )}
 

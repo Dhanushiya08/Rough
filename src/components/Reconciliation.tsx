@@ -41,7 +41,9 @@ export default function Reconciliation() {
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
-  const [isDirty, setIsDirty] = useState(false);
+  // const [isDirty, setIsDirty] = useState(false);
+  const [isPODirty, setIsPODirty] = useState(false);
+  const [isTableDirty, setIsTableDirty] = useState(false);
   const [selectedPO, setSelectedPO] = useState<string>("");
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const { startPolling } = usePollDocumentStatus();
@@ -160,7 +162,7 @@ export default function Reconciliation() {
   const handleRetry = async () => {
     try {
       setRetryLoading(true);
-      setIsDirty(false);
+      // setIsDirty(false);
       await apiClient.post(API_URL, {
         event: "retry-process",
         file_id: fileId,
@@ -176,6 +178,7 @@ export default function Reconciliation() {
         },
       });
       setUserManualStep(false);
+      setIsPODirty(false);
       startPolling(fileId, goTo, () => current);
       await fetchData(); // refresh
     } catch (err) {
@@ -232,7 +235,7 @@ export default function Reconciliation() {
 
       await apiClient.post(API_URL, payload);
       toast.success("Updated successful");
-
+      setIsTableDirty(false);
       startPolling(fileId, goTo, () => current);
     } catch (err) {
       console.error("Parking API failed:", err);
@@ -245,7 +248,8 @@ export default function Reconciliation() {
   console.log(currentData);
 
   const handlePORemove = (po: string) => {
-    setIsDirty(true);
+    // setIsDirty(true);
+    setIsPODirty(true);
     const newList = poList.filter((p) => p !== po);
     setPoList(newList);
     setItemsByPO((prev) => {
@@ -267,7 +271,8 @@ export default function Reconciliation() {
   };
 
   const handlePOEdit = (oldPO: string, newPO: string) => {
-    setIsDirty(true);
+    // setIsDirty(true);
+    setIsPODirty(true);
 
     setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
 
@@ -322,7 +327,7 @@ export default function Reconciliation() {
       {(retryLoading || parkLoading || isAnyProcessing) && (
         <ProcessingOverlay
           title="Processing Document"
-          description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+          description="Your request is currently being processed."
         />
       )}
 
@@ -349,15 +354,44 @@ export default function Reconciliation() {
 
         {/* <BackButton /> */}
       </div>
-      {isDirty && (
+      {/* {isDirty && (
         <div className="my-4 px-3">
           <Alert
-            message="You have unsaved changes. Click 'Retry Fetch SAP Data' to update data, or they will be lost."
+            message="You have unsaved changes. Click 'Retry Fetch' to update data, or they will be lost."
+            type="warning"
+            showIcon
+          />
+        </div>
+      )} */}
+      {isPODirty && (
+        <div className="my-4 px-3">
+          <Alert
+            message={
+              <span>
+                You've changed PO numbers. Click <strong>Retry Fetch</strong> to
+                apply the changes, or they will be lost.
+              </span>
+            }
             type="warning"
             showIcon
           />
         </div>
       )}
+      {isTableDirty && (
+        <div className="my-4 px-3">
+          <Alert
+            message={
+              <span>
+                You've made changes to the reconciliation or line items. Click{" "}
+                <strong>Update</strong> to save them.
+              </span>
+            }
+            type="info"
+            showIcon
+          />
+        </div>
+      )}
+
       {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6 thinscroll">
         <ReconciliationTable
@@ -367,7 +401,9 @@ export default function Reconciliation() {
             if (selectedPO) {
               setReconcileByPO((prev) => ({ ...prev, [selectedPO]: updated }));
             }
-            setIsDirty(true);
+            // setIsDirty(true);
+            // setIsPODirty(true);
+            setIsTableDirty(true);
           }}
         />
         <br></br>
@@ -396,7 +432,11 @@ export default function Reconciliation() {
             data={itemsByPO[selectedPO] ?? currentData}
             selectedPO={selectedPO}
             selectionMap={selectionMap}
-            onChange={setSelectionMap}
+            // onChange={setSelectionMap}
+            onChange={(updated) => {
+              setSelectionMap(updated);
+              setIsTableDirty(true);
+            }}
           />
         )}
         <br></br>

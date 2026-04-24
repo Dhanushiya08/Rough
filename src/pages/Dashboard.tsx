@@ -4,6 +4,7 @@ import { Eye, RefreshCw, Upload } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { getTableData, getTableCount } from "../services/dashboardService";
 import type { DataType } from "../services/dashboardService";
+import ProcessingOverlay from "../components/ProcessingOverlay";
 
 const { Option } = Select;
 
@@ -274,7 +275,7 @@ export default function Dashboard() {
 
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-auto">
-        <Table
+        {/* <Table
           columns={columns}
           dataSource={data}
           loading={loading}
@@ -287,7 +288,27 @@ export default function Dashboard() {
             showSizeChanger: false,
           }}
           className="custom-ant-table rounded-lg h-full overflow-auto"
-        />
+        /> */}
+        {loading ? (
+          <ProcessingOverlay
+            title="Loading your table data"
+            description="Loading data, this may take a few seconds..."
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="file_id"
+            pagination={{
+              current: currentPage,
+              pageSize: PAGE_SIZE,
+              total,
+              onChange: (page) => setCurrentPage(page),
+              showSizeChanger: false,
+            }}
+            className="custom-ant-table rounded-lg h-full overflow-auto"
+          />
+        )}
       </div>
     </div>
   );

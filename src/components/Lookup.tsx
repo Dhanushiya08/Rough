@@ -106,7 +106,7 @@ export default function Lookup() {
         {(loadingRetry || isAnyProcessing) ? (
           <ProcessingOverlay
             title="Processing Document"
-            description="Your request is currently being processed. Please wait and do not make any changes or navigate away."
+            description="Your request is currently being processed."
           />
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full w-full">
