@@ -150,33 +150,6 @@ export default function Dashboard() {
     },
 
     {
-      title: "Invoice Doc Number",
-      dataIndex: "invoice_doc_number",
-      render: (_: unknown, record: DataType) => {
-        const value = record?.invoice_doc_number?.toString()?.trim();
-
-        if (!value) {
-          return <span className="text-gray-400">-</span>;
-        }
-
-        return (
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-800">{value}</span>
-
-            <Tooltip title="Copy">
-              <button
-                type="button"
-                onClick={() => handleCopy(value)}
-                className="text-gray-500 hover:text-primary transition"
-              >
-                <Copy size={16} />
-              </button>
-            </Tooltip>
-          </div>
-        );
-      },
-    },
-    {
       title: "File Name",
       dataIndex: "file_name",
       render: (text: string) => (
@@ -221,6 +194,33 @@ export default function Dashboard() {
           {status}
         </Tag>
       ),
+    },
+    {
+      title: "Invoice Doc Number",
+      dataIndex: "invoice_doc_number",
+      render: (_: unknown, record: DataType) => {
+        const value = record?.invoice_doc_number?.toString()?.trim();
+
+        if (!value) {
+          return <span className="text-gray-400">-</span>;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-800">{value}</span>
+
+            <Tooltip title="Copy">
+              <button
+                type="button"
+                onClick={() => handleCopy(value)}
+                className="text-gray-500 hover:text-primary transition"
+              >
+                <Copy size={16} />
+              </button>
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       title: "Action",
