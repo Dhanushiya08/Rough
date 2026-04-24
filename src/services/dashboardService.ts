@@ -25,6 +25,8 @@ type ApiTableItem = {
   state: string;
   status: string;
   lang: string;
+  created_at: string;
+  invoice_doc_number?: string | null;
 };
 const validStates = ["extract", "lookup", "sap", "park"] as const;
 const validStatuses = [
@@ -94,6 +96,7 @@ export const getTableData = async (
           state,
           status,
           lang,
+          invoice_doc_number: item.invoice_doc_number,
         };
       }
 
