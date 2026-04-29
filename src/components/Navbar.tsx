@@ -4,14 +4,16 @@ import companyLogo from "../assets/image 2.png";
 import { LogOut, Menu, X } from "lucide-react";
 import "../App.css";
 
-export default function Navbar() {
+type NavbarProps = {
+  onLogout: () => void;
+};
+
+export default function Navbar({ onLogout }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <nav className="w-full bg-white border-b border-borderer shadow-sm">
-      {/* <div className="flex items-center justify-between px-4 md:px-8 h-16 md:h-20 lg:h-24"> */}
       <div className="flex items-center justify-between px-4 md:px-8 h-14 md:h-16 lg:h-18">
-        {/* Logos */}
         <div className="flex items-center gap-2">
           <img
             src={customerLogo}
@@ -27,12 +29,15 @@ export default function Navbar() {
             className="max-h-8 md:max-h-10 lg:max-h-12 w-auto object-contain"
           />
         </div>
-        {/* Desktop right */}
+
+        {/* Desktop */}
         <div className="hidden md:flex items-center gap-4">
           <span className="text-sm lg:text-base text-gray-700">
             demo@1cloudhub.com
           </span>
+
           <button
+            onClick={onLogout}
             aria-label="Log out"
             className="text-secondary hover:text-primary transition-colors"
           >
@@ -54,7 +59,9 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden px-4 py-4 flex flex-row justify-end gap-3 border-t border-borderer bg-white">
           <span className="text-sm text-gray-700">demo@1cloudhub.com</span>
+
           <button
+            onClick={onLogout}
             aria-label="Log out"
             className="flex items-center gap-2 text-sm text-secondary hover:text-primary transition-colors w-fit"
           >
