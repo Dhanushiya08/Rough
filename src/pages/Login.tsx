@@ -5,60 +5,39 @@ import { Controller, useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import CryptoJS from "crypto-js";
 
+// CryptoJS.SHA256("pwd").toString();
 const sampleUsers = [
   {
     username: "admin@1cloudhub.com",
-    password: CryptoJS.SHA256("admin123").toString(),
+    password:
+      "b999b3991c9e72a2af0f326fbe9cda3446e399c738ca2f600eec68c4d37b4425",
     role: "Admin",
   },
   {
     username: "user01@1cloudhub.com",
-    password: CryptoJS.SHA256("user01123").toString(),
+    password:
+      "f72b33d1a80b869c3c67b946f31d365e11f65cc8301695ed9fdf912030468305",
     role: "User",
   },
   {
     username: "user02@1cloudhub.com",
-    password: CryptoJS.SHA256("user02123").toString(),
+    password:
+      "025b5d1d8645562d412443af8628c8eee16e64b4d0967b604a92ae691514a90f",
     role: "User",
   },
   {
     username: "user03@1cloudhub.com",
-    password: CryptoJS.SHA256("user03123").toString(),
+    password:
+      "7077a1c355903de212b2c362bde670af55f682d518c36c17c82fcf7ea4571fc3",
     role: "User",
   },
   {
     username: "user04@1cloud.com",
-    password: CryptoJS.SHA256("user04123").toString(),
+    password:
+      "2a39c458b2d1a8ff21e1ab60c140e631e9fff4948cdb401218682a16dd242f0a",
     role: "User",
   },
 ];
-// const sampleUsers = [
-//   {
-//     username: "admin@1cloudhub.com",
-//     password: "admin123",
-//     role: "Admin",
-//   },
-//   {
-//     username: "user01@1cloudhub.com",
-//     password: "user01123",
-//     role: "User",
-//   },
-//   {
-//     username: "user02@1cloudhub.com",
-//     password: "user02123",
-//     role: "User",
-//   },
-//   {
-//     username: "user03@1cloudhub.com",
-//     password: "user03123",
-//     role: "User",
-//   },
-//   {
-//     username: "user04@1cloudhub.com",
-//     password: "user04123",
-//     role: "User",
-//   },
-// ];
 
 type UserType = {
   username: string;
@@ -93,7 +72,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     //     user.username === data.username && user.password === data.password,
     // );
     const hashedPassword = CryptoJS.SHA256(data.password).toString();
-
     const matchedUser = sampleUsers.find(
       (user) =>
         user.username === data.username && user.password === hashedPassword,
