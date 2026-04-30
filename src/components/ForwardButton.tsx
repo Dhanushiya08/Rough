@@ -1,4 +1,3 @@
-// components/ForwardButton.tsx
 import { Button } from "antd";
 import { ArrowRight } from "lucide-react";
 import { useStep } from "../hooks/useStep";

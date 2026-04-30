@@ -323,20 +323,6 @@ export default function Dashboard() {
 
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-auto">
-        {/* <Table
-          columns={columns}
-          dataSource={data}
-          loading={loading}
-          rowKey="file_id"
-          pagination={{
-            current: currentPage,
-            pageSize: PAGE_SIZE,
-            total,
-            onChange: (page) => setCurrentPage(page),
-            showSizeChanger: false,
-          }}
-          className="custom-ant-table rounded-lg h-full overflow-auto"
-        /> */}
         {loading ? (
           <ProcessingOverlay
             title="Loading your table data"

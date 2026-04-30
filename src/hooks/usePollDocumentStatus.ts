@@ -93,7 +93,6 @@ export function usePollDocumentStatus() {
         if (!isAnyProcessing(progress)) {
           stopPolling();
           if (isAllCompleted(progress)) {
-            // toast.success("Processing completed");
             if (!userManualStep) goTo(targetStep);
           }
         }

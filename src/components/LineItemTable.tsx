@@ -1,5 +1,4 @@
 import { Table } from "antd";
-// import { useState } from "react";
 import type { LineItem } from "../types/reconciliation";
 
 type LineItemsTableProps = {
@@ -15,9 +14,6 @@ export const LineItemsTable = ({
   onChange,
   selectionMap,
 }: LineItemsTableProps) => {
-  // const [selectionMap, setSelectionMap] = useState<Record<string, string[]>>(
-  //   {},
-  // );
 
   const computedInitialKeys = data
     ?.map((item, index) =>
@@ -34,7 +30,6 @@ export const LineItemsTable = ({
         ...selectionMap,
         [selectedPO]: keys as string[],
       };
-      // setSelectionMap(updated);
       onChange(updated);
     },
   };
@@ -42,7 +37,6 @@ export const LineItemsTable = ({
   const columns =
     data && data.length > 0
       ? Object.keys(data[0])
-          // .filter((key) => key !== "genaiSelected")
           .filter((key) => key !== "genaiSelected" && key !== "genaiId")
           .map((key) => ({
             title: key

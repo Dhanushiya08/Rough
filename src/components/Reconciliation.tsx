@@ -9,7 +9,6 @@ import type {
   ReconciliationItem,
 } from "../types/common";
 import ForwardButton from "./ForwardButton";
-// import BackButton from "./BackButton";
 import ReconciliationTable from "./Reconciliationtable";
 import toast, { Toaster } from "react-hot-toast";
 import { LineItemsTable } from "./LineItemTable";
@@ -41,7 +40,6 @@ export default function Reconciliation() {
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [poList, setPoList] = useState<string[]>([]);
-  // const [isDirty, setIsDirty] = useState(false);
   const [isPODirty, setIsPODirty] = useState(false);
   const [isTableDirty, setIsTableDirty] = useState(false);
   const [selectedPO, setSelectedPO] = useState<string>("");
@@ -68,8 +66,6 @@ export default function Reconciliation() {
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
-  // console.log(selectionMap, "selectionMap");
-  // Add state for items grouped by PO
   const [itemsByPO, setItemsByPO] = useState<Record<string, LineItem[]>>({});
 
   const fetchData = async () => {
@@ -83,9 +79,7 @@ export default function Reconciliation() {
         state: "sap",
       });
 
-      // const body = res.data.body;
       const body: GetListResponse = res.data.body;
-      console.log(body, "sap body");
 
       // Extracted
       setData(
@@ -127,7 +121,6 @@ export default function Reconciliation() {
       const grouped: Record<string, LineItem[]> = {};
       (body.items || []).forEach((item) => {
         const po = (item.poNumber as string) || body.poNumber?.[0] || "unknown";
-        // const po = item.poNumber || body.poNumber?.[0] || "unknown";
         if (!grouped[po]) grouped[po] = [];
         grouped[po].push(item);
       });
@@ -146,9 +139,7 @@ export default function Reconciliation() {
     fetchData();
   }, []);
   useEffect(() => {
-    // When PO changes, if no manual selection exists, fall back to genaiSelected
     if (!selectionMap[selectedPO]) {
-      // nothing to do, computedInitialKeys already handles this
       return;
     }
   }, [selectedPO]);
@@ -162,7 +153,6 @@ export default function Reconciliation() {
   const handleRetry = async () => {
     try {
       setRetryLoading(true);
-      // setIsDirty(false);
       await apiClient.post(API_URL, {
         event: "retry-process",
         file_id: fileId,
@@ -211,14 +201,7 @@ export default function Reconciliation() {
             selected: item.source,
           })),
 
-          // items: items.map((item, index) => {
-          //   const rowKey = `${selectedPO}-${index}`;
-
-          //   return {
-          //     ...item,
-          //     genaiSelected: (selectionMap[selectedPO] || []).includes(rowKey),
-          //   };
-          // }),
+          
           items: Object.entries(itemsByPO).flatMap(([po, poItems]) =>
             poItems.map((item, index) => {
               const rowKey = `${po}-${index}`;
@@ -245,10 +228,8 @@ export default function Reconciliation() {
     }
   };
   const currentData = items;
-  console.log(currentData);
 
   const handlePORemove = (po: string) => {
-    // setIsDirty(true);
     setIsPODirty(true);
     const newList = poList.filter((p) => p !== po);
     setPoList(newList);
@@ -271,7 +252,6 @@ export default function Reconciliation() {
   };
 
   const handlePOEdit = (oldPO: string, newPO: string) => {
-    // setIsDirty(true);
     setIsPODirty(true);
 
     setPoList((prev) => prev.map((po) => (po === oldPO ? newPO : po)));
@@ -352,17 +332,8 @@ export default function Reconciliation() {
           />
         </div>
 
-        {/* <BackButton /> */}
       </div>
-      {/* {isDirty && (
-        <div className="my-4 px-3">
-          <Alert
-            message="You have unsaved changes. Click 'Retry Fetch' to update data, or they will be lost."
-            type="warning"
-            showIcon
-          />
-        </div>
-      )} */}
+     
       {isPODirty && (
         <div className="my-4 px-3">
           <Alert
@@ -401,8 +372,6 @@ export default function Reconciliation() {
             if (selectedPO) {
               setReconcileByPO((prev) => ({ ...prev, [selectedPO]: updated }));
             }
-            // setIsDirty(true);
-            // setIsPODirty(true);
             setIsTableDirty(true);
           }}
         />
@@ -428,11 +397,9 @@ export default function Reconciliation() {
 
         {currentData?.length > 0 && (
           <LineItemsTable
-            // data={(selectedPO && itemsByPO[selectedPO]) || currentData}
             data={itemsByPO[selectedPO] ?? currentData}
             selectedPO={selectedPO}
             selectionMap={selectionMap}
-            // onChange={setSelectionMap}
             onChange={(updated) => {
               setSelectionMap(updated);
               setIsTableDirty(true);
@@ -467,9 +434,6 @@ export default function Reconciliation() {
                       onChange={(e) => handleChange(item.key, e.target.value)}
                     />
                   ) : (
-                    // <div className="text-sm text-gray-800 ">
-                    //   {item.value || "--"}
-                    // </div>
                     <div className="text-sm text-gray-800 break-words">
                       {isLong ? (
                         <Tooltip
@@ -496,15 +460,6 @@ export default function Reconciliation() {
         </Row>
       </div>
 
-      {/* FOOTER */}
-      {/* <div className="p-4 border-t flex justify-between">
-        <Button loading={retryLoading} onClick={handleRetry}>
-          Retry Fetch SAP Data
-        </Button>
-
-        <ForwardButton label="Update" onClick={handleParking} />
-
-      </div> */}
     </div>
   );
 }

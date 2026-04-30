@@ -48,7 +48,6 @@ export const POSelector: React.FC<Props> = ({
     setEditingPO(null);
   };
 
-  // ✅ accepts po param + closing brace was missing
   const handleCancel = (e: React.MouseEvent, po: string) => {
     e.stopPropagation();
     if (po === "") {

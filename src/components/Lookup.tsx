@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { Row, Col, Typography, Input, Button, Alert } from "antd";
 import { File, RotateCcw } from "lucide-react";
-// import PdfPreview from "./PdfPreview";
-// import ForwardButton from "./ForwardButton";
-// import BackButton from "./BackButton";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
 import { useLookup } from "../hooks/useLookup";

@@ -1,13 +1,12 @@
-// components/StepNavButtons.tsx
 import { Button } from "antd";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useStep } from "../hooks/useStep";
 
 interface StepNavButtonsProps {
-  backLabel?: string; // default: "Back"
-  forwardLabel?: string; // e.g. "Look Up" | "Fetch SAP Data"
-  onBack?: () => void; // override default goPrev
-  onForward?: () => void; // override default goNext
+  backLabel?: string; 
+  forwardLabel?: string; 
+  onBack?: () => void; 
+  onForward?: () => void; 
   hideBack?: boolean;
   hideForward?: boolean;
   forwardLoading?: boolean;

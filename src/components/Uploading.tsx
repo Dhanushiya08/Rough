@@ -5,28 +5,17 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast, { Toaster } from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-// import { uploadDocument } from "../services/postService";
 import { CloudUpload, Zap } from "lucide-react";
 import CustomSelect from "./CustomSelect";
 import { generateUniqueID } from "../utils/useUniqueId";
 import { useAppStore } from "../store/useAppStore";
-// import { startDocumentProcessing } from "../services/processingService";
 import axios from "axios";
-// import axios, { AxiosError } from "axios";
 import apiClient from "../services/apiClient";
 import { usePollDocumentStatus } from "../hooks/usePollDocumentStatus";
 import { useStep } from "../hooks/useStep";
 import ProcessingOverlay from "./ProcessingOverlay";
 
 const MAX_SIZE = 3 * 1024 * 1024;
-// type StepStatus = "pending" | "processing" | "completed";
-
-// interface Progress {
-//   extract: StepStatus;
-//   lookup: StepStatus;
-//   sap: StepStatus;
-//   park: StepStatus;
-// }
 const schema = z.object({
   file: z
     .instanceof(File)
@@ -40,11 +29,8 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 export default function Uploading() {
-  // export default function Uploading({ goNext }: { goNext?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
-  // const [progress, setProgress] = useState(0);
   const [confirm, setConfirm] = useState(false);
-  // const [lang, setLangname] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const [processingStarted, setProcessingStarted] = useState(false);
   const { startPolling } = usePollDocumentStatus();
@@ -102,10 +88,8 @@ export default function Uploading() {
       let message = "Upload failed";
 
       if (axios.isAxiosError(error)) {
-        // Axios error (API / network)
         message = error.response?.data?.message || error.message || message;
       } else if (error instanceof Error) {
-        // Normal JS error
         message = error.message;
       }
 
@@ -164,12 +148,10 @@ export default function Uploading() {
       toast.success("Processing started");
       setProcessingStarted(true);
       useAppStore.getState().setUserManualStep(false);
-      // goTo(2);
       if (fileId) {
         startPolling(fileId, goTo, () => current);
       }
 
-      // goNext?.();
     },
 
     onError: (error: unknown) => {
@@ -191,7 +173,6 @@ export default function Uploading() {
     },
   });
 
-  // const isProcessing = processingMutation.isPending || uploadMutation.isPending;
   const isProcessing =
     processingMutation.isPending ||
     uploadMutation.isPending ||
@@ -219,7 +200,6 @@ export default function Uploading() {
     setFileId("");
     setLang("");
     setConfirm(false);
-    // setProgress(0);
     setIsUploaded(false);
   };
 
@@ -290,7 +270,6 @@ export default function Uploading() {
                 onClick={() => {
                   if (!file) return;
 
-                  // setProgress(0);
                   setIsUploaded(false);
 
                   const id = generateUniqueID();

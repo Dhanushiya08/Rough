@@ -67,10 +67,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    // const matchedUser = sampleUsers.find(
-    //   (user) =>
-    //     user.username === data.username && user.password === data.password,
-    // );
     const hashedPassword = CryptoJS.SHA256(data.password).toString();
     const matchedUser = sampleUsers.find(
       (user) =>

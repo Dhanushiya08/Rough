@@ -1,9 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Row, Col, Typography, Button, Alert } from "antd";
 import { RotateCcw, File } from "lucide-react";
-// import PdfPreview from "./PdfPreview";
-// import BackButton from "./BackButton";
-// import ForwardButton from "./ForwardButton";
 import { useExtraction } from "../hooks/useExtraction";
 import { useAppStore } from "../store/useAppStore";
 import ProcessingOverlay from "./ProcessingOverlay";
@@ -25,24 +22,17 @@ export default function Extraction() {
   const fileName = useAppStore((s) => s.fileName);
   const progress = useAppStore((s) => s.progress);
   const lang = useAppStore((s) => s.lang);
-  // const lang = useAppStore((s) => s.lang);
   const hasRefetchedRef = useRef(false);
   const pollingActive = useAppStore((s) => s.pollingActive);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const setInitialLoading = useAppStore((s) => s.setInitialLoading);
-
-  // const [event, setEvent] = useState<ExtractionEvent>("get-list");
-  // const [retryCount, setRetryCount] = useState(0);
   const [loadingRetry, setLoadingRetry] = useState(false);
   const { startPolling } = usePollDocumentStatus();
   const { current, goTo } = useStep();
-  // const [hasRefetched, setHasRefetched] = useState(false);
   const isAnyProcessing =
     !!progress &&
     pollingActive &&
     Object.values(progress).some((s) => s === "processing");
-
-  console.log(progress, pollingActive, "isAnyProcessing");
 
   const {
     data = { poNumber: [], data: [] },
@@ -50,7 +40,6 @@ export default function Extraction() {
     error,
     refetch,
   } = useExtraction(fileId, fileName, "get-list");
-  console.log(data);
 
   const handleRetry = () => {
     setLoadingRetry(true);
@@ -68,8 +57,6 @@ export default function Extraction() {
   };
 
   useEffect(() => {
-    // if (!pollingActive) return;
-
     if (progress?.extract === "completed" && !hasRefetchedRef.current) {
       hasRefetchedRef.current = true;
       refetch();
@@ -95,9 +82,6 @@ export default function Extraction() {
           Retry Extraction
         </Button>
       </div>
-      {/* <BackButton /> */}
-      {/* </div> */}
-      {/* CONTENT */}
       <div className="flex-1 overflow-auto p-6 thinscroll">
         {loadingRetry || isAnyProcessing ? (
           <ProcessingOverlay
@@ -154,24 +138,6 @@ export default function Extraction() {
           </Row>
         )}
       </div>
-      {/* FOOTER */}
-      {/* <div className="p-4 border-t bg-stepbgbody flex justify-end items-center">
-        <Button
-          icon={<RotateCcw size={16} />}
-          loading={loadingRetry}
-          onClick={handleRetry}
-          disabled={isAnyProcessing}
-          className="flex items-center gap-2 border border-borderer text-primary bg-white hover:!bg-secondary hover:!text-white hover:!border-secondary shadow-sm"
-        >
-          Retry Extraction
-        </Button> */}
-
-      {/* <ForwardButton
-            label="Look Up"
-            onClick={handleLookUp}
-            disabled={isAnyProcessing}
-          /> */}
-      {/* </div> */}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// components/StepProgressBar.tsx
 import { useEffect, useRef } from "react";
 import { StepProvider } from "../context/StepProvider";
 import { useStep } from "../hooks/useStep";
@@ -29,25 +28,15 @@ const stepProgressKey: StepProgressKeyMap = {
 function StepProgressBarInner() {
   const { current, goTo } = useStep();
   const progress = useAppStore((s) => s.progress);
-  // const currentStep = useAppStore((s) => s.currentStep);
   const fileId = useAppStore((s) => s.fileId);
   const { startPolling, stopPolling } = usePollDocumentStatus();
   const initialLoading = useAppStore((s) => s.initialLoading);
-  // const setCurrentStep = useAppStore((s) => s.setCurrentStep);
   const setUserManualStep = useAppStore((s) => s.setUserManualStep);
   const currentRef = useRef(current);
   useEffect(() => {
     currentRef.current = current;
   }, [current]);
-  // const isStepDisabled = (stepId: number): boolean => {
-  //   const key = stepProgressKey[stepId];
-  //   if (!key) return false;
-  //   if (!progress) return stepId !== 1;
-  //   const status = progress[key];
-  //   if (status === "pending") return true;
-  //   return false;
-  // };
-  // const maxAllowedStep = stepMap[currentStep] ?? 5;
+
   const maxAllowedStep = (() => {
     if (!progress) return 1;
     if (
@@ -198,14 +187,7 @@ function StepProgressBarInner() {
                     disabled ? "opacity-4 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {/* <div
-                    className={[
-                      "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
-                      isCompleted || isActive
-                        ? "bg-primary border-primary text-white"
-                        : "bg-[#D9E4EA] border-gray-300 text-gray-400",
-                    ].join(" ")}
-                  > */}
+                 
                   <div
                     className={[
                       "w-7 h-7 rounded-lg flex items-center justify-center text-sm font-medium border",
@@ -215,16 +197,7 @@ function StepProgressBarInner() {
                     {status === "failed" ? "✕" : isCompleted ? "✓" : step.id}
                   </div>
 
-                  {/* <span
-                    className={[
-                      "text-xs font-semibold uppercase tracking-wide",
-                      isActive
-                        ? "text-primary"
-                        : isCompleted
-                          ? "text-gray-600"
-                          : "text-gray-400",
-                    ].join(" ")}
-                  > */}
+                  
                   <span
                     className={[
                       "text-xs font-semibold uppercase tracking-wide",

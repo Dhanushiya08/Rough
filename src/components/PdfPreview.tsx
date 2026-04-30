@@ -9,9 +9,7 @@ import { useAppStore } from "../store/useAppStore";
 import "../App.css";
 import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
-// import ProcessingOverlay from "./ProcessingOverlay";
 
-//  Worker (only once here)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
@@ -30,7 +28,6 @@ export default function PdfPreview() {
   const [fileType, setFileType] = useState<string>("");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
-  // const [filename, setFilename] = useState<string>("");
   const [tiffControls, setTiffControls] = useState<TiffControls | null>(null);
   const pages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => i + 1),
@@ -54,9 +51,6 @@ export default function PdfPreview() {
     onSuccess: (res) => {
       setFileType(res.body.file_type);
       const url = res.body.presignedUrl;
-      // const file_name = res.body.file_name;
-      // setFilename(file_name);
-      console.log(url);
       setFileUrl(url);
       if (res.body.file_type !== "pdf") {
         console.log(res.body.file_type);
@@ -84,20 +78,13 @@ export default function PdfPreview() {
       className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
       style={{ minHeight: 0 }}
     >
-      {/* {(fileMutation.isPending || isRendering) && (
-        <ProcessingOverlay
-          title="Preparing your document..."
-          description="We are retrieving and rendering your document. This may take a few moments."
-        />
-      )} */}
+     
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
-          {/* {fileType === "pdf" && <p>Pages: {numPages || "--"}</p>} */}
           {fileName ? fileName : ""}
         </p>
 
-        {/* Premium Controls */}
 
         <div className="flex items-center gap-2 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-inner border">
           <button
