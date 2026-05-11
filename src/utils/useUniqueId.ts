@@ -32,9 +32,21 @@ export function generateUniqueID(): string {
 
   const storedUser = localStorage.getItem("loggedInUser");
 
-  const userName = storedUser?.includes("@")
-    ? storedUser.split("@")[0]
-    : "unknown";
+  let userName = "unknown";
+
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+
+      const username = parsedUser?.username || "";
+
+      userName = username.includes("@")
+        ? username.split("@")[0]
+        : username || "unknown";
+    } catch (error) {
+      console.error("Invalid loggedInUser data", error);
+    }
+  }
 
   const random = Math.floor(Math.random() * 1000);
 
