@@ -120,11 +120,17 @@ export default function Uploading() {
   });
 
   const languageOptions = [
-    { label: "English - WLNG - Canada", value: "english" },
+    { label: "WLNG - Canada", value: "english" },
     { label: "Apical English", value: "apical-english" },
-    { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
-    { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
+    { label: "Apical / Asia Agri", value: "bahasa" },
+    { label: "Sateri / Asia Symbol", value: "mandarin" },
   ];
+  //  const languageOptions = [
+  //    { label: "English - WLNG - Canada", value: "english" },
+  //    { label: "Apical English", value: "apical-english" },
+  //    { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
+  //    { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
+  //  ];
 
   const processingMutation = useMutation({
     mutationFn: async ({

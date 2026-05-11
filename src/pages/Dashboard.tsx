@@ -133,11 +133,16 @@ export default function Dashboard() {
   type LanguageValue = "english" | "apical-english" | "bahasa" | "mandarin";
 
   const languageOptions = [
-    { label: "English - WLNG - Canada", value: "english" },
+    // { label: "English - WLNG - Canada", value: "english" },
+    // { label: "Apical English", value: "apical-english" },
+    // { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
+    // { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
+    { label: "WLNG - Canada", value: "english" },
     { label: "Apical English", value: "apical-english" },
-    { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
-    { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
+    { label: "Apical / Asia Agri", value: "bahasa" },
+    { label: "Sateri / Asia Symbol", value: "mandarin" },
   ] as const;
+
   const langColorMap: Record<LanguageValue, string> = {
     english: "blue",
     "apical-english": "purple",
