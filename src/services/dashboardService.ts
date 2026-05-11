@@ -36,7 +36,7 @@ const validStatuses = [
   "completed",
   "failed",
 ] as const;
-const validLangs = ["english", "bahasa", "mandarin"] as const;
+const validLangs = ["english", "apical-english", "bahasa", "mandarin"] as const;
 export type DataType = {
   file_id: string;
   file_name: string;

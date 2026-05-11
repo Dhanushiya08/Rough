@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
