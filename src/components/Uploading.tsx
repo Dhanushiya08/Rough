@@ -120,9 +120,10 @@ export default function Uploading() {
   });
 
   const languageOptions = [
-    { label: "English", value: "english" },
-    { label: "Bahasa", value: "bahasa" },
-    { label: "Mandarin", value: "mandarin" },
+    { label: "English - WLNG - Canada", value: "english" },
+    { label: "Apical English", value: "apical-english" },
+    { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
+    { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
   ];
 
   const processingMutation = useMutation({
@@ -151,7 +152,6 @@ export default function Uploading() {
       if (fileId) {
         startPolling(fileId, goTo, () => current);
       }
-
     },
 
     onError: (error: unknown) => {
@@ -251,8 +251,8 @@ export default function Uploading() {
 
         {/* LANGUAGE */}
         <CustomSelect
-          label="OCR LANGUAGE"
-          placeholder="Select a Language"
+          label="Business Group"
+          placeholder="Select a Business Group"
           options={languageOptions}
           onChange={(val) => setLang(val)}
           disabled={!isUploaded || isProcessing}

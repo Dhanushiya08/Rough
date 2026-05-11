@@ -10,31 +10,37 @@ const sampleUsers = [
   {
     username: "admin@1cloudhub.com",
     password:
-      "1a8e2cf3d6e1e7a00cdbe5899319e2cef16c5138d30355360dc4f8540de9dbcd",
+      // "1a8e2cf3d6e1e7a00cdbe5899319e2cef16c5138d30355360dc4f8540de9dbcd",
+      "b999b3991c9e72a2af0f326fbe9cda3446e399c738ca2f600eec68c4d37b4425",
     role: "Admin",
   },
   {
     username: "user01@1cloudhub.com",
     password:
-      "951444067dc2a7ca8a889fb37ccf297e817c2c0fe237282202785225bdfbc546",
+      // "951444067dc2a7ca8a889fb37ccf297e817c2c0fe237282202785225bdfbc546",
+      "f72b33d1a80b869c3c67b946f31d365e11f65cc8301695ed9fdf912030468305",
+
     role: "User",
   },
   {
     username: "user02@1cloudhub.com",
     password:
-      "6cbd99a8a92120e95e9336a3a5880b52c11fd14e18630331bf019d014a135ed0",
+      // "6cbd99a8a92120e95e9336a3a5880b52c11fd14e18630331bf019d014a135ed0",
+      "025b5d1d8645562d412443af8628c8eee16e64b4d0967b604a92ae691514a90f",
     role: "User",
   },
   {
     username: "user03@1cloudhub.com",
     password:
-      "8feecc892ecd04f888e944be1c44c4ab0f5f331042fe0d219b16ce9fa9563b11",
+      // "8feecc892ecd04f888e944be1c44c4ab0f5f331042fe0d219b16ce9fa9563b11",
+      "7077a1c355903de212b2c362bde670af55f682d518c36c17c82fcf7ea4571fc3",
     role: "User",
   },
   {
-    username: "user04@1cloud.com",
+    username: "user04@1cloudhub.com",
     password:
-      "3bf30b02d7113bccc538409492d228262f0eca8bd01854b84818db8f510241b3",
+      // "3bf30b02d7113bccc538409492d228262f0eca8bd01854b84818db8f510241b3",
+      "2a39c458b2d1a8ff21e1ab60c140e631e9fff4948cdb401218682a16dd242f0a",
     role: "User",
   },
   {
@@ -144,6 +150,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       (user) =>
         user.username === data.username && user.password === hashedPassword,
     );
+    console.log(hashedPassword);
+    console.log(matchedUser);
     if (matchedUser) {
       onLogin(matchedUser);
     } else {

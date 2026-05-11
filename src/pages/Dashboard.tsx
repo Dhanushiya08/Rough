@@ -129,11 +129,29 @@ export default function Dashboard() {
     sap: "geekblue",
     park: "magenta",
   };
-  const langColorMap = {
+
+  type LanguageValue = "english" | "apical-english" | "bahasa" | "mandarin";
+
+  const languageOptions = [
+    { label: "English - WLNG - Canada", value: "english" },
+    { label: "Apical English", value: "apical-english" },
+    { label: "Bahasa - Apical / Asia Agri", value: "bahasa" },
+    { label: "Mandarin - Sateri / Asia Symbol", value: "mandarin" },
+  ] as const;
+  const langColorMap: Record<LanguageValue, string> = {
     english: "blue",
+    "apical-english": "purple",
     bahasa: "green",
     mandarin: "orange",
   };
+
+  const langLabelMap = languageOptions.reduce<Record<LanguageValue, string>>(
+    (acc, item) => {
+      acc[item.value] = item.label;
+      return acc;
+    },
+    {} as Record<LanguageValue, string>,
+  );
   const handleRefresh = () => {
     fetchAll(searchText, statusFilter, stateFilter, currentPage);
   };
@@ -163,15 +181,22 @@ export default function Dashboard() {
       ),
     },
     {
-      title: "Language",
+      title: "Business Group",
       dataIndex: "lang",
       render: (lang: DataType["lang"]) => (
+        // <Tag
+        //   color={langColorMap[lang]}
+        //   className="capitalize px-3 py-1 rounded-full"
+        //   variant={"outlined"}
+        // >
+        //   {lang}
+        // </Tag>
         <Tag
           color={langColorMap[lang]}
           className="capitalize px-3 py-1 rounded-full"
-          variant={"outlined"}
+          variant="outlined"
         >
-          {lang}
+          {langLabelMap[lang]}
         </Tag>
       ),
     },

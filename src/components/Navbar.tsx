@@ -7,9 +7,17 @@ import "../App.css";
 type NavbarProps = {
   onLogout: () => void;
 };
+// type UserType = {
+//   username: string;
+//   password: string;
+//   role: string;
+// };
 
 export default function Navbar({ onLogout }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const storedUser = localStorage.getItem("loggedInUser");
+
+  const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <nav className="w-full bg-white border-b border-borderer shadow-sm">
@@ -33,7 +41,7 @@ export default function Navbar({ onLogout }: NavbarProps) {
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-4">
           <span className="text-sm lg:text-base text-gray-700">
-            demo@1cloudhub.com
+            {loggedInUser?.username || "Guest user"}
           </span>
 
           <button
