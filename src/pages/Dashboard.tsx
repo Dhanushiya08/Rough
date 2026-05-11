@@ -403,7 +403,7 @@ export default function Dashboard() {
           className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
       ${
         !langFilter || loading
-          ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-200 "
           : "bg-green-600 text-white hover:bg-green-700"
       }`}
         >
