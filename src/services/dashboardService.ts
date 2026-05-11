@@ -28,6 +28,14 @@ type ApiTableItem = {
   created_at: string;
   invoice_doc_number?: string | null;
 };
+type TableFilters = {
+  search?: string;
+  state?: DataType["state"];
+  status?: DataType["status"];
+  lang?: DataType["lang"];
+  page?: number;
+  pageSize?: number;
+};
 const validStates = ["extract", "lookup", "sap", "park"] as const;
 const validStatuses = [
   "pending",
@@ -46,13 +54,7 @@ export type DataType = {
   created_at: string;
   invoice_doc_number?: string | null;
 };
-export type TableFilters = {
-  search?: string;
-  state?: DataType["state"];
-  status?: DataType["status"];
-  page?: number;
-  pageSize?: number;
-};
+
 const isValidState = (value: unknown): value is DataType["state"] =>
   typeof value === "string" && validStates.includes(value as DataType["state"]);
 
@@ -121,4 +123,24 @@ export const getTableCount = async (
     typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
 
   return parsedBody?.data.count ?? 0;
+};
+export const exportExcel = async ({
+  page,
+  lang,
+}: {
+  page?: number;
+  lang: DataType["lang"];
+}): Promise<string> => {
+  const response = await apiClient.post<ApiResponse>("/posts", {
+    event: "get-excel-data",
+    page,
+    lang,
+  });
+
+  const rawBody = response.data?.body;
+
+  const parsedBody =
+    typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
+
+  return parsedBody?.data.presigned_url;
 };

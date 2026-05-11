@@ -1,8 +1,12 @@
 import { Table, Tag, Input, Select, Tooltip } from "antd";
 import { useState, useEffect, useRef } from "react";
-import { Eye, RefreshCw, Upload, Copy } from "lucide-react";
+import { Eye, RefreshCw, Upload, Copy, Download } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { getTableData, getTableCount } from "../services/dashboardService";
+import {
+  getTableData,
+  getTableCount,
+  exportExcel,
+} from "../services/dashboardService";
 import type { DataType } from "../services/dashboardService";
 import ProcessingOverlay from "../components/ProcessingOverlay";
 import toast from "react-hot-toast";
@@ -18,6 +22,9 @@ export default function Dashboard() {
     DataType["status"] | undefined
   >(undefined);
   const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(
+    undefined,
+  );
+  const [langFilter, setLangFilter] = useState<DataType["lang"] | undefined>(
     undefined,
   );
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,12 +50,14 @@ export default function Dashboard() {
     search: string,
     status: DataType["status"] | undefined,
     state: DataType["state"] | undefined,
+    lang: DataType["lang"] | undefined,
     page: number,
   ) => {
     const filters = {
       ...(search ? { search } : {}),
       ...(status ? { status } : {}),
       ...(state ? { state } : {}),
+      ...(lang ? { lang } : {}),
     };
 
     setLoading(true);
@@ -68,20 +77,27 @@ export default function Dashboard() {
     search: string,
     status: DataType["status"] | undefined,
     state: DataType["state"] | undefined,
+    lang: DataType["lang"] | undefined,
     page: number,
   ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchAll(search, status, state, page);
+      fetchAll(search, status, state, lang, page);
     }, 400);
   };
 
   useEffect(() => {
-    scheduleFetch(searchText, statusFilter, stateFilter, currentPage);
+    scheduleFetch(
+      searchText,
+      statusFilter,
+      stateFilter,
+      langFilter,
+      currentPage,
+    );
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchText, statusFilter, stateFilter, currentPage]);
+  }, [searchText, statusFilter, stateFilter, langFilter, currentPage]);
 
   const handleSearchChange = (val: string) => {
     setSearchText(val);
@@ -97,7 +113,10 @@ export default function Dashboard() {
     setStateFilter(val);
     setCurrentPage(1);
   };
-
+  const handleLangChange = (val: DataType["lang"] | undefined) => {
+    setLangFilter(val);
+    setCurrentPage(1);
+  };
   const handleCopy = async (value?: string, fileId?: string) => {
     if (!value) return;
 
@@ -158,7 +177,33 @@ export default function Dashboard() {
     {} as Record<LanguageValue, string>,
   );
   const handleRefresh = () => {
-    fetchAll(searchText, statusFilter, stateFilter, currentPage);
+    fetchAll(searchText, statusFilter, stateFilter, langFilter, currentPage);
+  };
+  const handleExport = async () => {
+    if (!langFilter) return;
+
+    try {
+      setLoading(true);
+
+      const presignedUrl = await exportExcel({
+        page: currentPage,
+        lang: langFilter,
+      });
+
+      if (!presignedUrl) {
+        toast.error("Export URL not found");
+        return;
+      }
+
+      window.open(presignedUrl, "_blank");
+
+      toast.success("Excel export started");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export excel");
+    } finally {
+      setLoading(false);
+    }
   };
   const columns = [
     {
@@ -341,6 +386,31 @@ export default function Dashboard() {
           <Option value="sap">SAP</Option>
           <Option value="park">Park</Option>
         </Select>
+        <Select
+          placeholder="Business Group"
+          allowClear
+          className="w-56"
+          onChange={handleLangChange}
+        >
+          <Option value="english">WLNG - Canada</Option>
+          <Option value="apical-english">Apical English</Option>
+          <Option value="bahasa">Apical / Asia Agri</Option>
+          <Option value="mandarin">Sateri / Asia Symbol</Option>
+        </Select>
+        <button
+          onClick={handleExport}
+          disabled={!langFilter || loading}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
+      ${
+        !langFilter || loading
+          ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+          : "bg-green-600 text-white hover:bg-green-700"
+      }`}
+        >
+          <Download size={15} />
+          Export Excel
+        </button>
+
         <button
           onClick={handleRefresh}
           disabled={loading}
