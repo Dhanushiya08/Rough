@@ -397,7 +397,7 @@ export default function Dashboard() {
           <Option value="bahasa">Apical / Asia Agri</Option>
           <Option value="mandarin">Sateri / Asia Symbol</Option>
         </Select>
-        <button
+        {/* <button
           onClick={handleExport}
           disabled={!langFilter || loading}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
@@ -409,7 +409,30 @@ export default function Dashboard() {
         >
           <Download size={15} />
           Export Excel
-        </button>
+        </button> */}
+        <Tooltip
+          title={
+            !langFilter
+              ? "Please choose the Business Group to export the data"
+              : "You can export every 10 records based on the selected Business Group"
+          }
+        >
+          <span>
+            <button
+              onClick={handleExport}
+              disabled={!langFilter || loading}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
+      ${
+        !langFilter || loading
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-200"
+          : "bg-green-600 text-white hover:bg-green-700"
+      }`}
+            >
+              <Download size={15} />
+              Export Excel
+            </button>
+          </span>
+        </Tooltip>
 
         <button
           onClick={handleRefresh}
