@@ -13,11 +13,12 @@ import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const PAGE_SIZE = 10;
+// const PAGE_SIZE = 10;
 
 export default function Dashboard() {
   const [data, setData] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<
     DataType["status"] | undefined
   >(undefined);
@@ -52,6 +53,7 @@ export default function Dashboard() {
     state: DataType["state"] | undefined,
     lang: DataType["lang"] | undefined,
     page: number,
+    pageSize: number,
   ) => {
     const filters = {
       ...(search ? { search } : {}),
@@ -62,7 +64,9 @@ export default function Dashboard() {
 
     setLoading(true);
     Promise.all([
-      getTableData({ ...filters, page, pageSize: PAGE_SIZE }),
+      // getTableData({ ...filters, page, pageSize: pageSize }),
+
+      getTableData({ ...filters, page, pageSize }),
       getTableCount(filters),
     ])
       .then(([rows, count]) => {
@@ -79,10 +83,11 @@ export default function Dashboard() {
     state: DataType["state"] | undefined,
     lang: DataType["lang"] | undefined,
     page: number,
+    pageSize: number,
   ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchAll(search, status, state, lang, page);
+      fetchAll(search, status, state, lang, page, pageSize);
     }, 400);
   };
 
@@ -93,11 +98,19 @@ export default function Dashboard() {
       stateFilter,
       langFilter,
       currentPage,
+      pageSize,
     );
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchText, statusFilter, stateFilter, langFilter, currentPage]);
+  }, [
+    searchText,
+    statusFilter,
+    stateFilter,
+    langFilter,
+    currentPage,
+    pageSize,
+  ]);
 
   const handleSearchChange = (val: string) => {
     setSearchText(val);
@@ -177,7 +190,14 @@ export default function Dashboard() {
     {} as Record<LanguageValue, string>,
   );
   const handleRefresh = () => {
-    fetchAll(searchText, statusFilter, stateFilter, langFilter, currentPage);
+    fetchAll(
+      searchText,
+      statusFilter,
+      stateFilter,
+      langFilter,
+      currentPage,
+      pageSize,
+    );
   };
   const handleExport = async () => {
     if (!langFilter) return;
@@ -456,12 +476,23 @@ export default function Dashboard() {
             columns={columns}
             dataSource={data}
             rowKey="file_id"
+            // pagination={{
+            //   current: currentPage,
+            //   pageSize: pageSize,
+            //   total,
+            //   onChange: (page) => setCurrentPage(page),
+            //   showSizeChanger: false,
+            // }}
             pagination={{
               current: currentPage,
-              pageSize: PAGE_SIZE,
+              pageSize,
               total,
-              onChange: (page) => setCurrentPage(page),
-              showSizeChanger: false,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
             }}
             className="custom-ant-table rounded-lg h-full overflow-auto"
           />
