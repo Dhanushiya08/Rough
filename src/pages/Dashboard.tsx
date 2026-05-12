@@ -435,7 +435,7 @@ export default function Dashboard() {
           title={
             !langFilter
               ? "Please choose the Business Group to export the data"
-              : "You can export every ${pageSize} records based on the selected Business Group"
+              : `You can export every ${pageSize} records based on the selected Business Group`
           }
         >
           <span className="inline-block">
