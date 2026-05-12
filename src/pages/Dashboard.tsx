@@ -466,7 +466,38 @@ export default function Dashboard() {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-auto">
+      <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+        {loading ? (
+          <ProcessingOverlay
+            title="Loading your table data"
+            description="Loading data, this may take a few seconds..."
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="file_id"
+            scroll={{ y: "calc(100vh - 280px)" }}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              onChange: (page, size) => {
+                if (size !== pageSize) {
+                  setCurrentPage(1);
+                } else {
+                  setCurrentPage(page);
+                }
+                setPageSize(size || 10);
+              },
+            }}
+            className="custom-ant-table rounded-lg flex-1 min-h-0"
+          />
+        )}
+      </div>
+      {/* <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 overflow-auto">
         {loading ? (
           <ProcessingOverlay
             title="Loading your table data"
@@ -503,7 +534,7 @@ export default function Dashboard() {
             className="custom-ant-table rounded-lg h-full overflow-auto"
           />
         )}
-      </div>
+      </div> */}
     </div>
   );
 }
