@@ -208,6 +208,7 @@ export default function Dashboard() {
       const presignedUrl = await exportExcel({
         page: currentPage,
         lang: langFilter,
+        pageSize: pageSize,
       });
 
       if (!presignedUrl) {
@@ -434,17 +435,17 @@ export default function Dashboard() {
           title={
             !langFilter
               ? "Please choose the Business Group to export the data"
-              : "You can export every 10 records based on the selected Business Group"
+              : "You can export every ${pageSize} records based on the selected Business Group"
           }
         >
-          <span>
+          <span className="inline-block">
             <button
               onClick={handleExport}
               disabled={!langFilter || loading}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
       ${
         !langFilter || loading
-          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-200"
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-200 pointer-events-none"
           : "bg-green-600 text-white hover:bg-green-700"
       }`}
             >
@@ -490,8 +491,13 @@ export default function Dashboard() {
               showSizeChanger: true,
               pageSizeOptions: ["10", "20", "50", "100"],
               onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
+                if (size !== pageSize) {
+                  setCurrentPage(1);
+                } else {
+                  setCurrentPage(page);
+                }
+
+                setPageSize(size || 10);
               },
             }}
             className="custom-ant-table rounded-lg h-full overflow-auto"

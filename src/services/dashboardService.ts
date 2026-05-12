@@ -127,14 +127,17 @@ export const getTableCount = async (
 export const exportExcel = async ({
   page,
   lang,
+  pageSize,
 }: {
   page?: number;
   lang: DataType["lang"];
+  pageSize?: number;
 }): Promise<string> => {
   const response = await apiClient.post<ApiResponse>("/posts", {
     event: "get-excel-data",
     page,
     lang,
+    pageSize,
   });
 
   const rawBody = response.data?.body;
