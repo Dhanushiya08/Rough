@@ -115,6 +115,18 @@ const sampleUsers = [
       "7c9df89c7e257775d5127c59b23af1cd1e1a5535e9da47622cd7f3cb55dbf074",
     role: "User",
   },
+  {
+    username: "amanina_tarmizi@averis.com",
+    password:
+      "03aa0f595da69c78a954c8048497970e0db4f9625c978cab58b754365a6fef01",
+    role: "User",
+  },
+  {
+    username: "derrick_cham@amperedigital.ai",
+    password:
+      "e6bd15fc43c26a4df64afef94e84895c4468b815e9fa84bb60e0889c69f122c6",
+    role: "User",
+  },
 ];
 
 type UserType = {
@@ -143,15 +155,15 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       password: "",
     },
   });
-
   const onSubmit = (data: LoginFormValues) => {
     const hashedPassword = CryptoJS.SHA256(data.password).toString();
+    // console.log(hashedPassword);
     const matchedUser = sampleUsers.find(
       (user) =>
         user.username === data.username && user.password === hashedPassword,
     );
-    console.log(hashedPassword);
-    console.log(matchedUser);
+    // console.log(hashedPassword);
+    // console.log(matchedUser);
     if (matchedUser) {
       onLogin(matchedUser);
     } else {
