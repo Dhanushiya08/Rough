@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { useAppStore } from "../store/useAppStore";
 import "../App.css";
 import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
-import { ZoomIn, ZoomOut, RotateCcw, RotateCw } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw, RefreshCw } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -143,7 +143,7 @@ export default function PdfPreview() {
             }}
             className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
           >
-            <RotateCcw size={16} />
+            <RefreshCw size={16} />
           </button>
 
           {/* {fileType === "tiff" && (
