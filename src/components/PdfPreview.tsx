@@ -34,6 +34,7 @@ export default function PdfPreview() {
   const [numPages, setNumPages] = useState<number>(0);
   const [scale, setScale] = useState(1);
   const [fileUrl, setFileUrl] = useState<string>("");
+  const [pdfRotation, setPdfRotation] = useState(0);
   const [fileType, setFileType] = useState<string>("");
   const file_id = useAppStore((s) => s.fileId);
   const fileName = useAppStore((s) => s.fileName);
@@ -72,6 +73,8 @@ export default function PdfPreview() {
       setIsRendering(false);
     },
   });
+  const rotatePdfLeft = () => setPdfRotation((r) => (r - 90 + 360) % 360);
+  const rotatePdfRight = () => setPdfRotation((r) => (r + 90) % 360);
   useEffect(() => {
     if (!file_id) return;
 
@@ -133,6 +136,7 @@ export default function PdfPreview() {
             onClick={() => {
               if (fileType === "pdf") {
                 setScale(1);
+                setPdfRotation(0);
               } else {
                 tiffControls?.reset();
               }
@@ -142,9 +146,9 @@ export default function PdfPreview() {
             <RotateCcw size={16} />
           </button>
 
-          {fileType === "tiff" && (
+          {/* {fileType === "tiff" && (
             <>
-              <div className="w-px h-4 bg-gray-300 mx-1" /> {/* divider */}
+              <div className="w-px h-4 bg-gray-300 mx-1" /> 
               <button
                 onClick={() => tiffControls?.rotateLeft()}
                 title="Rotate Left"
@@ -160,7 +164,29 @@ export default function PdfPreview() {
                 <RotateCw size={16} />
               </button>
             </>
-          )}
+          )} */}
+          {/* ROTATE — both PDF and TIFF */}
+          <div className="w-px h-4 bg-gray-300 mx-1" />
+          <button
+            onClick={() => {
+              if (fileType === "pdf") rotatePdfLeft();
+              else tiffControls?.rotateLeft();
+            }}
+            title="Rotate Left"
+            className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
+          >
+            <RotateCcw size={16} />
+          </button>
+          <button
+            onClick={() => {
+              if (fileType === "pdf") rotatePdfRight();
+              else tiffControls?.rotateRight();
+            }}
+            title="Rotate Right"
+            className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
+          >
+            <RotateCw size={16} />
+          </button>
         </div>
       </div>
 
@@ -181,6 +207,7 @@ export default function PdfPreview() {
                 key={page}
                 pageNumber={page}
                 scale={scale}
+                rotate={pdfRotation}
                 className="mb-4 max-w-full"
               />
             ))}
