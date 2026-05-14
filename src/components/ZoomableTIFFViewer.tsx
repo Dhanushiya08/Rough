@@ -6,12 +6,16 @@ import ProcessingOverlay from "./ProcessingOverlay";
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const ZOOM_STEP = 0.25;
+const ROTATE_STEP = 90;
 
 type TiffControls = {
   zoomIn: () => void;
   zoomOut: () => void;
   reset: () => void;
+  rotateLeft: () => void;
+  rotateRight: () => void;
   scale: number;
+  rotation: number;
 };
 
 interface Props {
@@ -25,20 +29,32 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
 
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const dragStart = useRef({ x: 0, y: 0 });
+
   useEffect(() => {
     setIsLoading(true);
   }, [tiff]);
+
   const clampPan = (x: number, y: number, currentScale = scale) => {
     if (!containerRef.current || !contentRef.current) return { x, y };
 
     const container = containerRef.current;
     const content = contentRef.current;
 
-    const scaledWidth = content.offsetWidth * currentScale;
-    const scaledHeight = content.offsetHeight * currentScale;
+    // Swap dimensions for 90/270 degree rotations
+    const isRotated90or270 = rotation % 180 !== 0;
+    const effectiveWidth = isRotated90or270
+      ? content.offsetHeight
+      : content.offsetWidth;
+    const effectiveHeight = isRotated90or270
+      ? content.offsetWidth
+      : content.offsetHeight;
+
+    const scaledWidth = effectiveWidth * currentScale;
+    const scaledHeight = effectiveHeight * currentScale;
 
     const maxX = Math.max(0, (scaledWidth - container.clientWidth) / 2);
     const maxY = Math.max(0, (scaledHeight - container.clientHeight) / 2);
@@ -51,15 +67,35 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
 
   const zoomIn = () => setScale((s) => Math.min(MAX_SCALE, s + ZOOM_STEP));
   const zoomOut = () => setScale((s) => Math.max(MIN_SCALE, s - ZOOM_STEP));
+
+  const rotateLeft = () => {
+    setRotation((r) => (r - ROTATE_STEP + 360) % 360);
+    setPan({ x: 0, y: 0 }); 
+  };
+
+  const rotateRight = () => {
+    setRotation((r) => (r + ROTATE_STEP) % 360);
+    setPan({ x: 0, y: 0 });
+  };
+
   const reset = () => {
     setScale(1);
     setPan({ x: 0, y: 0 });
+    setRotation(0);
   };
 
   useEffect(() => {
     setPan((prev) => clampPan(prev.x, prev.y, scale));
-    onZoomChange?.({ zoomIn, zoomOut, reset, scale });
-  }, [scale]);
+    onZoomChange?.({
+      zoomIn,
+      zoomOut,
+      reset,
+      rotateLeft,
+      rotateRight,
+      scale,
+      rotation,
+    });
+  }, [scale, rotation]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -74,12 +110,10 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-
     const newPan = {
       x: e.clientX - dragStart.current.x,
       y: e.clientY - dragStart.current.y,
     };
-
     setPan(clampPan(newPan.x, newPan.y));
   };
 
@@ -96,7 +130,6 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
       className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden"
       style={{ cursor: isDragging ? "grabbing" : "grab" }}
     >
-      {" "}
       {isLoading && (
         <ProcessingOverlay
           title="Preparing your document..."
@@ -106,9 +139,9 @@ export default function ZoomableTIFFViewer({ tiff, onZoomChange }: Props) {
       <div
         ref={contentRef}
         style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+          transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${scale})`,
           transformOrigin: "center",
-          transition: isDragging ? "none" : "transform 0.1s ease",
+          transition: isDragging ? "none" : "transform 0.2s ease",
         }}
       >
         <TIFFViewer tiff={tiff} onLoad={() => setIsLoading(false)} />

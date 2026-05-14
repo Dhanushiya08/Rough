@@ -18,6 +18,7 @@ export default function Navbar({ onLogout }: NavbarProps) {
   const storedUser = localStorage.getItem("loggedInUser");
 
   const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
+  console.log(loggedInUser?.username);
 
   return (
     <nav className="w-full bg-white border-b border-borderer shadow-sm">

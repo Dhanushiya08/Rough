@@ -8,17 +8,26 @@ import toast from "react-hot-toast";
 import { useAppStore } from "../store/useAppStore";
 import "../App.css";
 import ZoomableTIFFViewer from "./ZoomableTIFFViewer";
-import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
 ).toString();
+// type TiffControls = {
+//   zoomIn: () => void;
+//   zoomOut: () => void;
+//   reset: () => void;
+//   scale: number;
+// };
 type TiffControls = {
   zoomIn: () => void;
   zoomOut: () => void;
   reset: () => void;
+  rotateLeft: () => void;
+  rotateRight: () => void;
   scale: number;
+  rotation: number;
 };
 export default function PdfPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,13 +87,11 @@ export default function PdfPreview() {
       className="w-full h-full border rounded-xl bg-gray-100 flex flex-col overflow-hidden"
       style={{ minHeight: 0 }}
     >
-     
       {/* HEADER */}
       <div className="flex justify-between items-center p-3 border-b bg-white shadow-sm">
         <p className="text-sm text-gray-500 font-medium">
           {fileName ? fileName : ""}
         </p>
-
 
         <div className="flex items-center gap-2 bg-gray-100/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-inner border">
           <button
@@ -134,6 +141,26 @@ export default function PdfPreview() {
           >
             <RotateCcw size={16} />
           </button>
+
+          {fileType === "tiff" && (
+            <>
+              <div className="w-px h-4 bg-gray-300 mx-1" /> {/* divider */}
+              <button
+                onClick={() => tiffControls?.rotateLeft()}
+                title="Rotate Left"
+                className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
+              >
+                <RotateCcw size={16} />
+              </button>
+              <button
+                onClick={() => tiffControls?.rotateRight()}
+                title="Rotate Right"
+                className="p-2 rounded-full hover:bg-white shadow-sm transition active:scale-90"
+              >
+                <RotateCw size={16} />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
