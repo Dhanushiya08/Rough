@@ -19,7 +19,6 @@ const sampleUsers = [
     password:
       // "951444067dc2a7ca8a889fb37ccf297e817c2c0fe237282202785225bdfbc546",
       "f72b33d1a80b869c3c67b946f31d365e11f65cc8301695ed9fdf912030468305",
-
     role: "User",
   },
   {
@@ -125,6 +124,12 @@ const sampleUsers = [
     username: "derrick_cham@amperedigital.ai",
     password:
       "e6bd15fc43c26a4df64afef94e84895c4468b815e9fa84bb60e0889c69f122c6",
+    role: "User",
+  },
+  {
+    username: "amir_ahmadi@amperedigital.ai",
+    password:
+      "b1e9a5649ca977943d30781d26f2351d3c885220cf75a27af036e945631a435b",
     role: "User",
   },
 ];
