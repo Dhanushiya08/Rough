@@ -1,0 +1,41 @@
+import boto3
+from stream_unzip import stream_unzip
+
+s3 = boto3.client("s3")
+
+
+def lambda_handler(event, context):
+
+    bucket = event["bucket"]
+    zip_key = event["zip_key"]
+    output_prefix = event["output_prefix"].rstrip("/") + "/"
+
+    response = s3.get_object(
+        Bucket=bucket,
+        Key=zip_key
+    )
+
+    extracted = []
+
+    for file_name, file_size, chunks in stream_unzip(response["Body"].iter_chunks()):
+
+        filename = file_name.decode("utf-8")
+
+        print(f"Extracting {filename}")
+
+        # For initial testing only
+        data = b"".join(chunks)
+
+        s3.put_object(
+            Bucket=bucket,
+            Key=output_prefix + filename,
+            Body=data
+        )
+
+        extracted.append(filename)
+
+    return {
+        "statusCode": 200,
+        "files_extracted": extracted
+    }
+

@@ -1,0 +1,205 @@
+--1ch-rge-genai-document-processing-rds
+--│
+--├── doc_process          (Existing - Development)
+--├── lookup               (Existing - Development)
+--│
+--├── prod_doc_process     (Production)
+--│   ├── InvoiceCategory
+--│   ├── Document
+--│   ├── TransformationRule
+--│   ├── ModelConfiguration
+--│   ├── Prompt
+--│   ├── AIResult
+--│   ├── SAPChangeTracker
+--│   ├── ProcessingHistory
+--│   ├── EnrichmentResult
+--│   └── SAPLookupResult
+--│
+--├── prod_lookup          (Production)
+--│   └── BusinessGroup
+--│
+--└── prod_log             (Production)
+--    └── AuditLog
+
+--Create the new schemas:
+CREATE SCHEMA IF NOT EXISTS prod_doc_process;
+CREATE SCHEMA IF NOT EXISTS prod_lookup;
+CREATE SCHEMA IF NOT EXISTS prod_log;
+
+
+CREATE TABLE prod_lookup.BusinessGroup (
+    BusinessGroupId UUID PRIMARY KEY,
+    Code            VARCHAR(50) NOT NULL,
+    Name            VARCHAR(200) NOT NULL,
+    Active          BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE prod_log.AuditLog (
+    AuditId     UUID PRIMARY KEY,
+    UserId      VARCHAR(100) NOT NULL,
+    Action      VARCHAR(100) NOT NULL,
+    Entity      VARCHAR(100) NOT NULL,
+    EntityId    VARCHAR(100),
+    Timestamp   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE prod_doc_process.InvoiceCategory (
+    CategoryId       UUID PRIMARY KEY,
+    BusinessGroupId  UUID NOT NULL,
+    Name             VARCHAR(200) NOT NULL,
+    Type             VARCHAR(100),
+    Active           BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT fk_invoicecategory_businessgroup
+        FOREIGN KEY (BusinessGroupId)
+        REFERENCES prod_lookup.BusinessGroup(BusinessGroupId)
+);
+
+CREATE TABLE prod_doc_process.ModelConfiguration (
+    ModelId        UUID PRIMARY KEY,
+    Provider       VARCHAR(100) NOT NULL,
+    Model          VARCHAR(200) NOT NULL,
+    Temperature    REAL,
+    MaxTokens      INTEGER
+);
+
+CREATE TABLE prod_doc_process.Document (
+    DocumentId           UUID PRIMARY KEY,
+    BarcodeId            VARCHAR(100),
+    BusinessGroupId      UUID NOT NULL,
+    CategoryId           UUID NOT NULL,
+    OriginalFileName     VARCHAR(500),
+    OriginalS3Key        VARCHAR(1000),
+    PreProcessedS3Key    VARCHAR(1000),
+    FileType             VARCHAR(50),
+    MimeType             VARCHAR(100),
+    FileSize             BIGINT,
+    DocumentHash         VARCHAR(255),
+    PageCount            INTEGER,
+    CurrentStage         VARCHAR(100),
+    CurrentStatus        VARCHAR(100),
+
+    CONSTRAINT fk_document_businessgroup
+        FOREIGN KEY (BusinessGroupId)
+        REFERENCES prod_lookup.BusinessGroup(BusinessGroupId),
+
+    CONSTRAINT fk_document_category
+        FOREIGN KEY (CategoryId)
+        REFERENCES prod_doc_process.InvoiceCategory(CategoryId)
+);
+
+CREATE TABLE prod_doc_process.TransformationRule (
+    RuleId            UUID PRIMARY KEY,
+    BusinessGroupId   UUID NOT NULL,
+    CategoryId        UUID NOT NULL,
+    Version           INTEGER NOT NULL,
+    RuleDefinition    JSONB,
+
+    CONSTRAINT fk_rule_businessgroup
+        FOREIGN KEY (BusinessGroupId)
+        REFERENCES prod_lookup.BusinessGroup(BusinessGroupId),
+
+    CONSTRAINT fk_rule_category
+        FOREIGN KEY (CategoryId)
+        REFERENCES prod_doc_process.InvoiceCategory(CategoryId)
+);
+
+CREATE TABLE prod_doc_process.Prompt (
+    PromptId          UUID PRIMARY KEY,
+    BusinessGroupId   UUID NOT NULL,
+    CategoryId        UUID NOT NULL,
+    ModelId           UUID NOT NULL,
+    PromptType        VARCHAR(100),
+    Version           INTEGER,
+    Prompt            TEXT,
+
+    CONSTRAINT fk_prompt_businessgroup
+        FOREIGN KEY (BusinessGroupId)
+        REFERENCES prod_lookup.BusinessGroup(BusinessGroupId),
+
+    CONSTRAINT fk_prompt_category
+        FOREIGN KEY (CategoryId)
+        REFERENCES prod_doc_process.InvoiceCategory(CategoryId),
+
+    CONSTRAINT fk_prompt_model
+        FOREIGN KEY (ModelId)
+        REFERENCES prod_doc_process.ModelConfiguration(ModelId)
+);
+
+CREATE TABLE prod_doc_process.ProcessingHistory (
+    HistoryId      UUID PRIMARY KEY,
+    DocumentId     UUID NOT NULL,
+    Stage          VARCHAR(100),
+    AttemptNo      INTEGER,
+    Status         VARCHAR(100),
+    StartedAt      TIMESTAMP,
+    CompletedAt    TIMESTAMP,
+    TriggeredBy    VARCHAR(100),
+    Message        TEXT,
+
+    CONSTRAINT fk_history_document
+        FOREIGN KEY (DocumentId)
+        REFERENCES prod_doc_process.Document(DocumentId)
+);
+
+CREATE TABLE prod_doc_process.AIResult (
+    ResultId        UUID PRIMARY KEY,
+    HistoryId       UUID NOT NULL,
+    PromptId        UUID NOT NULL,
+    Stage           VARCHAR(100),
+    PageNumber      INTEGER,
+    RawResponse     JSONB,
+    OutputJson      JSONB,
+    Confidence      REAL,
+
+    CONSTRAINT fk_airesult_history
+        FOREIGN KEY (HistoryId)
+        REFERENCES prod_doc_process.ProcessingHistory(HistoryId),
+
+    CONSTRAINT fk_airesult_prompt
+        FOREIGN KEY (PromptId)
+        REFERENCES prod_doc_process.Prompt(PromptId)
+);
+
+CREATE TABLE prod_doc_process.EnrichmentResult (
+    ResultId      UUID PRIMARY KEY,
+    HistoryId     UUID NOT NULL,
+    RuleId        UUID NOT NULL,
+    InputJson     JSONB,
+    OutputJson    JSONB,
+
+    CONSTRAINT fk_enrichment_history
+        FOREIGN KEY (HistoryId)
+        REFERENCES prod_doc_process.ProcessingHistory(HistoryId),
+
+    CONSTRAINT fk_enrichment_rule
+        FOREIGN KEY (RuleId)
+        REFERENCES prod_doc_process.TransformationRule(RuleId)
+);
+
+CREATE TABLE prod_doc_process.SAPLookupResult (
+    LookupId        UUID PRIMARY KEY,
+    HistoryId       UUID NOT NULL,
+    RequestJson     JSONB,
+    ResponseJson    JSONB,
+
+    CONSTRAINT fk_lookup_history
+        FOREIGN KEY (HistoryId)
+        REFERENCES prod_doc_process.ProcessingHistory(HistoryId)
+);
+
+CREATE TABLE prod_doc_process.SAPChangeTracker (
+    ChangeId        UUID PRIMARY KEY,
+    DocumentId      UUID NOT NULL,
+    SAPDocument     VARCHAR(200),
+    FieldName       VARCHAR(200),
+    OldValue        VARCHAR(1000),
+    NewValue        VARCHAR(1000),
+    ChangedAt       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_change_document
+        FOREIGN KEY (DocumentId)
+        REFERENCES prod_doc_process.Document(DocumentId)
+);
+
+
