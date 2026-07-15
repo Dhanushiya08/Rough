@@ -75,7 +75,6 @@ CREATE TABLE prod_ocr_app.Document (
     FileType            VARCHAR(50),
     MimeType            VARCHAR(100),
     FileSize            BIGINT,
-    DocumentHash        VARCHAR(255),
     PageCount           INTEGER,
 
     CurrentStage        VARCHAR(100),
