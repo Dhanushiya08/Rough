@@ -1,0 +1,564 @@
+import { Table, Tag, Input, Select, Tooltip } from "antd";
+import { useState, useEffect, useRef } from "react";
+import {
+  Eye,
+  RefreshCw,
+  Copy,
+  Download,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
+import { useAppStore } from "../../store/useAppStore";
+import {
+  getTableData,
+  getTableCount,
+  exportExcel,
+} from "../../services/dashboardService";
+import type { DataType } from "../../services/dashboardService";
+import ProcessingOverlay from "../../components/ProcessingOverlay";
+import toast from "react-hot-toast";
+
+const { Option } = Select;
+
+// const PAGE_SIZE = 10;
+
+export default function Dashboard() {
+  const [data, setData] = useState<DataType[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [pageSize, setPageSize] = useState(10);
+  const [statusFilter, setStatusFilter] = useState<
+    DataType["status"] | undefined
+  >(undefined);
+  const [stateFilter, setStateFilter] = useState<DataType["state"] | undefined>(
+    undefined,
+  );
+  const [langFilter, setLangFilter] = useState<DataType["lang"] | undefined>(
+    undefined,
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [copiedRow, setCopiedRow] = useState<string | null>(null);
+
+  const openStepper = useAppStore((s) => s.openStepper);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleView = (record: DataType) => {
+    console.log(record, "onclick record");
+    openStepper(
+      record.file_id,
+      record.file_name,
+      record.lang,
+      record.state,
+      true,
+    );
+  };
+
+  const fetchAll = (
+    search: string,
+    status: DataType["status"] | undefined,
+    state: DataType["state"] | undefined,
+    lang: DataType["lang"] | undefined,
+    page: number,
+    pageSize: number,
+  ) => {
+    const filters = {
+      ...(search ? { search } : {}),
+      ...(status ? { status } : {}),
+      ...(state ? { state } : {}),
+      ...(lang ? { lang } : {}),
+    };
+
+    setLoading(true);
+    Promise.all([
+      // getTableData({ ...filters, page, pageSize: pageSize }),
+
+      getTableData({ ...filters, page, pageSize }),
+      getTableCount(filters),
+    ])
+      .then(([rows, count]) => {
+        setData(rows);
+        setTotal(count);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  };
+
+  const scheduleFetch = (
+    search: string,
+    status: DataType["status"] | undefined,
+    state: DataType["state"] | undefined,
+    lang: DataType["lang"] | undefined,
+    page: number,
+    pageSize: number,
+  ) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAll(search, status, state, lang, page, pageSize);
+    }, 400);
+  };
+
+  useEffect(() => {
+    scheduleFetch(
+      searchText,
+      statusFilter,
+      stateFilter,
+      langFilter,
+      currentPage,
+      pageSize,
+    );
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [
+    searchText,
+    statusFilter,
+    stateFilter,
+    langFilter,
+    currentPage,
+    pageSize,
+  ]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchText(val);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (val: DataType["status"] | undefined) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+  };
+
+  const handleStateChange = (val: DataType["state"] | undefined) => {
+    setStateFilter(val);
+    setCurrentPage(1);
+  };
+  const handleLangChange = (val: DataType["lang"] | undefined) => {
+    setLangFilter(val);
+    setCurrentPage(1);
+  };
+  const handleCopy = async (value?: string, fileId?: string) => {
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+
+      setCopiedRow(fileId || null);
+      toast.success("Copied");
+
+      setTimeout(() => {
+        setCopiedRow(null);
+      }, 2000);
+    } catch (error) {
+      toast.error("Copy failed");
+      console.log(error);
+    }
+  };
+  const statusColorMap: Record<DataType["status"], string> = {
+    pending: "default",
+    processing: "blue",
+    waiting: "orange",
+    completed: "green",
+    failed: "red",
+  };
+
+  const stateColorMap: Record<DataType["state"], string> = {
+    extract: "purple",
+    lookup: "cyan",
+    sap: "geekblue",
+    park: "magenta",
+  };
+
+  type LanguageValue = "english" | "apical-english" | "bahasa" | "mandarin";
+
+  const languageOptions = [
+    { label: "WLNG - Canada", value: "english" },
+    { label: "Apical English", value: "apical-english" },
+    { label: "Apical / Asia Agri", value: "bahasa" },
+    { label: "Sateri / Asia Symbol", value: "mandarin" },
+  ] as const;
+
+  const langColorMap: Record<LanguageValue, string> = {
+    english: "blue",
+    "apical-english": "purple",
+    bahasa: "green",
+    mandarin: "orange",
+  };
+
+  const langLabelMap = languageOptions.reduce<Record<LanguageValue, string>>(
+    (acc, item) => {
+      acc[item.value] = item.label;
+      return acc;
+    },
+    {} as Record<LanguageValue, string>,
+  );
+  const handleRefresh = () => {
+    fetchAll(
+      searchText,
+      statusFilter,
+      stateFilter,
+      langFilter,
+      currentPage,
+      pageSize,
+    );
+  };
+  const handleExport = async () => {
+    if (!langFilter) return;
+
+    try {
+      setLoading(true);
+
+      const presignedUrl = await exportExcel({
+        page: currentPage,
+        lang: langFilter,
+        pageSize: pageSize,
+      });
+
+      if (!presignedUrl) {
+        toast.error("Export URL not found");
+        return;
+      }
+
+      window.open(presignedUrl, "_blank");
+
+      toast.success("Excel export started");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export excel");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const columns = [
+    {
+      title: "Created At",
+      dataIndex: "created_at",
+      render: (created_at: string) => {
+        if (!created_at) return "-";
+
+        const date = new Date(created_at.replace(" ", "T") + "Z");
+        if (isNaN(date.getTime())) return "-";
+
+        return new Intl.DateTimeFormat("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: "Asia/Singapore",
+        }).format(date);
+      },
+    },
+
+    {
+      title: "File Name",
+      dataIndex: "file_name",
+      render: (text: string) => (
+        <span className="font-medium text-gray-800">{text}</span>
+      ),
+    },
+    {
+      title: "Business Group",
+      dataIndex: "lang",
+      render: (lang: DataType["lang"]) => (
+        <Tag
+          color={langColorMap[lang]}
+          className="capitalize px-3 py-1 rounded-full"
+          variant="outlined"
+        >
+          {langLabelMap[lang]}
+        </Tag>
+      ),
+    },
+    {
+      title: "State",
+      dataIndex: "state",
+      render: (state: DataType["state"]) => (
+        <Tag
+          color={stateColorMap[state]}
+          className="capitalize px-3 py-1 rounded-full"
+          variant={"outlined"}
+        >
+          {state}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (status: DataType["status"]) => (
+        <Tag
+          color={statusColorMap[status]}
+          className="capitalize px-3 py-1 rounded-full font-medium"
+          variant={"outlined"}
+        >
+          {status}
+        </Tag>
+      ),
+    },
+    {
+      title: "Invoice Doc Number",
+      dataIndex: "invoice_doc_number",
+      render: (_: unknown, record: DataType) => {
+        const value = record?.invoice_doc_number?.toString()?.trim();
+
+        if (!value) {
+          return <span className="text-gray-400">-</span>;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-800">{value}</span>
+
+            <Tooltip title={copiedRow === record.file_id ? "Copied" : "Copy"}>
+              <button
+                type="button"
+                // onClick={() => handleCopy(value)}
+                onClick={() => handleCopy(value, record.file_id)}
+                className="text-gray-500 hover:text-primary transition"
+              >
+                <Copy size={16} />
+              </button>
+            </Tooltip>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: unknown, record: DataType) => {
+        const isDisabled = record.status === "pending";
+
+        return (
+          <button
+            disabled={isDisabled}
+            onClick={() => handleView(record)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
+    ${
+      isDisabled
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : "bg-stepbgbody text-primary hover:bg-blue-100"
+    }`}
+          >
+            <Eye size={16} />
+            View
+          </button>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className="h-full flex flex-col stepbgheader px-10 py-4">
+      {/* HEADER */}
+      <div className="mb-5 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-semibold text-primary">
+            Parking Data History
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Track file processing across all stages
+          </p>
+        </div>
+      </div>
+
+      {/* SUMMARY CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Invoices */}
+        <div className="bg-white rounded-xl shadow-soft p-6 border border-gray-100 flex flex-col justify-between hover:-translate-y-1 hover:shadow-medium transition-all duration-200 cursor-default">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-gray-500 font-medium text-sm">
+              Total Invoices
+            </span>
+            <div className="p-1.5 bg-blue-50 text-blue-500 rounded-md">
+              <FileText size={18} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-4xl font-bold text-gray-800 mb-3 tracking-tight">
+              1,284
+            </h3>
+            <div className="flex items-center text-xs font-medium text-green-600 gap-1">
+              <TrendingUp size={14} />
+              <span>12.4% vs last month</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Processed */}
+        <div className="bg-white rounded-xl shadow-soft p-6 border border-gray-100 flex flex-col justify-between hover:-translate-y-1 hover:shadow-medium transition-all duration-200 cursor-default">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-gray-500 font-medium text-sm">Processed</span>
+            <div className="p-1.5 bg-green-50 text-green-500 rounded-md">
+              <CheckCircle2 size={18} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-4xl font-bold text-gray-800 mb-3 tracking-tight">
+              1,097
+            </h3>
+            <div className="flex items-center text-xs font-medium text-green-600 gap-1">
+              <TrendingUp size={14} />
+              <span>8.1% - 85.4% rate</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Needs Review */}
+        <div className="bg-white rounded-xl shadow-soft p-6 border border-gray-100 flex flex-col justify-between hover:-translate-y-1 hover:shadow-medium transition-all duration-200 cursor-default">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-gray-500 font-medium text-sm">
+              Needs Review
+            </span>
+            <div className="p-1.5 bg-orange-50 text-orange-500 rounded-md">
+              <AlertCircle size={18} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-4xl font-bold text-gray-800 mb-3 tracking-tight">
+              142
+            </h3>
+            <div className="flex items-center text-xs font-medium text-red-500 gap-1">
+              <TrendingDown size={14} />
+              <span>3.2% vs last month</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Exceptions */}
+        <div className="bg-white rounded-xl shadow-soft p-6 border border-gray-100 flex flex-col justify-between hover:-translate-y-1 hover:shadow-medium transition-all duration-200 cursor-default">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-gray-500 font-medium text-sm">
+              Exceptions
+            </span>
+            <div className="p-1.5 bg-red-50 text-red-500 rounded-md">
+              <XCircle size={18} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-4xl font-bold text-gray-800 mb-3 tracking-tight">
+              45
+            </h3>
+            <div className="flex items-center text-xs font-medium text-red-500 gap-1">
+              <TrendingDown size={14} />
+              <span>1.1% vs last month</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* FILTER BAR */}
+      <div className="bg-white p-6 rounded-xl shadow-soft mb-6 flex flex-wrap gap-5 items-center">
+        <Input
+          placeholder="Search file name..."
+          value={searchText}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-64"
+          allowClear
+          onClear={() => handleSearchChange("")}
+        />
+
+        <Select
+          placeholder="Status"
+          allowClear
+          className="w-44"
+          onChange={handleStatusChange}
+        >
+          <Option value="pending">Pending</Option>
+          <Option value="processing">Processing</Option>
+          <Option value="waiting">Waiting</Option>
+          <Option value="completed">Completed</Option>
+          <Option value="failed">Failed</Option>
+        </Select>
+
+        <Select
+          placeholder="State"
+          allowClear
+          className="w-44"
+          onChange={handleStateChange}
+        >
+          <Option value="extract">Extract</Option>
+          <Option value="lookup">Lookup</Option>
+          <Option value="sap">SAP</Option>
+          <Option value="park">Park</Option>
+        </Select>
+        <Select
+          placeholder="Business Group"
+          allowClear
+          className="w-56"
+          onChange={handleLangChange}
+        >
+          <Option value="english">WLNG - Canada</Option>
+          <Option value="apical-english">Apical English</Option>
+          <Option value="bahasa">Apical / Asia Agri</Option>
+          <Option value="mandarin">Sateri / Asia Symbol</Option>
+        </Select>
+        <Tooltip
+          title={
+            !langFilter
+              ? "Please choose the Business Group to export the data"
+              : `You can export every ${pageSize} records based on the selected Business Group`
+          }
+        >
+          <span className="inline-block">
+            <button
+              onClick={handleExport}
+              disabled={!langFilter || loading}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition
+      ${
+        !langFilter || loading
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-200 pointer-events-none"
+          : "bg-green-600 text-white hover:bg-green-700"
+      }`}
+            >
+              <Download size={15} />
+              Export Excel
+            </button>
+          </span>
+        </Tooltip>
+
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg border border-borderer text-gray-600 text-sm font-medium hover:bg-stepbgbody hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-button"
+        >
+          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+          Refresh
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 flex-1 min-h-0 overflow-auto">
+        {loading ? (
+          <ProcessingOverlay
+            title="Loading your table data"
+            description="Loading data, this may take a few seconds..."
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="file_id"
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              onChange: (page, size) => {
+                if (size !== pageSize) {
+                  setCurrentPage(1);
+                } else {
+                  setCurrentPage(page);
+                }
+
+                setPageSize(size || 10);
+              },
+            }}
+            className="custom-ant-table rounded-lg h-full overflow-auto"
+          />
+        )}
+      </div>
+    </div>
+  );
+}

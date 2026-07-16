@@ -1,0 +1,95 @@
+import type { PromptVersion } from "./types";
+
+export const MOCK_PROMPTS: PromptVersion[] = [
+  // Global - Base Prompts
+  {
+    id: "bp-1",
+    name: "Standard Base Extraction",
+    type: "Base Prompt",
+    business: "Global",
+    version: 1,
+    status: "Archived",
+    description: "Initial base prompt for standard extraction.",
+    content: "Extract all key-value pairs from the document.",
+    createdAt: "2023-01-10T08:00:00Z",
+    createdBy: "Admin",
+  },
+  {
+    id: "bp-2",
+    name: "Standard Base Extraction",
+    type: "Base Prompt",
+    business: "Global",
+    version: 2,
+    status: "Active",
+    description: "Improved base prompt with line item support.",
+    content: "Extract all key-value pairs and tabular line items from the document.",
+    createdAt: "2023-06-15T09:30:00Z",
+    createdBy: "Admin",
+  },
+  
+  // Global - Consolidation
+  {
+    id: "cp-1",
+    name: "General Consolidation",
+    type: "Consolidation Prompt",
+    business: "Global",
+    version: 1,
+    status: "Active",
+    description: "Merges multiple extractions into a single JSON.",
+    content: "Consolidate the provided extractions into a unified JSON schema.",
+    createdAt: "2023-02-20T10:15:00Z",
+    createdBy: "System",
+  },
+
+  // Global - Classification
+  {
+    id: "cl-1",
+    name: "Document Classifier",
+    type: "Classification Prompt",
+    business: "Global",
+    version: 1,
+    status: "Active",
+    description: "Classifies document types.",
+    content: "Determine if the document is an Invoice, PO, or Receipt.",
+    createdAt: "2023-03-05T11:45:00Z",
+    createdBy: "System",
+  },
+
+  // Main Prompts - Business Specific
+  {
+    id: "mp-api-1",
+    name: "Apical Invoice Processing",
+    type: "Main Prompt",
+    business: "Apical",
+    version: 1,
+    status: "Active",
+    description: "Main extraction logic for Apical invoices.",
+    content: "Extract vendor name, invoice date, and total amount specific to Apical formats.",
+    createdAt: "2023-04-12T14:20:00Z",
+    createdBy: "Apical Admin",
+  },
+  {
+    id: "mp-sat-1",
+    name: "Sateri Document Processing",
+    type: "Main Prompt",
+    business: "Sateri",
+    version: 1,
+    status: "Archived",
+    description: "Initial main prompt for Sateri.",
+    content: "Extract fields based on Sateri rules v1.",
+    createdAt: "2023-01-20T10:00:00Z",
+    createdBy: "Sateri Admin",
+  },
+  {
+    id: "mp-sat-2",
+    name: "Sateri Document Processing",
+    type: "Main Prompt",
+    business: "Sateri",
+    version: 2,
+    status: "Active",
+    description: "Updated main prompt for Sateri with new VAT rules.",
+    content: "Extract fields based on Sateri rules v2, including VAT logic.",
+    createdAt: "2023-08-11T16:30:00Z",
+    createdBy: "Sateri Admin",
+  },
+];
